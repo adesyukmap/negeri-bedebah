@@ -7,7 +7,7 @@ var PTR={},gest=null,lastTap=0,tapTimer=null;
 function ptrList(){return Object.keys(PTR).map(function(k){return PTR[k];});}
 function clampCam(){var lim=CW*cam.z*0.65,limy=CH_*cam.z*0.65;cam.px=Math.max(-lim,Math.min(lim,cam.px));cam.py=Math.max(-limy,Math.min(limy,cam.py));cam.z=Math.max(0.85,Math.min(3.2,cam.z));}
 function bindBoard(){
-  cv.addEventListener('pointerdown',function(e){audioUnlock();if(CONVOY)CONVOY.fast=true;cv.setPointerCapture&&cv.setPointerCapture(e.pointerId);PTR[e.pointerId]={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY};
+  cv.addEventListener('pointerdown',function(e){audioUnlock();if(CONVOY)CONVOY.fast=true;if(storyBusy()){storySkip();refresh();}cv.setPointerCapture&&cv.setPointerCapture(e.pointerId);PTR[e.pointerId]={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY};
     var l=ptrList();
     if(l.length===2){var a=l[0],b=l[1],mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};gest={type:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,z0:cam.z,mid0:mid,px0:cam.px,py0:cam.py,moved:true};}
     else if(l.length===1){gest={type:'one',px0:cam.px,py0:cam.py,moved:false};}});

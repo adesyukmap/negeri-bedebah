@@ -48,7 +48,7 @@ function tokenPos(pid,now){
 function exprOf(p,now){if(p.inJail)return 'sad';var e=EXPR[p.id];if(e&&now<e.until)return e.e;return null;}
 function drawToken(p,tp,now){
   var b=iso(tp.u,tp.v,tp.z),isCur=p.id===S.current,bob=isCur&&!anim?Math.abs(Math.sin(now/300))*TH*0.12:0,s=TW*0.52;
-  var opt={expr:exprOf(p,now),vest:p.inJail&&isPol(),cough:FX.forest&&now-FX.forest.t0<5200};
+  var opt={expr:exprOf(p,now),vest:p.inJail&&isPol(),cough:(FX.forest&&now-FX.forest.t0<5200)||(isPol()&&storyCoughing(now))};
   if(tp.ship){var bs=s*0.9;g.save();g.translate(b.x,b.y+TH*0.05);g.beginPath();g.moveTo(-bs*0.5,-bs*0.05);g.lineTo(bs*0.5,-bs*0.05);g.quadraticCurveTo(bs*0.35,bs*0.18,-bs*0.35,bs*0.15);g.closePath();g.fillStyle='#2C4F9E';g.fill();g.fillStyle='#fff';g.fillRect(-bs*0.4,-bs*0.04,bs*0.8,bs*0.04);g.restore();
     for(var w=0;w<3;w++)ell(b.x-TW*0.2-w*TW*0.08,b.y+TH*0.08,TW*0.04,TH*0.02,'rgba(255,255,255,.7)');}
   if(tp.clip!=null&&tp.clip<1){g.save();g.beginPath();g.rect(b.x-s,b.y-s*1.4-TH*2,s*2,s*1.4+TH*2+(tileTop(p.pos,now)-tp.z)+TH*0.2);var mh=iso(tp.u,tp.v,tileTop(anim?anim.pts[0]:p.pos,now));g.restore();}
@@ -81,7 +81,7 @@ function render(now){
   var title=isPol()?'NEGERI PARA KORUPTOR':'KEPULAUAN CUAN';if(isPol()){fsT=TW*0.15;g.font='800 '+fsT+'px "Baloo 2", sans-serif';}g.lineWidth=fsT*0.16;g.strokeStyle=isPol()?'#5A1410':'#7A4300';g.strokeText(title,OX,ty);g.fillStyle=isPol()?'#FFD9A0':'#FFE27A';g.fillText(title,OX,ty);
   g.font='900 '+(TW*0.12)+'px Nunito, sans-serif';g.fillStyle='rgba(15,60,95,.85)';g.fillText(S.turnLimit?('Ronde '+S.round+' dari '+S.turnLimit):('Ronde '+S.round),OX,OY+TH*3.42);
   if(S.kas>0||isPol()){var kp=Math.min(1,(S.kas||0)/kasLimit()),kx=OX,ky=OY+TH*3.62,kw=TW*1.0;rrect(kx-kw/2,ky,kw,TH*0.12,TH*0.06);g.fillStyle='rgba(15,40,60,.35)';g.fill();rrect(kx-kw/2,ky,kw*kp,TH*0.12,TH*0.06);g.fillStyle=isPol()?'#E2483D':'#2E9E5B';g.fill();
-    g.font='900 '+(TW*0.075)+'px Nunito, sans-serif';g.fillStyle='rgba(15,40,60,.85)';g.fillText(TH_().kasName+' '+short(S.kas||0)+' / '+short(kasLimit()),OX,ky+TH*0.3);}
+    g.font='900 '+(TW*0.075)+'px Nunito, sans-serif';g.fillStyle='rgba(15,40,60,.85)';g.fillText(TH_().kasName+' '+short(S.kas||0)+' / '+short(kasLimit())+(isPol()?storyBarLabel():''),OX,ky+TH*0.3);}
   var items=[];for(var i=0;i<NT;i++)items.push({d:RECT[i].cu+RECT[i].cv,i:i});
   lagoonLife(now).forEach(function(it){items.push(it);});
   actorItems(now,items);convoyItems(now,items);
@@ -102,7 +102,7 @@ function render(now){
   });
   drawParts(now);
   drawCloudShadows(now);
-  if(isPol()&&(S.kasStage||0)>=2){g.save();g.globalAlpha=0.06*(S.kasStage||0);g.fillStyle='#8A8070';g.fillRect(0,0,CW,CH_);g.restore();}
+  storyOverlay(now);
   if(FX.quake){var qt=(now-FX.quake.t0)/1600;if(qt<1)drawCracks(FX.quake,qt);else FX.quake=null;}
   if(NIGHT>0.05){g.save();g.globalCompositeOperation='multiply';g.fillStyle=mix('#FFFFFF','#45569A',NIGHT);g.fillRect(0,0,CW,CH_);g.restore();
     g.save();g.globalCompositeOperation='lighter';for(var j=0;j<NT;j++){var st2=S.tiles[j];if(st2.owner===null||T[j].type!=='city'||st2.level<1)continue;var zq=iso(ZN[j].bu,ZN[j].bv,tileTop(j,now)+TH*0.4),gl=g.createRadialGradient(zq.x,zq.y,1,zq.x,zq.y,TW*0.45);gl.addColorStop(0,'rgba(255,190,90,'+(0.32*NIGHT)+')');gl.addColorStop(1,'rgba(255,190,90,0)');g.fillStyle=gl;g.beginPath();g.arc(zq.x,zq.y,TW*0.45,0,7);g.fill();}
@@ -127,7 +127,8 @@ function drainEvents(now){
   while(EVENTS.length){var e=EVENTS.shift();
     if(e.t==='toast')showToast(e.text,e.kind);
     else if(e.t==='sfx')play(e.n);
-    else if(e.t==='dice')startDiceRoll(now);
+    else if(e.t==='dice'){startDiceRoll(now);onStoryRoll(now);}
+    else if(e.t==='story'){onStoryEvent(e,now);}
     else if(e.t==='landmark'){landFx.push({tile:e.tile,t0:now+600});focusTile(e.tile,2000);}
     else if(e.t==='build'){FX.build[e.tile]={t0:now,level:e.level};focusTile(e.tile,1300);var bz=ZN[e.tile];coinBurst(tokenPos(S.current,now),{u:bz.bu,v:bz.bv,z:DZ+TH*0.5},5,now);}
     else if(e.t==='takeover'){(function(e){var tk={t0:Infinity,fromColor:S.players[e.from].color,toColor:S.players[e.to].color};FX.take[e.tile]=tk;afterOverlay(function(n2){tk.t0=n2;focusTile(e.tile,2600);setTimeout(function(){play(isPol()?'bulldoze':'stamp');},500);setTimeout(function(){FX.shake={t0:performance.now(),amt:TW*0.05,dur:500};play('takeover');},1150);});})(e);}

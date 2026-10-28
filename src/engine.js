@@ -43,7 +43,13 @@ function hasP(p,k){return !!(S&&S.passives&&p&&!p.bankrupt&&p.char===k);}
 function useP(p,k){if(!hasP(p,k))return false;p.pu=p.pu||{};if(p.pu[k])return false;p.pu[k]=1;return true;}
 function canUseP(p,k){return hasP(p,k)&&!(p.pu&&p.pu[k]);}
 function pToast(p,k,extra){toast(PASSIVES[k].n+' ('+p.name+')'+(extra?': '+extra:''),'good');}
-function kasLimit(){return S&&S.theme==='politik'?100000:KAS_LIMIT;}
+function kasLimit(){return S&&S.theme==='politik'?(storyStage()===0?125000:250000):KAS_LIMIT;}
+var STORY=[{n:'Hutan Lebat'},{n:'Karhutla',t:'Titik api muncul di tengah hutan. Api mulai menjalar.'},{n:'Pemadaman',t:'Pesawat pemadam dan hujan datang. Api padam, hutan tinggal arang.'},
+  {n:'Tanam Sawit',t:'Hutan mati. Mafia Sawit datang, lahan jadi konsesi.'},{n:'Panen Raya',t:'Sawit berbuah lebat. Truk bolak-balik ke pabrik.'},
+  {n:'Proyek IKN',t:'Peletakan batu pertama ibu kota baru. Crane mulai berputar.'},{n:'Mangkrak',t:'Proyek berhenti. Crane diam, rumput tumbuh di tiang beton.'},
+  {n:'Banjir Rob',t:'Air laut naik dan menenggelamkan proyek.'},{n:'Reboisasi Pencitraan',t:'Pejabat menanam satu bibit di depan kamera, lalu pergi.'}];
+function storyStage(){return (S&&S.story)||0;}
+function storyNext(){var st=storyStage();return STORY[st>=8?1:st+1].n;}
 function jailMax(p){return hasP(p,'imam')?2:3;}
 function appealFee(){return S&&S.theme==='politik'?100000:50000;}
 function pelniFee(p){return hasP(p,'solo')?0:PELNI_FEE;}
@@ -189,7 +195,7 @@ function newGame(cfg){
     tiles:T.map(function(){return {owner:null,level:-1};}), order:order, turnIdx:0, current:order[0], round:1, turnLimit:cfg.turnLimit, startMoney:cfg.money, buildMode:cfg.buildMode||'bertahap',
     festival:null, festLevel:0, phase:'handoff', pending:null, dice:[3,4], winner:null, anim:null, threats:{},
     chanceDeck:shuffle(th.chance.map(function(_,i){return i;})), danaDeck:shuffle(th.dana.map(function(_,i){return i;})),
-    passives:!!cfg.passives&&th.id==='politik', kas:0, kasStage:0, newsEnabled:cfg.news!==false, news:null, baliho:null, lastSum:7, fajar:false};
+    passives:!!cfg.passives&&th.id==='politik', kas:0, kasStage:0, story:0, newsEnabled:cfg.news!==false, news:null, baliho:null, lastSum:7, fajar:false};
   toast('Urutan main: '+order.map(function(i){return S.players[i].name;}).join(', '));
   save(); return S;
 }
@@ -294,11 +300,12 @@ function checkKas(){
   if(S.phase==='over'||(S.kas||0)<kasLimit())return;
   var pot=S.kas,alive=alivePlayers(); S.kas=0;
   if(S.theme==='politik'){
-    S.kasStage=Math.min(3,(S.kasStage||0)+1);
+    var from=storyStage(),to=from>=8?1:from+1; S.story=to; S.kasStage=Math.min(3,to);
     var poor=alive.slice().sort(function(a,b){return a.money-b.money;})[0],half=Math.round(pot/2);
-    poor.money+=half; emit({t:'money',pid:poor.id,d:half});
-    toast('Kas pungli tembus '+short(pot)+'! Hutan dibakar jadi sawit. Separuh jadi bansos untuk '+poor.name+', separuh lagi raib entah ke mana','bad big');
-    emit({t:'forest',stage:S.kasStage}); sfx('fire');
+    if(to>1){poor.money+=half; emit({t:'money',pid:poor.id,d:half});}
+    toast(STORY[to].n.toUpperCase()+'! '+STORY[to].t+(to>1?' Separuh kas jadi bansos untuk '+poor.name+', separuh lagi raib.':''),'bad big');
+    if(to===1)S.kas=pot;
+    emit({t:'story',stage:to,from:from});
   } else {
     var each=Math.floor(pot/2/alive.length/1000)*1000;
     alive.forEach(function(q){q.money+=each; emit({t:'money',pid:q.id,d:each});});

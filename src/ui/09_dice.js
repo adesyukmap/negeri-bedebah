@@ -37,7 +37,7 @@ function drawDie3(cu,cv,cz,R,hs,alpha){
   });
   if(alpha!=null)g.restore();
 }
-var DICE_POS=[[MID-0.4,MID+0.4],[MID+0.4,MID-0.4]],diceRoll=null,DICE_DUR=1100,restR=[finalRot(3,0.12),finalRot(4,-0.1)];
+var DICE_POS=[[MID-0.62,MID+1.02],[MID+1.02,MID-0.62]],diceRoll=null,DICE_DUR=1100,restR=[finalRot(3,0.12),finalRot(4,-0.1)];
 var cup={phase:'idle',t0:0,power:0,auto:0,rel:0};
 function cupPower(now){return cup.phase==='shake'?Math.min(1,(now-cup.t0)/1600):cup.power;}
 function cupStart(){var now=performance.now();if(!S||S.phase!=='turn'||cup.phase!=='idle'||cur().pelni)return;audioUnlock();cup.phase='shake';cup.t0=now;cup.auto=0;cup.lastRattle=0;refresh();}

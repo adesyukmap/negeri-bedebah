@@ -13,7 +13,7 @@ var SLOT_GROUPS=[
     {k:'card',label:'Ambil kartu'},{k:'coins',label:'Koin'},{k:'pay',label:'Bayar'},{k:'siren',label:'Sirene OTT'},{k:'sting',label:'Sting Breaking News'},{k:'news',label:'Breaking news (jingle)'},
     {k:'typing',label:'Teks diketik'},{k:'festival',label:'Kampanye / pesta'},{k:'fajar',label:'Serangan fajar'},{k:'quake',label:'Gempa'},
     {k:'fire',label:'Hutan terbakar'},{k:'cough',label:'Batuk'},{k:'splash',label:'Gorong-gorong / air'},{k:'pop',label:'Muncul'},
-    {k:'appeal',label:'Sidang banding'},{k:'bad',label:'Sial'},{k:'broke',label:'Bangkrut'},{k:'win',label:'Menang'}];}}];
+    {k:'appeal',label:'Sidang banding'},{k:'uuk',label:'Orangutan senang'},{k:'birds',label:'Burung panik / rangkong'},{k:'plane',label:'Pesawat pemadam'},{k:'rain',label:'Hujan'},{k:'treesFall',label:'Pohon tumbang'},{k:'laugh',label:'Tawa Mafia Sawit'},{k:'horn',label:'Klakson truk'},{k:'ribbon',label:'Gunting pita + tepuk tangan'},{k:'windCreak',label:'Angin dan crane berderit'},{k:'flood',label:'Air banjir'},{k:'pile',label:'Palu tiang pancang'},{k:'bad',label:'Sial'},{k:'broke',label:'Bangkrut'},{k:'win',label:'Menang'}];}}];
 var BUILTIN={sting:'sting',card:'card',typing:'typing',newsType:'keyboard',collapse:'fold',appeal:'tick'};
 var SILENT={host:1,preman:0,tukang:0,mafia:1,mic:0};
 var USER_RAW={},USER_META={},USER_BUF={},SAMPLE_BUF={},PLAYING={},SDB=null;

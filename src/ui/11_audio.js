@@ -26,6 +26,17 @@ function syncMusic(){
 function tone(f,dur,type,vol,f2,delay){if(!AC||muted)return;var t=AC.currentTime+(delay||0),o=AC.createOscillator(),gn=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);gn.gain.setValueAtTime(0.0001,t);gn.gain.exponentialRampToValueAtTime(vol||0.2,t+0.01);gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(gn);gn.connect(AC.destination);o.start(t);o.stop(t+dur+0.02);}
 function noise(dur,vol,delay,hp){if(!AC||muted)return;var t=AC.currentTime+(delay||0),s=AC.createBufferSource(),f=AC.createBiquadFilter(),gn=AC.createGain();s.buffer=noiseBuf;f.type='bandpass';f.frequency.value=hp||1800;gn.gain.setValueAtTime(vol,t);gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);s.connect(f);f.connect(gn);gn.connect(AC.destination);s.start(t);s.stop(t+dur);}
 function synthPlay(n,arg){switch(n){
+  case 'uuk':tone(420,0.14,'triangle',0.12,620);tone(440,0.16,'triangle',0.12,680,0.2);break;
+  case 'birds':for(var bd=0;bd<8;bd++)tone(2200+Math.random()*1200,0.05,'sine',0.05,2800+Math.random()*900,bd*0.06);noise(0.5,0.12,0,3000);break;
+  case 'plane':tone(110,1.6,'sawtooth',0.06,140);noise(1.6,0.12,0,500);break;
+  case 'rain':noise(2.5,0.18,0,4000);noise(2.5,0.1,0.3,1500);break;
+  case 'treesFall':[0,0.35,0.7].forEach(function(d){noise(0.1,0.4,d,900);tone(70,0.3,'triangle',0.25,40,d+0.08);});break;
+  case 'laugh':[0,0.28,0.56,0.84].forEach(function(d,i){tone(170-i*12,0.2,'sawtooth',0.1,140-i*12,d);});break;
+  case 'horn':tone(330,0.25,'square',0.06);tone(330,0.3,'square',0.06,null,0.35);break;
+  case 'ribbon':noise(0.06,0.3,0,5000);for(var cl=0;cl<10;cl++)noise(0.03,0.2,0.2+cl*0.07,2500);break;
+  case 'windCreak':noise(1.5,0.1,0,600);tone(240,0.6,'sawtooth',0.03,200,0.4);break;
+  case 'flood':noise(2.0,0.3,0,700);noise(1.2,0.2,0.5,1800);break;
+  case 'pile':[0,0.4,0.8].forEach(function(d){tone(80,0.15,'triangle',0.3,50,d);noise(0.06,0.3,d,1200);});break;
   case 'sting':tone(55,1.1,'sawtooth',0.22,41);tone(110,0.9,'sawtooth',0.12,82);noise(0.5,0.45,0,180);[392,466,587].forEach(function(f){tone(f,0.7,'sawtooth',0.05,f*0.94,0.05);});break;
   case 'tukang':for(var w=0;w<2;w++){tone(2600,0.12,'square',0.05,2900,w*0.2);}break;
   case 'preman':tone(160,0.25,'sawtooth',0.1,120);tone(130,0.3,'sawtooth',0.08,100,0.22);break;

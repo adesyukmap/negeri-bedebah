@@ -2,7 +2,7 @@
 var SPEED=1;try{SPEED=Math.max(1,Math.min(3,+localStorage.getItem('kc-speed')||1));}catch(e){}
 function setSpeed(v){SPEED=v;try{localStorage.setItem('kc-speed',String(v));}catch(e){}var b=$('speedBtn');if(b)b.textContent=v+'x';}
 var CINE={open:false,q:[],cur:null,t0:0,el:0,last:0},CINE_DUR=10000,QUIPS=[],ACTORS=[],PEND=[],CONVOY=null;
-function cineBusy(){return CINE.open||CINE.q.length>0||!!CONVOY;}
+function cineBusy(){return CINE.open||CINE.q.length>0||!!CONVOY||(typeof storyBusy==='function'&&storyBusy());}
 function queueCine(kind,data){CINE.q.push({kind:kind,data:data||{}});if(!CINE.open)nextCine();}
 function nextCine(){var c=CINE.q.shift();if(!c){closeCineUI();return;}CINE.cur=c;CINE.open=true;CINE.t0=performance.now();CINE.el=0;CINE.last=CINE.t0;CINE.fired={};CINE.lastType=0;$('cine').hidden=false;refresh();requestAnimationFrame(cineFrame);}
 function endCine(){if(!CINE.open)return;var c=CINE.cur;CINE.open=false;CINE.cur=null;if(c&&c.data.onEnd)try{c.data.onEnd(c.data);}catch(e){}

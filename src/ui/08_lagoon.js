@@ -15,12 +15,12 @@ function lagoonWater(now){
   var ic=iso(MID,MID,0);
   ell(ic.x,ic.y+TH*0.22,TW*1.46,TH*1.42,'rgba(255,255,255,.28)');ell(ic.x,ic.y+TH*0.16,TW*1.34,TH*1.28,'#CDAE6E');ell(ic.x,ic.y+TH*0.1,TW*1.3,TH*1.2,'#E2C88C');
   ell(ic.x,ic.y,TW*1.26,TH*1.12,radialFill(ic.x,ic.y-TH*0.3,TW*1.3,'#FFF4D6','#EBD3A0'));
-  if(isPol())forestGround(ic,now);
+  if(isPol())storyGround(ic,now);
   else{ell(ic.x-TW*0.78,ic.y-TH*0.3,TW*0.36,TH*0.28,radialFill(ic.x-TW*0.78,ic.y-TH*0.3,TW*0.36,'#B6E6A6','#5FAE5A'));ell(ic.x+TW*0.82,ic.y+TH*0.2,TW*0.28,TH*0.22,radialFill(ic.x+TW*0.82,ic.y+TH*0.2,TW*0.28,'#B6E6A6','#5FAE5A'));}
 }
 function forestGround(ic,now){var st=S.kasStage||0;var gg=radialFill(ic.x,ic.y-TH*0.2,TW*1.2,st>=2?'#C9C07A':'#8ED17E',st>=2?'#9A9A4A':'#3F8E4A');ell(ic.x,ic.y-TH*0.04,TW*1.12,TH*0.98,gg);}
-var FOREST=(function(){var a=[];for(var k=0;k<22;k++){var ang=hash(k,11)*Math.PI*2,r=0.35+Math.sqrt(hash(k,23))*1.15;a.push({u:MID+Math.cos(ang)*r,v:MID+Math.sin(ang)*r,s:0.28+hash(k,5)*0.14,o:hash(k,99)});}return a;})();
-function treeAt(t){var du=t.u-MID+5,dv=t.v-MID+5,near=Math.abs(du-4.6)+Math.abs(dv-5.4)<0.95||Math.abs(du-5.4)+Math.abs(dv-4.6)<0.95||Math.abs(du-3.9)+Math.abs(dv-5.6)<0.7||Math.abs(du-5.85)+Math.abs(dv-5.9)<0.4||(du+dv<9.2&&Math.abs(du-dv)<1.2);return !near;}
+var FOREST=(function(){var a=[];for(var k=0;k<40;k++){var ang=hash(k,11)*Math.PI*2,r=0.3+Math.sqrt(hash(k,23))*0.95;a.push({u:MID+Math.cos(ang)*r,v:MID+Math.sin(ang)*r,s:0.26+hash(k,5)*0.14,o:hash(k,99)});}a.sort(function(x,y){return (x.u+x.v)-(y.u+y.v);});return a;})();
+function treeAt(t){var ex=[[MID-0.62,MID+1.02,0.5],[MID+1.02,MID-0.62,0.5],[MID+0.85,MID+0.9,0.42],[MID-0.1,MID+1.0,0.3]];for(var i=0;i<ex.length;i++){if(Math.hypot(t.u-ex[i][0],t.v-ex[i][1])<ex[i][2])return false;}return true;}
 function drawRainTree(x,y,s){ell(x+s*0.2,y,s*0.4,s*0.13,'rgba(20,50,20,.28)');g.fillStyle='#6A4A2A';g.fillRect(x-s*0.05,y-s*0.5,s*0.1,s*0.5);
   [[0,-0.75,0.42],[-0.25,-0.6,0.3],[0.25,-0.62,0.32],[0,-1.0,0.3]].forEach(function(c){var cx=x+c[0]*s,cy=y+c[1]*s,r=c[2]*s;g.beginPath();g.arc(cx,cy,r,0,7);g.fillStyle=radialFill(cx,cy,r,'#7FD36E','#1F6E34');g.fill();});}
 function lagoonLife(now){
@@ -29,15 +29,7 @@ function lagoonLife(now){
     items.push({d:su+sv+jt*(du+dv)+0.2,f:function(){drawDolphin(su,sv,du,dv,jt);}});})(k);}
   var ta=t*0.06,tu=MID+Math.cos(ta)*3.9,tv=MID+Math.sin(ta)*3.9;items.push({d:tu+tv,f:function(){drawTurtle(tu,tv,ta,now);}});
   var ba=-t*0.035+1.2,bu=MID+Math.cos(ba)*3.1,bv=MID+Math.sin(ba)*3.1;items.push({d:bu+bv,f:function(){drawBoat(bu,bv,ba,now);}});
-  if(pol){
-    var st=S.kasStage||0,burn=FX.forest,bt=burn?(now-burn.t0)/3200:2;
-    FOREST.forEach(function(tr,idx){if(!treeAt(tr))return;var conv=tr.o<st/3,wasConv=burn?tr.o<burn.from/3:conv,burning=bt<1&&conv&&!wasConv;
-      items.push({d:tr.u+tr.v,f:function(){var q=iso(tr.u,tr.v,0),s=TW*tr.s;
-        if(burning){if(bt<0.55){drawRainTree(q.x,q.y,s);fire(q.x,q.y-s*0.6,s*0.8,now,idx);}else if(bt<0.75){g.fillStyle='#2A1C14';g.fillRect(q.x-s*0.05,q.y-s*0.3,s*0.1,s*0.3);fire(q.x,q.y-s*0.2,s*0.5*(1-(bt-0.55)/0.2),now,idx);}else{var gs=(bt-0.75)/0.25;g.save();g.translate(q.x,q.y);g.scale(gs,gs);g.translate(-q.x,-q.y);sawit(q.x,q.y,s*0.9,idx);g.restore();}}
-        else if(conv)sawit(q.x,q.y,s*0.9,idx); else drawRainTree(q.x,q.y,s);}});});
-    items.push({d:2*MID-0.5,f:function(){drawIKN(MID-1.1,MID+0.6,now);}});
-    items.push({d:2*MID+1.75,f:function(){drawOrangutan(MID+0.85,MID+0.9,now,st,bt<1);}});
-    if(bt<1)items.push({d:20,f:function(){var c=iso(MID,MID,0);g.save();g.globalAlpha=Math.sin(Math.PI*bt)*0.55;for(var s2=0;s2<9;s2++){var ph=(t*0.3+s2/9)%1;var sx=c.x+(hash(s2,2)-0.5)*TW*2,sy=c.y-ph*TH*5;g.beginPath();g.arc(sx,sy,TW*(0.25+ph*0.6),0,7);g.fillStyle='rgba(110,105,100,.55)';g.fill();}g.restore();}});
+  if(pol){storyItems(now,items);
   } else {
     var cx=MID+0.75+Math.sin(t*0.7)*0.3,cy=MID+0.95;items.push({d:cx+cy,f:function(){drawCrab(cx,cy,now);}});
     [[MID-1.1,MID+0.25,0.32],[MID+1.1,MID+0.25,0.34],[MID-0.55,MID+1.15,0.3]].forEach(function(pp){items.push({d:pp[0]+pp[1],f:function(){var q=iso(pp[0],pp[1],0);palm(q.x,q.y,TW*pp[2]);}});});

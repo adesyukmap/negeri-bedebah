@@ -15,7 +15,7 @@ function mafiaFist(x,y,s,open,flip){g.save();g.translate(x,y);if(flip)g.scale(-1
     rrect(-s*0.045,-s*0.08,s*0.04,s*0.03,s*0.012);g.fillStyle='#F2C230';g.fill();ell(-s*0.025,-s*0.07,s*0.012,s*0.01,'#2FA7E0');}
   g.restore();}
 function drawMafiaBody(s,cx,by,now,pw,thr){
-  var t=now/1000,jx=0,jy=0;if(cup.phase==='shake'){var amp=0.3+pw;jx=Math.sin(now/36)*s*0.035*amp;jy=Math.cos(now/29)*s*0.03*amp;}
+  var t=now/1000,jx=0,jy=0;if(MAF.laugh){jy=Math.abs(Math.sin(now/130))*s*-0.012;}if(cup.phase==='shake'){var amp=0.3+pw;jx=Math.sin(now/36)*s*0.035*amp;jy=Math.cos(now/29)*s*0.03*amp;}
   var lean=cup.phase==='shake'?pw*0.06:0,bob=Math.sin(t*1.6)*s*0.006;
   g.save();g.translate(cx,by);g.scale(1+lean,1+lean);g.translate(-cx,-by);
   var sh=by-s*0.42+bob,hw=s*0.5;
@@ -53,7 +53,7 @@ function drawMafiaBody(s,cx,by,now,pw,thr){
   ell(hx,hy+r*0.3,r*0.15,r*0.11,'#C48256');
   // mustache + grin with gold tooth
   g.fillStyle='#15151C';g.beginPath();g.moveTo(hx,hy+r*0.42);g.quadraticCurveTo(hx-r*0.45,hy+r*0.34,hx-r*0.62,hy+r*0.55);g.quadraticCurveTo(hx-r*0.3,hy+r*0.5,hx,hy+r*0.52);g.quadraticCurveTo(hx+r*0.3,hy+r*0.5,hx+r*0.62,hy+r*0.55);g.quadraticCurveTo(hx+r*0.45,hy+r*0.34,hx,hy+r*0.42);g.fill();
-  var grin=cup.phase==='shake'?0.1+pw*0.08:0.1;
+  var grin=MAF.laugh?0.3+Math.abs(Math.sin(now/130))*0.06:cup.phase==='shake'?0.1+pw*0.08:0.1;
   g.beginPath();g.moveTo(hx-r*0.5,hy+r*0.58);g.quadraticCurveTo(hx,hy+r*(0.62+grin*4),hx+r*0.5,hy+r*0.58);g.quadraticCurveTo(hx,hy+r*0.66,hx-r*0.5,hy+r*0.58);g.fillStyle='#4A1010';g.fill();
   g.save();g.clip();g.fillStyle='#FBF6EA';g.fillRect(hx-r*0.5,hy+r*0.58,r,r*0.12);for(var tq=-3;tq<=3;tq++){g.strokeStyle='rgba(120,100,80,.6)';g.lineWidth=1;g.beginPath();g.moveTo(hx+tq*r*0.12,hy+r*0.58);g.lineTo(hx+tq*r*0.12,hy+r*0.7);g.stroke();}g.fillStyle='#F2C230';g.fillRect(hx+r*0.12,hy+r*0.585,r*0.12,r*0.1);g.restore();
   // cigar + smoke
@@ -68,7 +68,7 @@ function drawMafiaBody(s,cx,by,now,pw,thr){
     g.lineWidth=s*0.04;g.strokeStyle='rgba(255,255,255,.06)';g.stroke();
     ell(hx2+d*s*0.02,fy+s*0.04,s*0.075,s*0.04,'#F4F1EA');});
   if(cup.phase==='shake'){miniDie2D(fx-s*0.02,fy-s*0.05,s*0.07,now/60,3);miniDie2D(fx+s*0.03,fy-s*0.04,s*0.07,-now/50,5);}
-  mafiaFist(fx-spread*0.5,fy,s,open,false);mafiaFist(fx+spread*0.5,fy,s,open,true);
+  if(MAF.laugh){var rb=Math.sin(now/110)*s*0.022;mafiaFist(fx-s*0.035,fy+rb,s,0,false);mafiaFist(fx+s*0.035,fy-rb,s,0,true);}else{mafiaFist(fx-spread*0.5,fy,s,open,false);mafiaFist(fx+spread*0.5,fy,s,open,true);}
   MAF.fist={x:fx,y:fy};
   g.restore();
 }
@@ -87,3 +87,9 @@ function drawMafia(now){
   g.save();g.globalAlpha=Math.min(1,MAF.vis*1.6);g.drawImage(mc,ox,oy,w,h);g.restore();
   if(cup.phase==='idle'&&!diceRoll&&MAF.vis>0.5&&S.phase==='turn'){g.save();g.globalAlpha=Math.min(1,(MAF.vis-0.5)*6);pill(G.cx,G.by-s*0.05,'Tahan tombol, Bos kocok dadunya',Math.max(12,s*0.045),'rgba(20,20,28,.85)','#FFD95A');g.restore();}
 }
+
+function renderMafiaAt(cx,by,s,alpha,now,laugh){var w=Math.ceil(s*1.3),h=Math.ceil(s*1.05),d2=dpr;if(!MAF.cv2)MAF.cv2=document.createElement('canvas');var mc=MAF.cv2;
+  if(mc.width!==Math.ceil(w*d2)||mc.height!==Math.ceil(h*d2)){mc.width=Math.ceil(w*d2);mc.height=Math.ceil(h*d2);}
+  var c=mc.getContext('2d'),old=g,fs=MAF.fist;c.setTransform(d2,0,0,d2,0,0);c.clearRect(0,0,w,h);g=c;MAF.laugh=!!laugh;var lcx=w/2,lby=h*0.86;drawMafiaBody(s,lcx,lby,now,0,null);MAF.laugh=false;MAF.fist=fs;
+  c.globalCompositeOperation='destination-in';var fg=c.createLinearGradient(0,h*0.8,0,h*0.99);fg.addColorStop(0,'rgba(0,0,0,1)');fg.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=fg;c.fillRect(0,0,w,h);c.globalCompositeOperation='source-over';
+  g=old;g.save();g.globalAlpha=alpha;g.drawImage(mc,cx-lcx,by-lby,w,h);g.restore();}

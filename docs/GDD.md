@@ -589,5 +589,11 @@ Target performa 60 fps di iPad M2 (target device), dan 120 fps kalau layarnya Pr
 - Pasif karakter: opsi lobby (Politik saja), default Mati. Daftar pasif ada di PASSIVES (src/engine.js). Diuji 8000 game per varian: semua karakter di rentang 0,85x sampai 1,16x dari rata-rata, mirip sebaran acak tanpa pasif (0,88x sampai 1,05x). Penyesuaian: Joget Rp10rb, Tidur Siang Rp20rb, Narasumber Rp30rb, Iuran Partai Rp30rb, Prihatin ganti penuh, Ratu Pajak 20%, Pindah Kubu hanya ke kota yang lebih mahal (maks +Rp50rb), Lord ganti dari diskon bangun jadi diskon sewa 15%.
 - Kas Pungli Politik meledak di Rp100rb (Santai tetap Rp1jt).
 
-## 21. Usulan (belum disetujui): siklus event Kas Pungli
+## 21. Siklus event Kas Pungli (lihat bagian 22, sudah dibangun)
 Tiap kas penuh, board pindah tahap: Karhutla, Tanam Sawit, Bangun IKN, Proyek Mangkrak, Tambang Nikel, Reklamasi, Food Estate, Banjir Rob, lalu ulang. Catatan: di ambang Rp100rb siklus habis di tengah game; Rp250rb cukup untuk satu siklus per game.
+
+## 22. Cerita tengah board (dibangun 28 Okt 22.10)
+- Tema Politik. Kas Pungli memajukan babak. Babak 0 ke 1 di 125rb (kas tidak dikosongkan), selanjutnya tiap 250rb (separuh bansos ke pemain termiskin, separuh raib). Bar kas menampilkan babak berikutnya.
+- Babak: 0 Hutan Lebat, 1 Karhutla (api menjalar pelan, warga bermasker batuk, orangutan menangis di pucuk pohon, kabut asap), 2 Pemadaman (pesawat water bombing dan hujan, hutan jadi arang), 3 Tanam Sawit (pohon mati tumbang, Bos Mafia Sawit tertawa pongah sambil meremas tangan 5 detik, game ditahan, tap untuk lanjut; plang KONSESI PT SAWIT JAYA ABADI, orangutan di balik pagar), 4 Panen Raya (sawit besar, pabrik berasap, karung uang membesar sesuai kas, orangutan di kandang Konservasi), 5 Proyek IKN (sebagian sawit digusur, gunting pita, crane berputar), 6 Mangkrak (crane diam, pita STOP, papan "dalam peninjauan", orangutan duduk di ujung crane), 7 Banjir Rob (air naik menutup pulau, orangutan di atas balok kayu), 8 Reboisasi Pencitraan (pejabat tanam satu bibit di depan kamera), lalu kembali ke Karhutla.
+- Kejadian berkala tidak pakai timer: muncul saat dadu dilempar, satu kejadian tiap 2 sampai 3 lemparan, sesuai babak (orangutan tepuk dada, asap menyapu dan semua token batuk, burung panik, truk bibit atau buah sawit lewat, palu tiang pancang, angin dan crane berderit, perahu warga, kilatan kamera). Dadu istirahat di tepi kiri dan kanan pulau supaya tengah pulau terlihat.
+- Rata-rata kas terisi sekitar 1,5jt per game (simulasi), jadi umumnya sampai babak 5 sampai 6.
