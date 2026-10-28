@@ -172,7 +172,7 @@ function hudEvent(e,now){
     else if(e.t==='quip'){if(!isPol()||e.key==='lawan'){}else if(e.key==='sorry'){(function(e){afterOverlay(function(){addQuip(e.pid,QUIP_TEXT.sorry,2600,'sorry');},1300);})(e);}else if(QUIP_TEXT[e.key])addQuip(e.pid,QUIP_TEXT[e.key],null,e.key);}
     else if(e.t==='swap'){[e.a,e.b].forEach(function(id){var tp3=tokenPos(id,now);for(var k=0;k<6;k++)parts.push({u:tp3.u,v:tp3.v,z:tp3.z+TH*0.4,t0:now,life:700,kind:'poof',a:k});});}
     else if(e.t==='baliho'){focusTile(e.tile,1600);}
-    else if(e.t==='landed'){var t2=T[e.tile],tp4=tokenPos(e.pid,now);if((t2.deco==='raja'||t2.deco==='toba')){for(var k2=0;k2<10;k2++)parts.push({u:tp4.u,v:tp4.v,z:tp4.z,t0:now,life:800,kind:'splash',a:k2});play('splash');}else for(var k3=0;k3<5;k3++)parts.push({u:tp4.u,v:tp4.v,z:tp4.z,t0:now,life:600,kind:'dust',a:k3});}
+    else if(e.t==='landed'){var t2=T[e.tile],tp4=tokenPos(e.pid,now);if(t2.type==='transport'){var tsn={plane:'jet',ship:'shipHorn',train:'trainHorn',bus:'horn'}[t2.deco];if(tsn)play(tsn);}if((t2.deco==='raja'||t2.deco==='toba')){for(var k2=0;k2<10;k2++)parts.push({u:tp4.u,v:tp4.v,z:tp4.z,t0:now,life:800,kind:'splash',a:k2});play('splash');}else for(var k3=0;k3<5;k3++)parts.push({u:tp4.u,v:tp4.v,z:tp4.z,t0:now,life:600,kind:'dust',a:k3});}
   }
 }
 function coinBurst(from,to,n,now){for(var k=0;k<n;k++)coins.push({a:{u:from.u,v:from.v,z:from.z+TH*0.6},b:{u:to.u,v:to.v,z:to.z+TH*0.6},t0:now+k*70,dur:850,arc:TH*(1.4+Math.random()*0.8),rain:false});play('coins');}

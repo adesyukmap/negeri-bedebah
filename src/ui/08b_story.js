@@ -163,7 +163,7 @@ function storyFx(now){if(!isPol()||!S)return;var tr=STV.trans,te=tr?now-tr.t0:1e
     if(te>SEQ2.gemoy-200){var dimA=Math.min(1,(te-SEQ2.gemoy+200)/400)*Math.min(1,(SEQ2.end-te)/400);g.save();g.globalAlpha=dimA*0.35;g.fillStyle='#0E0E1A';g.fillRect(0,0,CW,CH_);g.restore();}
     if(te>SEQ2.gemoy&&te<SEQ2.gemoyEnd+400){var gt=te-SEQ2.gemoy,gs=Math.min(CH_*0.8,CW*0.4),rise=easeOutB(Math.min(1,gt/600)),out=te>SEQ2.gemoyEnd?(te-SEQ2.gemoyEnd)/400:0,by=CH_+gs*0.06+(1-rise)*gs*0.9+out*gs*0.9;
       stOnce(tr,'gemoy',te,SEQ2.gemoy,function(){play('pop');});
-      drawChar('gemoy',CW*0.5,by,gs,null,{expr:'happy'});
+      drawChar('gemoy',CW*0.5,by,gs,null,{expr:'happy',damkar:true});
       if(gt>450&&!out){var fs2=Math.max(14,gs*0.055);bubble(CW*0.5+gs*0.12,by-gs*0.98,'Kami sudah berusaha semaksimal mungkin.',fs2,Math.min(CW*0.5,fs2*16),Math.min(1,(gt-450)/200));}}
     if(te>SEQ2.crowd){var ct=te-SEQ2.crowd,ps=S.players.filter(function(p){return !p.bankrupt;}),n=ps.length,cs=Math.min(CH_*0.5,CW/(n+0.8)*0.95),rise2=easeOutB(Math.min(1,ct/450)),fade=Math.min(1,(SEQ2.end-te)/300);
       stOnce(tr,'omon',te,SEQ2.crowd,function(){play('omon');});

@@ -31,6 +31,9 @@ function synthPlay(n,arg){switch(n){
   case 'uuk':tone(420,0.14,'triangle',0.12,620);tone(440,0.16,'triangle',0.12,680,0.2);break;
   case 'birds':for(var bd=0;bd<8;bd++)tone(2200+Math.random()*1200,0.05,'sine',0.05,2800+Math.random()*900,bd*0.06);noise(0.5,0.12,0,3000);break;
   case 'plane':tone(110,1.6,'sawtooth',0.06,140);noise(1.6,0.12,0,500);break;
+  case 'jet':noise(1.9,0.16,0,1400);tone(160,1.9,'sawtooth',0.035,780);tone(2400,1.6,'sine',0.015,3600,0.2);break;
+  case 'shipHorn':tone(98,1.5,'sawtooth',0.07);tone(147,1.5,'sawtooth',0.045);tone(98,0.9,'sawtooth',0.05,null,1.7);break;
+  case 'trainHorn':tone(370,0.4,'square',0.045);tone(466,0.4,'square',0.035);tone(370,0.8,'square',0.045,null,0.5);tone(466,0.8,'square',0.035,null,0.5);noise(1.2,0.03,0.2,300);break;
   case 'rain':noise(2.5,0.18,0,4000);noise(2.5,0.1,0.3,1500);break;
   case 'treesFall':[0,0.35,0.7].forEach(function(d){noise(0.1,0.4,d,900);tone(70,0.3,'triangle',0.25,40,d+0.08);});break;
   case 'laugh':[0,0.28,0.56,0.84].forEach(function(d,i){tone(170-i*12,0.2,'sawtooth',0.1,140-i*12,d);});break;
