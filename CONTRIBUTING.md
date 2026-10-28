@@ -11,6 +11,7 @@ Terima kasih sudah mau bantu. Semua perubahan masuk lewat Pull Request dan direv
 ## Aturan konten (wajib)
 Tema Politik adalah satire **fenomena**, bukan serangan ke orang.
 - Semua tokoh fiktif. Dilarang karikatur, kemiripan wajah, nama, atau logo tokoh, partai, perusahaan, dan media yang nyata.
+- Warna kulit boleh beragam dan harus wajar, tapi tidak pernah jadi bahan lelucon.
 - Dilarang istilah bernada SARA atau rasis (contoh: "aseng").
 - Kasus OTT dan berita ditulis tanpa nama orang.
 - Merek dagang tidak boleh muncul (mobil, ponsel, TV, dan lain-lain).
@@ -24,6 +25,7 @@ PR yang melanggar aturan ini akan ditutup.
 - Target performa: lancar di iPad M2 Safari.
 
 ## Aset
+- Sprite karakter: PNG latar hijau polos #00FF00, satu karakter, badan penuh, gaya chibi sama dengan set yang ada. Pakai template di `assets/chars/PROMPT-base.txt` dan tulis deskripsi kostum, rambut dan properti saja, **tanpa nama orang**. Jalankan `python3 assets/chars/proc.py` untuk membuang latar dan memotong.
 - Audio: m4a (AAC) mono 44.1 kHz, sependek mungkin. Tambahkan baris di `ASSETS.md` dengan sumber dan lisensinya.
 - Aset tanpa lisensi yang jelas tidak akan di-merge.
 
