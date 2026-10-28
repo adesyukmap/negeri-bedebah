@@ -1,6 +1,6 @@
 
 /* ================= UI + RENDER ================= */
-var CHARS_POL=[{id:'solo',name:'Pria Solo'},{id:'gemoy',name:'Si Gemoy'},{id:'gaberner',name:'Gaberner'},{id:'pinguin',name:'Ketua Pinguin'},{id:'banteng',name:'Mak Banteng'},
+var CHARS_POL=[{id:'solo',name:'Pria Solo'},{id:'gemoy',name:'Si Gemoy'},{id:'gaberner',name:'Abah Gaberner'},{id:'pinguin',name:'Ketua Pinguin'},{id:'banteng',name:'Mak Banteng'},
   {id:'prihatin',name:'Presiden Prihatin'},{id:'opung',name:'Lord Opung'},{id:'izin',name:'Bang Izin Tambang'},{id:'gusur',name:'Raja Gusur'},{id:'fufufafa',name:'Fufufafa'},
   {id:'instan',name:'Ketum Instan'},{id:'saham',name:'Papa Minta Saham'},{id:'slepet',name:'El Slepet'},{id:'taro',name:'El Taro'},{id:'zonk',name:'Lord Zonk'},
   {id:'dungu',name:'El Akal Dungu'},{id:'ratupajak',name:'Ratu Pajak'},{id:'konten',name:'Kang Konten'},{id:'micmati',name:'Mbak Mic Mati'},{id:'imam',name:'Imam Besar 212'},{id:'stoik',name:'Duta Stoikisme'}];
