@@ -1,0 +1,299 @@
+<title>Kepulauan Cuan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kepulauan Cuan">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800;900&display=swap">
+<style>
+/* Layout: compact player bar on top, toy-diorama board filling the rest, floating in a tropical sea. Single deliberate look (daylight tropics), same in light and dark hosts. */
+:root{
+  color-scheme: light;
+  --sea-hi:#4FB8E0; --sea-lo:#1C6A9A;
+  --sand:#F6E7C1; --panel:#FFF8EC; --panel-edge:#E9D6B0;
+  --ink:#4A3426; --ink-soft:#7A6150;
+  --gold:#F2B705; --gold-deep:#C98F00;
+  --danger:#E2483D; --ok:#2E9E5B; --violet:#6E56CF;
+  --f-display:'Baloo 2', 'Arial Rounded MT Bold', 'Trebuchet MS', system-ui, sans-serif;
+  --f-body:'Nunito', 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+html,body{height:100%}
+body{
+  margin:0; background:radial-gradient(120% 90% at 50% 40%, var(--sea-hi), var(--sea-lo));
+  color:var(--ink); font-family:var(--f-body); font-weight:700;
+  -webkit-user-select:none; user-select:none; touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent; overflow:hidden;
+}
+#app{height:100%; box-sizing:border-box; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:12px; position:relative}
+.screen{height:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:20px; overflow-y:auto}
+.screen::before,.screen::after{content:''; margin:auto}
+h1,h2,h3{font-family:var(--f-display); margin:0; text-wrap:balance; line-height:1.05}
+
+/* buttons */
+.btn{
+  font-family:var(--f-display); font-weight:800; font-size:20px; letter-spacing:.01em;
+  min-height:56px; padding:8px 26px; border:0; border-radius:var(--r-md); cursor:pointer;
+  color:var(--ink); background:linear-gradient(#FFD34D, var(--gold));
+  box-shadow:0 5px 0 var(--gold-deep), 0 9px 16px rgba(20,40,60,.28), inset 0 2px 0 rgba(255,255,255,.65);
+  transition:transform .08s, box-shadow .08s;
+}
+.btn:active{transform:translateY(4px); box-shadow:0 1px 0 var(--gold-deep), 0 3px 8px rgba(20,40,60,.25), inset 0 2px 0 rgba(255,255,255,.6)}
+.btn:focus-visible{outline:4px solid #fff; outline-offset:3px}
+.btn[disabled]{filter:grayscale(.8); opacity:.5; cursor:default}
+.btn.ghost{background:linear-gradient(#FFFDF6,#F1E4C8); box-shadow:0 5px 0 #CDB68A, 0 9px 16px rgba(20,40,60,.22), inset 0 2px 0 #fff}
+.btn.ghost:active{box-shadow:0 1px 0 #CDB68A}
+.btn.red{color:#fff; background:linear-gradient(#FF6B5E,var(--danger)); box-shadow:0 5px 0 #A92E25, 0 9px 16px rgba(20,40,60,.28), inset 0 2px 0 rgba(255,255,255,.4)}
+.btn.small{font-size:16px; min-height:48px; padding:6px 18px}
+.btn.wide{width:100%}
+.btn.shake{min-width:220px; touch-action:none; -webkit-user-select:none; user-select:none}
+.btn.shake.held{transform:translateY(4px) scale(.98); box-shadow:0 1px 0 var(--gold-deep), 0 0 0 6px rgba(255,226,122,.5); animation:jig .12s infinite alternate}
+@keyframes jig{from{transform:translateY(4px) rotate(-1.5deg)}to{transform:translateY(4px) rotate(1.5deg)}}
+#camBtn{position:absolute; right:10px; bottom:max(16px, env(safe-area-inset-bottom, 0px)); z-index:4}
+.cardface.flip{animation:flip .55s cubic-bezier(.2,.8,.3,1.2) both}
+@keyframes flip{0%{transform:perspective(900px) rotateY(-160deg) scale(.7); filter:brightness(.6)}60%{filter:brightness(1.2)}100%{transform:perspective(900px) rotateY(0) scale(1)}}
+.cardface.dana{background:linear-gradient(160deg,#F7B955,#C9741E); box-shadow:inset 0 2px 0 rgba(255,255,255,.4), 0 6px 0 #8A4A0E}
+#ott{position:fixed; inset:0; z-index:40; pointer-events:none; overflow:hidden}
+#ott .bar{position:absolute; left:0; right:0; height:50%; background:#0B0B10; transform:translateY(-100%)}
+#ott .bar.b{bottom:0; transform:translateY(100%)}
+#ott.run .bar.t{animation:shutT 3.2s ease both}
+#ott.run .bar.b{animation:shutB 3.2s ease both}
+@keyframes shutT{0%{transform:translateY(-100%)}12%,85%{transform:translateY(-22%)}100%{transform:translateY(-100%)}}
+@keyframes shutB{0%{transform:translateY(100%)}12%,85%{transform:translateY(22%)}100%{transform:translateY(100%)}}
+#ott .siren{position:absolute; inset:0; box-shadow:inset 0 0 120px 30px rgba(226,72,61,.0)}
+#ott.run .siren{animation:siren .35s steps(2) 8}
+@keyframes siren{0%{box-shadow:inset 0 0 140px 40px rgba(226,72,61,.75)}100%{box-shadow:inset 0 0 140px 40px rgba(47,128,237,.75)}}
+#ott .flash{position:absolute; inset:0; background:#fff; opacity:0}
+#ott.run .flash{animation:flash 3.2s linear both}
+@keyframes flash{0%,20%{opacity:0}22%{opacity:.85}26%{opacity:0}31%{opacity:.7}35%{opacity:0}100%{opacity:0}}
+#ott .center{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) scale(.6); opacity:0; display:flex; flex-direction:column; align-items:center; gap:8px}
+#ott.run .center{animation:pop 3.2s ease both}
+@keyframes pop{0%,10%{opacity:0; transform:translate(-50%,-50%) scale(.6)}18%,82%{opacity:1; transform:translate(-50%,-50%) scale(1)}100%{opacity:0; transform:translate(-50%,-50%) scale(.9)}}
+#ott canvas{width:170px; height:208px}
+#ott .tag{background:#E2483D; color:#fff; font:800 30px var(--f-display); padding:4px 18px; border-radius:10px; letter-spacing:.04em}
+#ott .ticker{background:#fff; color:#111; font:900 17px var(--f-body); padding:6px 14px; border-radius:8px; max-width:90vw; text-align:center}
+#cine{position:fixed; inset:0; z-index:45; background:#06080F}
+#cine canvas{position:absolute; inset:0; width:100%; height:100%}
+#cineSkip{position:absolute; right:max(16px, env(safe-area-inset-right, 0px)); bottom:max(18px, env(safe-area-inset-bottom, 0px)); z-index:2}
+#cineBar{position:absolute; left:0; right:0; bottom:0; height:5px; background:rgba(255,255,255,.15)}
+#cineBar i{display:block; height:100%; width:0; background:#FFD23F}
+#news{position:fixed; left:50%; top:12%; z-index:35; transform:translateX(-50%); width:min(440px, 92vw); cursor:pointer}
+#news .card{background:var(--panel); border-radius:var(--r-lg); padding:18px 22px; box-shadow:0 8px 0 var(--panel-edge), 0 18px 40px rgba(10,40,70,.45); text-align:center; border-top:8px solid #E2483D}
+#news.run .card{animation:drop .6s cubic-bezier(.2,.9,.3,1.3) both}
+@keyframes drop{from{transform:translateY(-140%) rotate(-4deg)}to{transform:none}}
+#news h3{font-size:30px; margin:4px 0}
+#news p{margin:0; font-size:16px}
+
+/* splash */
+#splash .logo{font-family:var(--f-display); font-weight:800; color:#FFE27A; font-size:clamp(46px, 9vw, 104px); text-align:center; line-height:.9;
+  text-shadow:0 4px 0 #B86E00, 0 8px 0 rgba(0,0,0,.18), 0 14px 30px rgba(0,30,60,.4); -webkit-text-stroke:2px #7A4300}
+#splash .tag{color:#fff; font-size:20px; font-weight:800; text-shadow:0 2px 0 rgba(0,0,0,.2); text-align:center}
+.char-parade{display:flex; gap:4px; flex-wrap:wrap; justify-content:center}
+.char-parade canvas{width:76px; height:96px}
+.stack{display:flex; flex-direction:column; gap:14px; align-items:stretch; min-width:min(320px, 100%)}
+
+/* sheet card */
+.sheet{background:var(--panel); border-radius:var(--r-lg); padding:24px; box-shadow:0 8px 0 var(--panel-edge), 0 18px 40px rgba(10,40,70,.35); width:min(560px, 100%); box-sizing:border-box; display:flex; flex-direction:column; gap:18px}
+.sheet h2{font-size:32px}
+.field{display:flex; flex-direction:column; gap:8px}
+.field label,.label{font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:900}
+.seg{display:flex; gap:8px; flex-wrap:wrap}
+.seg button{flex:1 1 0; min-width:64px; min-height:52px; border-radius:var(--r-sm); border:3px solid var(--panel-edge); background:#fff; font-family:var(--f-display); font-weight:800; font-size:18px; color:var(--ink); cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--ink); background:#FFE89A; box-shadow:inset 0 -3px 0 rgba(0,0,0,.12)}
+.seg button:focus-visible{outline:3px solid var(--ink); outline-offset:2px}
+input[type=text]{font:800 20px var(--f-body); color:var(--ink); padding:12px 14px; border-radius:var(--r-sm); border:3px solid var(--panel-edge); background:#fff; min-height:52px; box-sizing:border-box; width:100%; -webkit-user-select:text; user-select:text}
+input[type=text]:focus{outline:none; border-color:var(--ink)}
+.row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+.row > *{flex:1 1 auto}
+
+/* character picker */
+.char-grid{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px}
+.char-card{border:3px solid var(--panel-edge); background:#fff; border-radius:var(--r-md); padding:6px 4px 8px; display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; font:800 14px var(--f-body); color:var(--ink); position:relative}
+.char-card canvas{width:72px; height:88px}
+.char-card[disabled]{opacity:.45; cursor:default}
+.char-card .taken{position:absolute; top:6px; right:6px; font-size:11px; color:#fff; padding:2px 7px; border-radius:99px}
+.char-card:not([disabled]):active{transform:scale(.96)}
+.char-card:focus-visible{outline:3px solid var(--ink)}
+.pick-head{display:flex; align-items:center; gap:12px}
+.dot{width:18px; height:18px; border-radius:50%; box-shadow:inset 0 -3px 0 rgba(0,0,0,.2), 0 2px 0 rgba(0,0,0,.15); flex:none}
+
+/* game */
+#game{height:100%; display:grid; grid-template-rows:auto minmax(0,1fr); gap:6px}
+#topbar{display:flex; gap:10px; align-items:center; min-width:0}
+.side{flex:1 1 auto; display:flex; gap:8px; justify-content:center; flex-wrap:wrap; min-width:0; padding-top:2px}
+#stage{position:relative; min-width:0; min-height:0}
+#board{position:absolute; inset:0; width:100%; height:100%; touch-action:none}
+.pcard{flex:0 1 200px; min-width:0; box-sizing:border-box; background:var(--panel); border-radius:var(--r-md); padding:5px 10px 5px 5px; display:grid; grid-template-columns:40px minmax(0,1fr); gap:8px; align-items:center;
+  box-shadow:0 5px 0 var(--panel-edge), 0 10px 22px rgba(10,40,70,.28); border-left:7px solid var(--pc); transition:transform .25s, box-shadow .25s}
+.pcard canvas{width:40px; height:50px}
+.pcard.active{transform:translateY(2px) scale(1.03); box-shadow:0 0 0 4px #FFE27A, 0 5px 0 var(--panel-edge), 0 14px 30px rgba(10,40,70,.4)}
+.pcard.out{filter:grayscale(1); opacity:.5}
+.pname{font:800 13px var(--f-body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.pmoney{font:800 18px var(--f-display); font-variant-numeric:tabular-nums; line-height:1.1}
+.pmeta{font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ink-soft); font-weight:800}
+.chips{display:flex; gap:4px; flex-wrap:wrap; margin-top:3px}
+.chip{font-size:10.5px; font-weight:900; letter-spacing:.04em; text-transform:uppercase; padding:2px 7px; border-radius:99px; color:#fff; background:var(--ink)}
+.chip.jail{background:#3B8FC2}.chip.pelni{background:#2C4F9E}.chip.threat{background:var(--danger); animation:blink 1s steps(2) infinite}.chip.broke{background:#555}
+@keyframes blink{50%{opacity:.55}}
+
+#actionbar{position:absolute; left:50%; bottom:max(16px, env(safe-area-inset-bottom, 0px)); transform:translateX(-50%); display:flex; gap:10px; flex-wrap:wrap; justify-content:center; width:max-content; max-width:92%; z-index:3}
+#actionbar .hint{background:rgba(255,248,236,.95); padding:10px 16px; border-radius:var(--r-md); font-weight:900; box-shadow:0 4px 0 var(--panel-edge)}
+#menuBtn,#speedBtn{flex:none}
+#speedBtn{min-width:56px}
+.sheet.studio{width:min(720px,100%); max-height:92vh}
+.studio-head{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.tabs{display:flex; gap:8px; flex-wrap:wrap}
+.tabs button{font:800 15px var(--f-body); padding:9px 16px; border-radius:999px; border:2px solid #E3D3B0; background:#FFFDF6; color:#4A3426; cursor:pointer; min-height:44px}
+.tabs button.on{background:#4A3426; color:#fff; border-color:#4A3426}
+.slist{display:flex; flex-direction:column; gap:8px}
+.srow{display:flex; align-items:center; gap:12px; background:#FFFDF6; border:2px solid #EFE2C6; border-radius:14px; padding:8px 10px}
+.sface{width:44px; height:54px; flex:none}
+.stext{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px}
+.stext b{font-size:16px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.ssub{font-size:13px; color:#8A7560}
+.spill{align-self:flex-start; font:800 12px var(--f-body); padding:2px 8px; border-radius:999px; background:#EFE6D2; color:#6A5640; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.spill.mine{background:#2E9E5B; color:#fff}
+.sacts{display:flex; gap:6px; flex:none}
+.wallet.warn{color:#C0392B; font-weight:800}
+.wallet.okmsg{color:#1E7A45; font-weight:800}
+@media (max-width:620px){.srow{flex-wrap:wrap}.sacts{width:100%; justify-content:flex-end}}
+#toasts{position:absolute; top:10px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; gap:6px; align-items:center; z-index:5; pointer-events:none; width:min(460px, 90%)}
+.toast{background:rgba(255,248,236,.97); color:var(--ink); padding:8px 14px; border-radius:var(--r-sm); font-weight:800; font-size:15px; box-shadow:0 4px 0 var(--panel-edge), 0 6px 16px rgba(0,0,0,.2); text-align:center; animation:tin .25s ease-out}
+.toast.bad{background:#FFE6E2; box-shadow:0 4px 0 #F2B2A9}
+.toast.good{background:#E6F7E9; box-shadow:0 4px 0 #A9DDB3}
+.toast.big{font-family:var(--f-display); font-size:22px}
+@keyframes tin{from{transform:translateY(-8px); opacity:0}}
+
+/* overlays */
+.overlay{position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; padding:max(16px, env(safe-area-inset-left, 0px)); background:rgba(8,36,60,.5); box-sizing:border-box}
+.overlay .sheet{max-height:100%; overflow-y:auto}
+.modal-top{display:flex; gap:14px; align-items:center}
+.modal-top canvas{width:150px; height:130px; flex:none}
+.eyebrow{font-size:12px; text-transform:uppercase; letter-spacing:.1em; font-weight:900}
+.facts{display:grid; grid-template-columns:auto 1fr; gap:4px 14px; font-size:15px}
+.facts dt{color:var(--ink-soft); font-weight:800}
+.facts dd{margin:0; font-weight:900; font-variant-numeric:tabular-nums}
+.opts{display:flex; flex-direction:column; gap:12px}
+.opt-sub{display:block; font:700 13px var(--f-body); opacity:.75}
+.wallet{font-size:14px; color:var(--ink-soft); font-weight:800}
+.wallet b{color:var(--ink); font-variant-numeric:tabular-nums}
+.cardface{border-radius:var(--r-lg); padding:26px 22px; text-align:center; color:#fff; background:linear-gradient(160deg,#8B74FF,#5A3FC0); box-shadow:inset 0 2px 0 rgba(255,255,255,.4), 0 6px 0 #3E2A8C}
+.cardface.good{background:linear-gradient(160deg,#4CCB7A,#22955A); box-shadow:inset 0 2px 0 rgba(255,255,255,.4), 0 6px 0 #17683E}
+.cardface.bad{background:linear-gradient(160deg,#FF7A6B,#D8392E); box-shadow:inset 0 2px 0 rgba(255,255,255,.4), 0 6px 0 #962219}
+.cardface h3{font-size:34px; margin:6px 0}
+.cardface p{font-size:18px; margin:0}
+#handoff .sheet{align-items:center; text-align:center}
+#handoff canvas{width:160px; height:196px}
+#handoff h2{font-size:42px}
+.result-list{display:flex; flex-direction:column; gap:8px}
+.result-row{display:grid; grid-template-columns:28px 44px 1fr auto; gap:10px; align-items:center; background:#fff; border-radius:var(--r-sm); padding:6px 10px}
+.result-row canvas{width:44px; height:54px}
+.result-row b{font-variant-numeric:tabular-nums}
+.rules{font-size:14px; line-height:1.5; font-weight:700; max-width:65ch}
+.rules p{margin:0 0 8px}
+
+@media (max-aspect-ratio: 1/1), (max-width: 760px){
+  body{overflow:auto}
+  #topbar{align-items:flex-start}
+  .side{flex-wrap:nowrap; overflow-x:auto; justify-content:flex-start; padding-bottom:6px}
+  .pcard{flex:0 0 190px}
+  .char-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
+}
+@media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} }
+</style>
+
+<div id="app">
+  <section id="splash" class="screen">
+    <div class="logo">Kepulauan<br>Cuan</div>
+    <div class="tag">Keliling Indonesia, kuasai kotanya, jadi Raja Cuan. Sekarang ada Tema Politik.</div>
+    <div class="char-parade" id="parade"></div>
+    <div class="stack">
+      <button class="btn" id="btnNew">Main Baru</button>
+      <button class="btn ghost" id="btnResume" hidden>Lanjutkan Game</button>
+      <button class="btn ghost" id="btnStudio">Sound Studio</button>
+    </div>
+  </section>
+
+  <section id="lobby" class="screen" hidden>
+    <div class="sheet">
+      <h2>Siapkan permainan</h2>
+      <div class="field"><span class="label">Tema</span><div class="seg" id="segTheme"></div><span class="wallet" id="themeHint"></span></div>
+      <div class="field"><span class="label">Jumlah pemain</span><div class="seg" id="segCount"></div></div>
+      <div class="field"><span class="label">Batas ronde</span><div class="seg" id="segLimit"></div></div>
+      <div class="field"><span class="label">Modal awal</span><div class="seg" id="segMoney"></div><label class="wallet" for="moneyInput">Atau atur sendiri (Rp)</label><input type="text" inputmode="numeric" id="moneyInput" autocomplete="off"></div>
+      <div class="field"><span class="label">Cara bangun</span><div class="seg" id="segBuild"></div><span class="wallet" id="buildHint"></span></div>
+      <div class="field"><span class="label" id="newsLabel">Kabar Nusantara</span><div class="seg" id="segNews"></div><span class="wallet">Tiap 3 ronde ada peristiwa yang mengubah aturan selama satu ronde.</span></div>
+      <div class="row"><button class="btn ghost" id="lobbyBack">Kembali</button><button class="btn" id="lobbyNext">Pilih Karakter</button></div>
+    </div>
+  </section>
+
+  <section id="pick" class="screen" hidden>
+    <div class="sheet">
+      <div class="pick-head"><span class="dot" id="pickDot"></span><h2 id="pickTitle">Pemain 1</h2></div>
+      <div class="field"><label for="nameInput">Nama</label><input type="text" id="nameInput" maxlength="12" autocomplete="off"></div>
+      <div class="field"><span class="label">Pilih karakter</span><div class="char-grid" id="charGrid"></div></div>
+      <div class="row"><button class="btn ghost" id="pickBack">Kembali</button></div>
+    </div>
+  </section>
+
+  <section id="game" hidden>
+    <div id="topbar"><div class="side" id="sideL"></div><button class="btn ghost small" id="speedBtn" aria-label="Kecepatan game">1x</button><button class="btn ghost small" id="menuBtn">Menu</button></div>
+    <div id="stage">
+      <canvas id="board"></canvas>
+      <div id="toasts"></div>
+      <div id="actionbar"></div>
+      <button class="btn ghost small" id="camBtn">Lihat semua</button>
+    </div>
+  </section>
+</div>
+
+<div class="overlay" id="handoff" hidden>
+  <div class="sheet">
+    <span class="eyebrow" id="hoRound">Ronde 1</span>
+    <canvas id="hoFace" width="320" height="392"></canvas>
+    <h2 id="hoName">Giliran</h2>
+    <button class="btn" id="hoGo">Ayo jalan!</button>
+  </div>
+</div>
+<div id="ott" hidden><div class="siren"></div><div class="bar t"></div><div class="bar b"></div><div class="flash"></div><div class="center"><span class="tag">BREAKING NEWS</span><canvas id="ottFace" width="340" height="416"></canvas><span class="ticker" id="ottName">OTT!</span></div></div>
+<div id="cine" hidden><canvas id="cineCv"></canvas><div id="cineBar"><i id="cineProg"></i></div><button type="button" class="btn ghost" id="cineSkip">Skip &rsaquo;</button></div>
+<div id="news" hidden><div class="card"><span class="eyebrow" id="newsEyebrow" style="color:#E2483D">Kabar Nusantara</span><h3 id="newsTitle">Kabar</h3><p id="newsText"></p></div></div>
+<div class="overlay" id="modal" hidden><div class="sheet" id="modalBody"></div></div>
+<div class="overlay" id="pause" hidden>
+  <div class="sheet">
+    <h2>Istirahat dulu</h2>
+    <p class="wallet">Game tersimpan otomatis di iPad ini.</p>
+    <div class="opts">
+      <button class="btn" id="pResume">Lanjut main</button>
+      <button class="btn ghost" id="pMusic">Musik: Nyala</button>
+      <button class="btn ghost" id="pSound">Efek suara: Nyala</button>
+      <button class="btn ghost" id="pStudio">Sound Studio</button>
+      <button class="btn ghost" id="pRules">Aturan singkat</button>
+      <div class="rules" id="rulesBox" hidden>
+        <p><b>Kota:</b> beli tanah, lalu bangun Rumah, Villa, Gedung. Di mode Bertahap, tiap kunjungan cuma naik satu level. Landmark baru bisa setelah lewat Start sekali, dan Landmark kebal Takeover.</p>
+        <p><b>Sewa:</b> kuasai satu region penuh, sewanya x2. Pesta Rakyat bikin satu kota x2, dan kalau kamu merayakan kota yang sama lagi naik jadi x3 lalu x4. Total kelipatan sewa maksimal x6.</p>
+        <p><b>Takeover:</b> mendarat di kota lawan, bayar sewa, lalu boleh ambil alih seharga 2x total investasinya.</p>
+        <p><b>Menang:</b> lawan bangkrut semua, 3 region penuh, 1 jalur penuh, 4 wisata, atau aset terbesar saat ronde habis.</p>
+      </div>
+      <button class="btn red" id="pQuit">Keluar ke menu</button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="studio" hidden>
+  <div class="sheet studio">
+    <div class="studio-head"><h2>Sound Studio</h2><button class="btn ghost small" id="studioClose">Tutup</button></div>
+    <div class="tabs" id="studioTabs"></div>
+    <p class="wallet" id="studioHint"></p>
+    <div id="studioBody" class="slist"></div>
+    <p class="wallet">Suara kamu tersimpan di perangkat ini saja (m4a, mp3, wav, maks 3 MB). Rekaman Voice Memos bisa dibagikan ke Files lalu di-upload dari sini.</p>
+  </div>
+</div>
+<div class="overlay" id="result" hidden>
+  <div class="sheet">
+    <span class="eyebrow" id="resHow">Menang</span>
+    <div class="modal-top"><canvas id="resFace" width="300" height="260"></canvas><h2 id="resName">Juragan baru!</h2></div>
+    <div class="result-list" id="resList"></div>
+    <div class="row"><button class="btn ghost" id="resMenu">Menu utama</button><button class="btn" id="resAgain">Main lagi</button></div>
+  </div>
+</div>
+
