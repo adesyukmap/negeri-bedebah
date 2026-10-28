@@ -12,7 +12,7 @@ function cineTap(){if(CINE.open&&CINE.done){play('tap');endCine();}}
 function closeCineUI(){$('cine').hidden=true;holdMove=performance.now()+450;refresh();}
 function once(key,fn){if(!CINE.fired[key]){CINE.fired[key]=1;fn();}}
 function cineFrame(now){if(!CINE.open)return;requestAnimationFrame(cineFrame);
-  CINE.el+=Math.min(100,now-CINE.last)*SPEED;CINE.last=now;if(CINE.el>=CINE_DUR){CINE.el=CINE_DUR;if(!CINE.done)cineFinished(now);}var el=CINE.el;$('cineProg').style.width=(el/CINE_DUR*100)+'%';
+  var DUR=(CINE.cur.data&&CINE.cur.data.dur)||CINE_DUR;CINE.el+=Math.min(100,now-CINE.last)*SPEED;CINE.last=now;if(CINE.el>=DUR){CINE.el=DUR;if(!CINE.done)cineFinished(now);}var el=CINE.el;$('cineProg').style.width=(el/DUR*100)+'%';
   var cv2=$('cineCv'),w=window.innerWidth,h=window.innerHeight,d=Math.min(2,window.devicePixelRatio||1);
   if(cv2.width!==Math.round(w*d)||cv2.height!==Math.round(h*d)){cv2.width=Math.round(w*d);cv2.height=Math.round(h*d);}
   var c=cv2.getContext('2d'),old=g;c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);g=c;g.lineJoin='round';g.lineCap='round';
@@ -78,8 +78,8 @@ var CINE_SCENES={
     var tShake=t<6.6?Math.sin(now/40)*s*0.008:0;drawChar(p.char,tokX+tShake,fy,s,p.color,{vest:true,expr:t<6.6?(t>2.8?'sad':'shock'):null});
     var fs=Math.max(16,Math.min(w*0.022,h*0.036));
     if(t>0.8)once('host',function(){play('host');});
-    if(t>0.8&&t<6.6)speech(hostX+s*0.15,fy-s*1.05,typed((isFemale(p.char)?'Ibu':'Bapak')+' ketangkap kasus apa?',t,0.8,26),fs,w*0.3,{anchor:'l',W:w});
-    if(t>2.8&&t<6.6)speech(tokX-s*0.1,fy-s*1.05,'"'+typed(e.caseText||'Saya cuma lewat, Mbak.',t,2.8,30)+'"',fs,w*0.34,{anchor:'r',W:w});
+    if(t>0.8&&t<3.0)speech(hostX+s*0.1,fy-s*1.05,typed((isFemale(p.char)?'Ibu':'Bapak')+' ketangkap kasus apa?',t,0.8,26),fs,w*0.28,{anchor:'l',W:w});
+    if(t>3.0&&t<6.6)speech(tokX,fy-s*1.02,'"'+typed(e.caseText||'Saya cuma lewat, Mbak.',t,2.8,30)+'"',fs,w*0.34,{anchor:'r',W:w});
     if(t>=6.6){var pp=Math.max(0.3,easeBack((t-6.6)/0.35));speech(tokX,fy-s*1.05,'Saya akan lawan!',fs*1.35*pp,w*0.4,{bg:'#FFE27A',stroke:'#C62828',weight:900,W:w});once('lw',function(){play('slam',0.4);play('quip:lawan');});}
     flashes(w,h,t,11,6);
     if(t>0.4){var it=easeOut((t-0.4)/0.4),ly=h*0.9;g.save();g.translate((1-it)*-w,0);var bw2=bandText(w*0.12,ly,'OTT!',Math.max(20,h*0.045),'#E2483D','#fff',-0.2);
@@ -105,17 +105,20 @@ var CINE_SCENES={
     g.fillStyle='#6BBF59';g.fillRect(0,h*0.62,w,h*0.38);
     var bx=w*0.2,by=h*0.06,bw=w*0.6,bh=h*0.36;g.fillStyle='#5A5A66';g.fillRect(bx+bw*0.1,by+bh,w*0.012,h*0.2);g.fillRect(bx+bw*0.9-w*0.012,by+bh,w*0.012,h*0.2);
     rrect(bx,by,bw,bh,10);var bgr=g.createLinearGradient(bx,0,bx+bw,0);bgr.addColorStop(0,shade(p.color,0.15));bgr.addColorStop(1,shade(p.color,-0.25));g.fillStyle=bgr;g.fill();g.strokeStyle='#fff';g.lineWidth=6;g.stroke();
-    g.save();rrect(bx,by,bw,bh,10);g.clip();drawChar(p.char,bx+bw*0.2,by+bh*1.25,bh*1.05,null,{expr:'happy'});g.restore();
-    var idx=S.players.indexOf(p)+1;g.font='900 '+(bh*0.2)+'px "Baloo 2", sans-serif';g.textAlign='left';g.textBaseline='middle';g.fillStyle='#fff';g.fillText('COBLOS NO. '+idx,bx+bw*0.4,by+bh*0.3);
-    g.font='900 '+(bh*0.12)+'px Nunito, sans-serif';g.fillStyle='#FFE27A';g.fillText(p.name.toUpperCase(),bx+bw*0.4,by+bh*0.52);g.font='800 '+(bh*0.09)+'px Nunito, sans-serif';g.fillStyle='#fff';g.fillText('Bangun '+city+', pasti cuan!',bx+bw*0.4,by+bh*0.7);
+    g.save();rrect(bx,by,bw,bh,10);g.clip();drawChar(p.char,bx+bw*0.2,by+bh*(sprImg(p.char)?1.62:1.25),bh*(sprImg(p.char)?1.5:1.05),null,{expr:'happy'});g.restore();
+    var idx=S.players.indexOf(p)+1,tx0=bx+bw*0.4,tmax=bw*0.56;g.textAlign='left';g.textBaseline='middle';
+    var fit=function(txt,size,font,y,col){var fz=size;g.font=font.replace('#',fz);while(g.measureText(txt).width>tmax&&fz>8){fz-=1;g.font=font.replace('#',fz);}g.fillStyle=col;g.fillText(txt,tx0,y);};
+    fit('COBLOS NO. '+idx,bh*0.2,'900 #px "Baloo 2", sans-serif',by+bh*0.2,'#fff');
+    fit(p.name.toUpperCase(),bh*0.11,'900 #px Nunito, sans-serif',by+bh*0.37,'#FFE27A');
+    fit('Bangun '+city+', pasti cuan!',bh*0.085,'800 #px Nunito, sans-serif',by+bh*0.5,'#fff');
     var sy=h*0.72,stw=w*0.5;g.fillStyle='#7A3A1E';g.fillRect(w/2-stw/2,sy-h*0.12,stw,h*0.12);g.fillStyle='#A0522D';g.fillRect(w/2-stw/2,sy-h*0.13,stw,h*0.02);
     for(var k=0;k<12;k++){g.fillStyle=k%2?'#fff':'#D7261E';g.beginPath();var x0=w/2-stw/2+k*stw/12;g.moveTo(x0,sy-h*0.11);g.lineTo(x0+stw/12,sy-h*0.11);g.lineTo(x0+stw/24,sy-h*0.07);g.fill();}
     var ts=Math.min(h*0.28,w*0.16),jump=Math.abs(Math.sin(now/260))*h*0.012;drawChar(p.char,w/2,sy-h*0.13-jump,ts,p.color,{expr:t>4&&t<5.5?'happy':null});
     g.fillStyle='#333';g.fillRect(w/2+ts*0.22,sy-h*0.13-ts*0.55,ts*0.03,ts*0.35);ell(w/2+ts*0.235,sy-h*0.13-ts*0.58,ts*0.05,ts*0.06,'#222');
     rrect(w/2-ts*0.3,sy-h*0.13-ts*0.3,ts*0.6,ts*0.3,ts*0.04);g.fillStyle='#E8E2D2';g.fill();
     var fs=Math.max(16,Math.min(w*0.022,h*0.036));
-    if(t>0.8&&t<4.8)speech(w/2-ts*0.15,sy-h*0.13-ts*1.0,typed('Saudara-saudara! '+city+' akan kita bangun jadi kota cuan!',t,0.8,30),fs,w*0.3,{W:w,anchor:'r'});
-    if(t>=5)speech(w/2-ts*0.15,sy-h*0.13-ts*1.0,typed('Pilih saya, dijamin... cuan! Hidup rakyat!',t,5,30),fs,w*0.3,{W:w,bg:'#FFE27A',anchor:'r'});
+    if(t>0.8&&t<4.8)speech(w/2+ts*0.2,h*0.62,typed('Saudara-saudara! '+city+' akan kita bangun jadi kota cuan!',t,0.8,30),fs,w*0.34,{W:w,anchor:'l'});
+    if(t>=5)speech(w/2+ts*0.2,h*0.62,typed('Pilih saya, dijamin... cuan! Hidup rakyat!',t,5,30),fs,w*0.34,{W:w,bg:'#FFE27A',anchor:'l'});
     for(var r=0;r<3;r++)for(var c=0;c<14;c++){var x=w*(c+0.5+(r%2)*0.5)/14,y=h*(0.84+r*0.07),bob=Math.abs(Math.sin(now/200+c*1.3+r))*h*0.015,sh=['#E2483D','#F2C230','#2F80ED','#2E9E5B','#fff'][(c+r)%5];
       g.strokeStyle='#5A4A3A';g.lineWidth=2;g.beginPath();g.moveTo(x+h*0.02,y-h*0.07-bob);g.lineTo(x+h*0.02,y-h*0.14-bob);g.stroke();g.fillStyle=(c+r)%3?p.color:'#fff';g.beginPath();g.moveTo(x+h*0.02,y-h*0.14-bob);g.lineTo(x+h*0.07+Math.sin(now/120+c)*h*0.006,y-h*0.125-bob);g.lineTo(x+h*0.02,y-h*0.11-bob);g.fill();
       drawMiniPerson(x,y-bob,h*0.1,sh,Math.sin(now/150+c),false);}

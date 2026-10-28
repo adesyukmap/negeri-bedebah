@@ -166,6 +166,8 @@ function hudEvent(e,now){
     else if(e.t==='pungli'){addActor('preman',S.players[e.pid].pos,isPol()?'Uang keamanan, Bos!':'Bayar dulu, Bos!',e.amt);play('pay');}
     else if(e.t==='parkir'){var pf=typeof parkirFee==='function'?parkirFee():2000;addActor('tukang',S.players[e.pid].pos,String(Math.round(pf/100)/10).replace('.',',')+'rebu ga bikin lo miskin, boss!',e.amt);}
     else if((e.t==='kasTax'||e.t==='raib')&&S&&S.players[e.pid]&&e.amt>0){var tk2=tokenPos(e.pid,now);floaters.push({u:tk2.u,v:tk2.v,z:tk2.z+TW*0.9,text:(e.t==='raib'?'raib ':'kas ')+short(e.amt),color:e.t==='raib'?'#7A6150':'#B8322A',t0:now+300+floaters.length*90});}
+    else if(e.t==='court'){queueCine('court',Object.assign({dur:e.kind==='sel'?6500:e.kind==='bebas'?6000:10000},e));}
+    else if(e.t==='appeal'&&isPol()){}
     else if(e.t==='appeal'){play('appeal');if(!e.ok&&isPol())addQuip(e.pid,QUIP_TEXT.lawan,2600,'lawan');else addQuip(e.pid,e.ok?(isPol()?'Hakimnya bijak sekali!':'Akhirnya bebas!'):'Yah, gagal...',2600);}
     else if(e.t==='quip'){if(!isPol()||e.key==='lawan'){}else if(e.key==='sorry'){(function(e){afterOverlay(function(){addQuip(e.pid,QUIP_TEXT.sorry,2600,'sorry');},1300);})(e);}else if(QUIP_TEXT[e.key])addQuip(e.pid,QUIP_TEXT[e.key],null,e.key);}
     else if(e.t==='swap'){[e.a,e.b].forEach(function(id){var tp3=tokenPos(id,now);for(var k=0;k<6;k++)parts.push({u:tp3.u,v:tp3.v,z:tp3.z+TH*0.4,t0:now,life:700,kind:'poof',a:k});});}

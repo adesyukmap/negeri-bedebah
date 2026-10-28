@@ -225,10 +225,10 @@ function roll(power){
   if(S.phase!=='turn')return; var p=cur(); if(p.pelni)return;
   var dv=rollDice(power,p),a=dv[0],b=dv[1],dbl=a===b,sum=a+b; S.dice=[a,b]; S.lastSum=sum; emit({t:'dice'});
   if(p.inJail){
-    if(dbl){p.inJail=false;p.jailTurns=0;p.rolledDouble=false; toast('Double! '+p.name+' bebas dari '+tileName(IDX.jail),'good'); if(gemoyDice(p))pEmit(p,'gemoy',p.name+' joget, dadunya double terus'); return walk(p,sum);}
+    if(dbl){p.inJail=false;p.jailTurns=0;p.rolledDouble=false; toast('Double! '+p.name+' bebas dari '+tileName(IDX.jail),'good'); if(S.theme==='politik')emit({t:'court',kind:'bebas',how:'double',pid:p.id}); if(gemoyDice(p))pEmit(p,'gemoy',p.name+' joget, dadunya double terus'); return walk(p,sum);}
     p.jailTurns++;
-    if(p.jailTurns>=jailMax(p)){p.inJail=false;p.jailTurns=0;p.rolledDouble=false; toast('Sudah '+jailMax(p)+' giliran. '+p.name+' akhirnya bebas!'); if(hasP(p,'imam'))pEmit(p,'imam',p.name+' dibela massa aksi, cuma ditahan 2 giliran'); return walk(p,sum);}
-    toast('Belum double. Masih '+TH_().jailVerb+' '+(jailMax(p)-p.jailTurns)+' giliran lagi'); S.phase='end'; save(); return;
+    if(p.jailTurns>=jailMax(p)){p.inJail=false;p.jailTurns=0;p.rolledDouble=false; toast('Sudah '+jailMax(p)+' giliran. '+p.name+' akhirnya bebas!'); if(S.theme==='politik')emit({t:'court',kind:'bebas',how:'waktu',pid:p.id}); if(hasP(p,'imam'))pEmit(p,'imam',p.name+' dibela massa aksi, cuma ditahan 2 giliran'); return walk(p,sum);}
+    toast('Belum double. Masih '+TH_().jailVerb+' '+(jailMax(p)-p.jailTurns)+' giliran lagi'); if(S.theme==='politik')emit({t:'court',kind:'sel',pid:p.id,day:p.jailTurns+1,left:jailMax(p)-p.jailTurns}); S.phase='end'; save(); return;
   }
   if(dbl){p.doubles++; if(p.doubles>=3){toast('3x double berturut-turut! Kebablasan...','bad'); return sendJail(p,S.theme==='politik'?'ott':'karam');} p.rolledDouble=true;
     if(hasP(p,'gemoy')){alivePlayers().forEach(function(o){if(o.id!==p.id&&S.phase!=='over')pay(o.id,10000,p.id);});pEmit(p,'gemoy',p.name+' joget dapat double, semua lawan bayar Rp10rb');}}
@@ -237,11 +237,11 @@ function roll(power){
 }
 function payAppeal(){var p=cur(),fee=appealFee(); if(S.phase!=='turn'||!p.inJail||p.money<fee||p.appealed)return; payKas(p.id,fee,kasPart()); p.appealed=true; if(S.phase==='over')return save();
   if(hasP(p,'taro'))pEmit(p,'taro',p.name+' ahli hukum, peluang banding 75%');
-  if(Math.random()<(hasP(p,'taro')?0.75:0.5)){p.inJail=false;p.jailTurns=0;toast((S.theme==='politik'?'Banding dikabulkan! ':'Berhasil! ')+p.name+' bebas. Silakan kocok dadu','good big');emit({t:'appeal',ok:true,pid:p.id});}
-  else{toast((S.theme==='politik'?'Banding ditolak. ':'Gagal. ')+p.name+' tetap '+TH_().jailVerb+'. Masih bisa coba double','bad big');emit({t:'appeal',ok:false,pid:p.id});if(S.theme==='politik')emit({t:'quip',pid:p.id,key:'lawan'});}
+  if(Math.random()<(hasP(p,'taro')?0.75:0.5)){p.inJail=false;p.jailTurns=0;toast((S.theme==='politik'?'Banding dikabulkan! ':'Berhasil! ')+p.name+' bebas. Silakan kocok dadu','good big');emit({t:'appeal',ok:true,pid:p.id});if(S.theme==='politik')emit({t:'court',kind:'banding',ok:true,pid:p.id});}
+  else{toast((S.theme==='politik'?'Banding ditolak. ':'Gagal. ')+p.name+' tetap '+TH_().jailVerb+'. Masih bisa coba double','bad big');emit({t:'appeal',ok:false,pid:p.id});if(S.theme==='politik')emit({t:'court',kind:'banding',ok:false,pid:p.id});}
   save();}
 function jailFee(){return S&&S.theme==='politik'?250000:JAIL_FEE;}
-function payJail(){var p=cur(),fee=jailFee(); if(S.phase!=='turn'||!p.inJail||p.money<fee)return; payKas(p.id,fee,kasPart()); if(S.phase==='over')return save(); p.inJail=false; p.jailTurns=0; if(S.theme==='politik')emit({t:'quip',pid:p.id,key:'sogok'}); toast(p.name+(S.theme==='politik'?' sogok hakim ':' bayar ')+fmt(fee)+' dan bebas. Silakan kocok dadu'); save();}
+function payJail(){var p=cur(),fee=jailFee(); if(S.phase!=='turn'||!p.inJail||p.money<fee)return; payKas(p.id,fee,kasPart()); if(S.phase==='over')return save(); p.inJail=false; p.jailTurns=0; if(S.theme==='politik')emit({t:'court',kind:'sogok',pid:p.id,fee:fee}); toast(p.name+(S.theme==='politik'?' sogok hakim ':' bayar ')+fmt(fee)+' dan bebas. Silakan kocok dadu'); save();}
 function pelniTo(i){var p=cur(); i=+i; if(S.phase!=='turn'||!p.pelni||i===p.pos||!(i>=0&&i<NT))return; p.pelni=false; p.rolledDouble=false; toast(p.name+(S.theme==='politik'?' blusukan lewat gorong-gorong ke ':' berlayar ke ')+tileName(i)); walkTo(p,i,S.theme==='politik'?'sewer':'ship');}
 /* escalation: +1 step every 2 rounds (Politik only) */
 function escStep(){return S&&S.theme==='politik'?Math.floor(Math.max(0,(S.round||1)-1)/2):0;}
