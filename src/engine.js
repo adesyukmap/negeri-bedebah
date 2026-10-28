@@ -493,7 +493,7 @@ function botOpp(p){return alivePlayers().filter(function(o){return o.id!==p.id;}
 function botRemain(){return S.turnLimit?Math.max(1,S.turnLimit-S.round+1):15;}
 /* worst single payment the player could face next: highest opponent rent, or the pungli tile */
 function botMaxRent(p){var m=punglAmt(p.id);for(var i=0;i<NT;i++){var o=S.tiles[i].owner;if(o!==null&&o!==p.id&&!P(o).bankrupt)m=Math.max(m,rentOf(i));}return m;}
-function botBuffer(p){var sm=S.startMoney,lv=botLvl(p);if(lv==='mudah')return 0;if(lv==='sedang')return 0.15*sm;
+function botBuffer(p){var sm=S.startMoney,lv=botLvl(p);if(lv==='mudah')return 0.04*sm;if(lv==='sedang')return Math.max(0.06*sm,Math.min(0.3*sm,botMaxRent(p)*0.6));
   return Math.max(0.06*sm,Math.min(0.45*sm,botMaxRent(p)*0.8));}
 function botTx(c){return c+txTaxAmt(c);}
 function jalurOf(i){for(var j=0;j<JALUR.length;j++)if(JALUR[j].indexOf(i)>=0)return j;return -1;}
@@ -531,7 +531,7 @@ function evalLanding(p,j,s,full,buf){
   }
   return 0;}
 function botRollEV(p,pw,lv){var d=rollDist(pw,p),ev=0,buf=botBuffer(p),k=lv||{};for(var s=2;s<=12;s++){var j=(p.pos+s)%NT,v=k[j]!=null?k[j]:(k[j]=evalLanding(p,j,s,true,buf));if(p.pos+s>=NT)v+=salaryAmt();ev+=d[s]*v;}return ev;}
-function botPower(p){var lv=botLvl(p);if(lv==='mudah')return Math.random();if(lv==='sedang')return 0.35+Math.random()*0.3;
+function botPower(p){var lv=botLvl(p);if(lv==='mudah'&&Math.random()<0.6)return 0.2+Math.random()*0.6;if(lv==='sedang'&&Math.random()<0.15)return 0.35+Math.random()*0.3;
   var memo={},best=0.5,bv=botRollEV(p,0.5,memo);[0,0.25,0.75,1].forEach(function(pw){var ev=botRollEV(p,pw,memo);if(ev>bv+1){bv=ev;best=pw;}});return best;}
 function botPelniTile(p){var lv=botLvl(p),best=-1,bv=-1e18;
   if(lv==='mudah'){var t=Math.floor(Math.random()*NT);return t===p.pos?(t+1)%NT:t;}
@@ -550,26 +550,26 @@ function botJail(p){
   return {a:'roll',power:pw};}
 function botBuy(p,i){
   var lv=botLvl(p),op=buyOptions(p,i),buf=botBuffer(p),sm=S.startMoney;if(!op.length)return 'skip';
-  if(lv==='mudah')return Math.random()<0.6?op[Math.floor(Math.random()*op.length)]:'skip';
-  if(lv==='sedang'){if(p.money-botTx(buyCost(i,0,p))<buf)return 'skip';var b=0;op.forEach(function(l){if(p.money-botTx(buyCost(i,l,p))>=2*buf)b=l;});return b;}
+  if(lv==='mudah'){if(p.money-botTx(buyCost(i,0,p))<buf)return 'skip';return Math.random()<0.92?op[Math.min(op.length-1,Math.random()<0.5?1:0)]:'skip';}
+  if(lv==='sedang'){if(p.money-botTx(buyCost(i,0,p))<buf&&!(stratValue(p,i)>=0.3*sm&&p.money-botTx(buyCost(i,0,p))>=0))return 'skip';var b=0;op.forEach(function(l){if(p.money-botTx(buyCost(i,l,p))>=2*buf)b=l;});return b;}
   var sv=stratValue(p,i),c0=botTx(buyCost(i,0,p));
   if(p.money-c0<buf&&!(sv>=0.3*sm&&p.money-c0>=0))return 'skip';
   var best=0;op.forEach(function(l){if(p.money-botTx(buyCost(i,l,p))>=buf*1.2)best=l;});return best;}
 function botBuyAsset(p,i){
   var lv=botLvl(p),pr=botTx(assetPrice(i,p)),buf=botBuffer(p);if(p.money<assetPrice(i,p))return 'no';
-  if(lv==='mudah')return Math.random()<0.6?'yes':'no';
-  if(lv==='sedang')return p.money-pr>=buf?'yes':'no';
+  if(lv==='mudah')return p.money-pr>=buf&&Math.random()<0.85?'yes':'no';
+  if(lv==='sedang')return (p.money-pr>=buf||(stratValue(p,i)>=0.3*S.startMoney&&p.money-pr>=0))?'yes':'no';
   return (p.money-pr>=buf||(stratValue(p,i)>=0.3*S.startMoney&&p.money-pr>=0))?'yes':'no';}
 function botUpgrade(p,i){
   var lv=botLvl(p),op=upgradeOptions(p,i),buf=botBuffer(p),sm=S.startMoney,b='skip';if(!op.length)return 'skip';
-  if(lv==='mudah')return Math.random()<0.2?op[0]:'skip';
+  if(lv==='mudah'){if(Math.random()<0.45&&p.money-botTx(upCost(i,op[0]))>=buf*2)return op[0];return 'skip';}
   var full=regionFull(p.id,T[i].region);
   if(lv==='sedang'){if(!(tileL(i)<=160000||full||p.money>0.6*sm))return 'skip';op.forEach(function(l){if(p.money-botTx(upCost(i,l))>=buf)b=l;});return b;}
   op.forEach(function(l){var need=(l===4&&full)?buf*0.5:buf;if(p.money-botTx(upCost(i,l))>=need)b=l;});return b;}
 function botTakeover(p,pd){
   var lv=botLvl(p),i=pd.tile,st=S.tiles[i],buf=botBuffer(p),sm=S.startMoney;
   var price=takeoverPrice(i,p),can=st.level<4&&p.money>=price,full=st.owner!==null&&regionFull(st.owner,T[i].region);
-  if(lv==='mudah')return 'no';
+  if(lv==='mudah'){if(st.level<4&&p.money-botTx(price)>=0.4*sm&&Math.random()<0.25)return 'yes';return 'no';}
   var swapOk=pd.swap!=null&&!regionFull(p.id,T[pd.swap].region);
   if(lv==='sedang'){if(swapOk&&Math.random()<0.6)return 'swap';
     var comp=regionTiles(T[i].region).every(function(k){return k===i||S.tiles[k].owner===p.id;});
