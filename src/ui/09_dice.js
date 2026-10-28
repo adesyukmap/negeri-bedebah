@@ -18,11 +18,11 @@ function drawDie3(cu,cv,cz,R,hs,alpha){
   var quads=vis.map(function(o){var f=o.f,n=f.n,a=f.a,b=f.b;return [[-1,-1],[1,-1],[1,1],[-1,1]].map(function(c){return P([n[0]*hs+a[0]*c[0]*hs+b[0]*c[1]*hs,n[1]*hs+a[1]*c[0]*hs+b[1]*c[1]*hs,n[2]*hs+a[2]*c[0]*hs+b[2]*c[1]*hs]);});});
   g.lineJoin='round';var edgeW=Math.max(3,hs*TW*0.5);
   // rounded silhouette: fat round-joined stroke, slightly darker = soft bevel edge
-  quads.forEach(function(q,k){var br=0.87+0.13*Math.max(0,dot(vis[k].nw,LIGHT));path(q);var c='rgb('+Math.round(244*br)+','+Math.round(245*br)+','+Math.round(250*br)+')';g.fillStyle=c;g.fill();g.strokeStyle=c;g.lineWidth=edgeW;g.stroke();});
-  quads.forEach(function(q,k){var o=vis[k],f=o.f,n=f.n,a=f.a,b=f.b,lt=Math.max(0,dot(o.nw,LIGHT)),br=0.88+0.12*lt;
+  quads.forEach(function(q,k){var br=0.955+0.045*Math.max(0,dot(vis[k].nw,LIGHT));path(q);var c='rgb('+Math.round(253*br)+','+Math.round(253*br)+','+Math.round(255*br)+')';g.fillStyle=c;g.fill();g.strokeStyle=c;g.lineWidth=edgeW;g.stroke();});
+  quads.forEach(function(q,k){var o=vis[k],f=o.f,n=f.n,a=f.a,b=f.b,lt=Math.max(0,dot(o.nw,LIGHT)),br=0.96+0.04*lt;
     var cx=(q[0].x+q[2].x)/2,cy=(q[0].y+q[2].y)/2,ins=q.map(function(p){return {x:cx+(p.x-cx)*0.95,y:cy+(p.y-cy)*0.95};});
-    roundPoly(ins,0.42);var gr=g.createLinearGradient(ins[0].x,ins[0].y,ins[2].x,ins[2].y),hi=Math.min(1,br+0.1);
-    gr.addColorStop(0,'rgb('+Math.round(255*hi)+','+Math.round(255*hi)+','+Math.round(255*hi)+')');gr.addColorStop(1,'rgb('+Math.round(238*br)+','+Math.round(240*br)+','+Math.round(246*br)+')');g.fillStyle=gr;g.fill();
+    roundPoly(ins,0.42);var gr=g.createLinearGradient(ins[0].x,ins[0].y,ins[2].x,ins[2].y),hi=1;
+    gr.addColorStop(0,'rgb('+Math.round(255*hi)+','+Math.round(255*hi)+','+Math.round(255*hi)+')');gr.addColorStop(1,'rgb('+Math.round(250*br)+','+Math.round(250*br)+','+Math.round(253*br)+')');g.fillStyle=gr;g.fill();
     var vis2=dot(o.nw,VIEW);
     PIPS[f.v].forEach(function(pp){var one=f.v===1,pr=(one?0.36:0.235)*hs,sp=f.v===6?0.52:0.5,cen=[n[0]*hs*1.002+(a[0]*pp[0]+b[0]*pp[1])*hs*sp,n[1]*hs*1.002+(a[1]*pp[0]+b[1]*pp[1])*hs*sp,n[2]*hs*1.002+(a[2]*pp[0]+b[2]*pp[1])*hs*sp],ring=[];
       for(var k2=0;k2<18;k2++){var th=k2/18*Math.PI*2,cs=Math.cos(th)*pr,sn=Math.sin(th)*pr;ring.push(P([cen[0]+a[0]*cs+b[0]*sn,cen[1]+a[1]*cs+b[1]*sn,cen[2]+a[2]*cs+b[2]*sn]));}
@@ -37,12 +37,18 @@ function drawDie3(cu,cv,cz,R,hs,alpha){
   });
   if(alpha!=null)g.restore();
 }
-var DICE_POS=[[MID-0.62,MID+1.02],[MID+1.02,MID-0.62]],diceRoll=null,DICE_DUR=1100,restR=[finalRot(3,0.12),finalRot(4,-0.1)];
-var cup={phase:'idle',t0:0,power:0,auto:0,rel:0};
-function cupPower(now){return cup.phase==='shake'?Math.min(1,(now-cup.t0)/1600):cup.power;}
-function cupStart(){var now=performance.now();if(!S||S.phase!=='turn'||cup.phase!=='idle'||cur().pelni)return;audioUnlock();cup.phase='shake';cup.t0=now;cup.auto=0;cup.lastRattle=0;refresh();}
-function cupRelease(){var now=performance.now();if(cup.phase!=='shake')return;var held=now-cup.t0;if(held<380){cup.auto=cup.t0+850;return;}doRelease(now);}
-function doRelease(now){if(isPol())play('mafia');cup.power=cupPower(now);cup.phase='slam';cup.rel=now;roll();refresh();}
+var DICE_POS=[[MID-0.93,MID+1.53],[MID+1.53,MID-0.93]],diceRoll=null,DICE_DUR=1100,restR=[finalRot(3,0.12),finalRot(4,-0.1)];
+var cup={phase:'idle',t0:0,power:0,auto:0,rel:0,npc:null},CUP_PERIOD=2400;
+/* hold-to-shake power ping-pongs 0 -> 1 -> 0 (period CUP_PERIOD), so holding too long drops back to low power */
+function cupTri(el){var f=(el%CUP_PERIOD)/(CUP_PERIOD/2);return f<=1?f:2-f;}
+function cupRising(now){return ((now-cup.t0)%CUP_PERIOD)<CUP_PERIOD/2;}
+function cupPower(now){if(cup.phase!=='shake')return cup.power;var el=now-cup.t0;if(cup.npc){var f=Math.min(1,el/cup.npc.dur),e=f*f*(3-2*f);return cup.npc.power*e;}return cupTri(el);}
+function cupStart(){var now=performance.now();if(!S||S.phase!=='turn'||cup.phase!=='idle'||cup.npc||cur().pelni)return;audioUnlock();cup.phase='shake';cup.t0=now;cup.auto=0;cup.lastRattle=0;refresh();}
+function cupRelease(){var now=performance.now();if(cup.phase!=='shake'||cup.npc)return;var held=now-cup.t0;if(held<380){cup.auto=cup.t0+850;return;}doRelease(now);}
+function doRelease(now){if(isPol())play('mafia');cup.power=cup.npc?cup.npc.power:cupPower(now);cup.npc=null;cup.phase='slam';cup.rel=now;roll(cup.power);refresh();}
+/* NPC: shake ~0.9-1.4 s (Mafia shaker in Politik, cup in Santai), then release with exactly this power */
+function npcRoll(power){var now=performance.now();if(!S||S.phase!=='turn'||cup.phase!=='idle'||cup.npc)return false;power=power==null||isNaN(power)?0.5:Math.max(0,Math.min(1,+power));
+  cup.npc={power:power,dur:900+Math.random()*500};cup.phase='shake';cup.t0=now;cup.auto=0;cup.lastRattle=0;refresh();return true;}
 function startDiceRoll(now){var vals=S.dice,pw=cup.power||0.4;diceRoll={t0:now,power:pw,dice:vals.map(function(v,k){var ax=nrm([Math.random()-0.5,Math.random()-0.5,Math.random()-0.5]);return {val:v,axis:ax,R:finalRot(v,(Math.random()-0.5)*0.6)};}),dbl:vals[0]===vals[1],sum:vals[0]+vals[1]};
   if(isPol()){diceRoll.pol=true;var F=MAF.fist||{x:CW/2,y:CH_*0.3};diceRoll.from=screenToWorld(F.x,F.y+TH*0.3,2*MID-2.5);}if(cup.phase!=='slam'){cup.phase='slam';cup.rel=now;cup.power=pw;}}
 function drawCup(x,y,s,tilt,alpha){g.save();g.globalAlpha=alpha==null?1:alpha;g.translate(x,y);g.rotate(tilt);
@@ -55,12 +61,11 @@ function drawCup(x,y,s,tilt,alpha){g.save();g.globalAlpha=alpha==null?1:alpha;g.
   g.restore();}
 function drawDice(now){
   var hs=0.27,c=iso(MID,MID,0),s=TW*0.62;
-  if(cup.phase==='shake'&&cup.auto&&now>=cup.auto)doRelease(now);
+  if(cup.phase==='shake'&&((cup.auto&&now>=cup.auto)||(cup.npc&&now-cup.t0>=cup.npc.dur)))doRelease(now);
   if(cup.phase==='shake'){var pw=cupPower(now),amp=0.25+pw*0.95,jx=Math.sin(now/38)*TW*0.06*amp+Math.sin(now/23)*TW*0.03*amp,jy=Math.cos(now/31)*TH*0.08*amp,tilt=Math.sin(now/45)*0.22*amp;
     if(now-(cup.lastRattle||0)>Math.max(55,140-pw*80)){cup.lastRattle=now;play('rattle',pw);}
     if(!isPol())drawCup(c.x+jx,c.y-TH*(0.9+pw*0.4)+jy,s,tilt);
-    var mtr=iso(MID,MID,0);g.save();rrect(mtr.x-TW*0.5,mtr.y+TH*1.25,TW,TH*0.16,TH*0.08);g.fillStyle='rgba(40,25,10,.35)';g.fill();rrect(mtr.x-TW*0.5,mtr.y+TH*1.25,TW*pw,TH*0.16,TH*0.08);g.fillStyle=pw>0.75?'#E2483D':pw>0.4?'#F2B705':'#2E9E5B';g.fill();g.restore();
-    pill(mtr.x,mtr.y+TH*1.75,pw>0.75?'KENCANG!':pw>0.4?'Makin kencang...':'Kocok terus',TW*0.09,'rgba(255,248,236,.95)',INK);
+    powerMeter(now,pw);
     return;}
   if(diceRoll&&diceRoll.pol){drawPolRoll(now,hs);return;}
   if(diceRoll){var el=now-diceRoll.t0,pw2=diceRoll.power,slamT=170,holdT=260,liftT=520;
@@ -75,8 +80,19 @@ function drawDice(now){
     return;}
   if(cup.phase==='slam'&&now-cup.rel>2500)cup.phase='idle';
   DICE_POS.forEach(function(p,k){drawDie3(p[0],p[1],hs,restR[k],hs);});
-  if(!isPol()){var cs=iso(MID+0.95,MID-0.95,0);drawCup(cs.x,cs.y,s*0.7,0.1);}
+  if(!isPol()){var cs=iso(MID+0.3,MID-1.55,0);drawCup(cs.x,cs.y,s*0.7,0.1);}
 }
+/* power bar under the island centre: three zones, moving marker, direction arrow */
+function powerMeter(now,pw){var m=iso(MID,MID,0),bw=TW*1.5,bh=Math.max(8,TH*0.2),x0=m.x-bw/2,y0=m.y+TH*1.35,zc=pw>0.67?'#E2483D':pw>0.34?'#F2B705':'#2E9E5B',lab=pw>0.67?'Besar':pw>0.34?'Sedang':'Kecil';
+  g.save();rrect(x0-bh*0.35,y0-bh*0.35,bw+bh*0.7,bh*1.7,bh*0.85);g.fillStyle='rgba(30,20,10,.45)';g.fill();
+  ['#2E9E5B','#F2B705','#E2483D'].forEach(function(c,k){g.save();rrect(x0,y0,bw,bh,bh/2);g.clip();g.globalAlpha=0.32;g.fillStyle=c;g.fillRect(x0+bw*k/3,y0,bw/3,bh);g.restore();});
+  g.save();rrect(x0,y0,bw,bh,bh/2);g.clip();var fg=g.createLinearGradient(x0,0,x0+bw,0);fg.addColorStop(0,'#2E9E5B');fg.addColorStop(0.5,'#F2B705');fg.addColorStop(1,'#E2483D');g.fillStyle=fg;g.fillRect(x0,y0,bw*pw,bh);g.restore();
+  g.strokeStyle='rgba(255,255,255,.7)';g.lineWidth=Math.max(1,bh*0.12);[1,2].forEach(function(k){g.beginPath();g.moveTo(x0+bw*k/3,y0+bh*0.15);g.lineTo(x0+bw*k/3,y0+bh*0.85);g.stroke();});
+  var mx=x0+bw*pw;ell(mx,y0+bh/2,bh*0.75,bh*0.75,'#fff');ell(mx,y0+bh/2,bh*0.5,bh*0.5,zc);
+  if(!cup.npc){var up=cupRising(now);g.fillStyle='#fff';g.beginPath();if(up){g.moveTo(mx+bh*1.1,y0+bh*0.5-bh*0.45);g.lineTo(mx+bh*1.6,y0+bh*0.5);g.lineTo(mx+bh*1.1,y0+bh*0.5+bh*0.45);}else{g.moveTo(mx-bh*1.1,y0+bh*0.5-bh*0.45);g.lineTo(mx-bh*1.6,y0+bh*0.5);g.lineTo(mx-bh*1.1,y0+bh*0.5+bh*0.45);}g.closePath();g.fill();}
+  g.restore();
+  var fs=Math.max(11,TW*0.11);pill(m.x,y0+bh+fs*1.2,lab,fs,zc,'#fff');
+  if(!cup.npc&&now-cup.t0>CUP_PERIOD*0.55){g.save();g.globalAlpha=0.85;pill(m.x,y0+bh+fs*2.8,'lepas pas di zona yang kamu mau',Math.max(9,fs*0.62),'rgba(255,248,236,.95)',INK);g.restore();}}
 
 function drawPolRoll(now,hs){var el=now-diceRoll.t0,pw=diceRoll.power,FL=560,fr=diceRoll.from;
   diceRoll.dice.forEach(function(d,k){var tu=DICE_POS[k][0],tv=DICE_POS[k][1];

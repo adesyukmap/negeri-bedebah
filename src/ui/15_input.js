@@ -7,11 +7,11 @@ var PTR={},gest=null,lastTap=0,tapTimer=null;
 function ptrList(){return Object.keys(PTR).map(function(k){return PTR[k];});}
 function clampCam(){var lim=CW*cam.z*0.65,limy=CH_*cam.z*0.65;cam.px=Math.max(-lim,Math.min(lim,cam.px));cam.py=Math.max(-limy,Math.min(limy,cam.py));cam.z=Math.max(0.85,Math.min(3.2,cam.z));}
 function bindBoard(){
-  cv.addEventListener('pointerdown',function(e){audioUnlock();if(CONVOY)CONVOY.fast=true;if(storyBusy()){storySkip();refresh();}cv.setPointerCapture&&cv.setPointerCapture(e.pointerId);PTR[e.pointerId]={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY};
+  cv.addEventListener('pointerdown',function(e){audioUnlock();if(CONVOY)CONVOY.fast=true;if(storyBusy()){storySkip();refresh();}cv.setPointerCapture&&cv.setPointerCapture(e.pointerId);if(S&&S.phase==='turn'&&cur().pelni&&!cur().npc){var rr0=cv.getBoundingClientRect();HOVER=hitTile(e.clientX-rr0.left,e.clientY-rr0.top);}PTR[e.pointerId]={x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY};
     var l=ptrList();
     if(l.length===2){var a=l[0],b=l[1],mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};gest={type:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,z0:cam.z,mid0:mid,px0:cam.px,py0:cam.py,moved:true};}
     else if(l.length===1){gest={type:'one',px0:cam.px,py0:cam.py,moved:false};}});
-  cv.addEventListener('pointermove',function(e){var p=PTR[e.pointerId];if(!p||!gest)return;p.x=e.clientX;p.y=e.clientY;var l=ptrList(),r=cv.getBoundingClientRect();
+  cv.addEventListener('pointermove',function(e){var p=PTR[e.pointerId];if(!gest&&S&&S.phase==='turn'&&cur().pelni){var rr=cv.getBoundingClientRect();HOVER=hitTile(e.clientX-rr.left,e.clientY-rr.top);}if(!p||!gest)return;p.x=e.clientX;p.y=e.clientY;var l=ptrList(),r=cv.getBoundingClientRect();
     if(gest.type==='pinch'&&l.length>=2){var a=l[0],b=l[1],d=Math.hypot(a.x-b.x,a.y-b.y),mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2},z=Math.max(0.85,Math.min(3.2,gest.z0*d/gest.d0));
       var C={x:CW/2,y:CH_/2},m0={x:gest.mid0.x-r.left,y:gest.mid0.y-r.top},m1={x:mid.x-r.left,y:mid.y-r.top};
       var w={x:C.x+(m0.x-C.x-gest.px0)/gest.z0,y:C.y+(m0.y-C.y-gest.py0)/gest.z0};
@@ -26,4 +26,4 @@ function bindBoard(){
   cv.addEventListener('wheel',function(e){e.preventDefault();var r=cv.getBoundingClientRect(),m={x:e.clientX-r.left,y:e.clientY-r.top},C={x:CW/2,y:CH_/2},z0=cam.z,z=Math.max(0.85,Math.min(3.2,z0*Math.exp(-e.deltaY*0.0015)));
     var w={x:C.x+(m.x-C.x-cam.px)/z0,y:C.y+(m.y-C.y-cam.py)/z0};cam.z=z;cam.px=m.x-C.x-(w.x-C.x)*z;cam.py=m.y-C.y-(w.y-C.y)*z;setCamMode('free');clampCam();},{passive:false});
 }
-function tapAt(x,y){if(!S)return;var i=hitTile(x,y);if(i<0)return;var p=cur();if(S.phase==='turn'&&p.pelni){if(i!==p.pos){play('tap');pelniTo(i);refresh();}return;}play('tap');openDetail(i);}
+function tapAt(x,y){if(!S)return;var i=hitTile(x,y);if(i<0)return;var p=cur();if(S.phase==='turn'&&p.pelni&&!p.npc){if(i!==p.pos){HOVER=i;play('tap');pelniTo(i);refresh();}return;}play('tap');openDetail(i);}

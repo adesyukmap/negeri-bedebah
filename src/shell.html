@@ -126,18 +126,70 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
 .side{flex:1 1 auto; display:flex; gap:8px; justify-content:center; flex-wrap:wrap; min-width:0; padding-top:2px}
 #stage{position:relative; min-width:0; min-height:0}
 #board{position:absolute; inset:0; width:100%; height:100%; touch-action:none}
-.pcard{flex:0 1 200px; min-width:0; box-sizing:border-box; background:var(--panel); border-radius:var(--r-md); padding:5px 10px 5px 5px; display:grid; grid-template-columns:40px minmax(0,1fr); gap:8px; align-items:center;
-  box-shadow:0 5px 0 var(--panel-edge), 0 10px 22px rgba(10,40,70,.28); border-left:7px solid var(--pc); transition:transform .25s, box-shadow .25s}
-.pcard canvas{width:40px; height:50px}
-.pcard.active{transform:translateY(2px) scale(1.03); box-shadow:0 0 0 4px #FFE27A, 0 5px 0 var(--panel-edge), 0 14px 30px rgba(10,40,70,.4)}
-.pcard.out{filter:grayscale(1); opacity:.5}
-.pname{font:800 13px var(--f-body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.pmoney{font:800 18px var(--f-display); font-variant-numeric:tabular-nums; line-height:1.1}
-.pmeta{font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ink-soft); font-weight:800}
-.chips{display:flex; gap:4px; flex-wrap:wrap; margin-top:3px}
-.chip{font-size:10.5px; font-weight:900; letter-spacing:.04em; text-transform:uppercase; padding:2px 7px; border-radius:99px; color:#fff; background:var(--ink)}
-.chip.jail{background:#3B8FC2}.chip.pelni{background:#2C4F9E}.chip.threat{background:var(--danger); animation:blink 1s steps(2) infinite}.chip.broke{background:#555}
+/* player bar: tiny chips, tap anywhere for the detail panel */
+#sideL{cursor:pointer; gap:6px; flex-wrap:nowrap; overflow:hidden; padding:2px 2px 6px}
+#sideL:focus-visible{outline:3px solid #fff; outline-offset:2px; border-radius:14px}
+.pchip{flex:0 1 auto; min-width:0; max-width:180px; height:44px; box-sizing:border-box; display:flex; align-items:center; gap:6px; padding:2px 9px 2px 4px; border-radius:14px; background:var(--panel);
+  box-shadow:inset 0 -4px 0 var(--pc), 0 3px 0 var(--panel-edge), 0 6px 14px rgba(10,40,70,.25); transition:transform .25s, box-shadow .25s}
+.pchip .pav{position:relative; flex:none; display:block}
+.pchip .pav canvas{display:block; width:30px; height:38px}
+.pnpc{position:absolute; left:-2px; bottom:-1px; font:900 8.5px/1 var(--f-body); font-style:normal; letter-spacing:.04em; color:#FFE27A; background:var(--ink); padding:2px 3px; border-radius:5px}
+.pchip .pct{display:flex; flex-direction:column; min-width:0; line-height:1.05}
+.pchip .pname{font:900 11.5px var(--f-body); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:86px}
+.pchip .pmoney{font:800 16px var(--f-display); font-variant-numeric:tabular-nums; line-height:1.05; transition:color .2s}
+.pchip.up .pmoney{color:#1E8A4C}.pchip.down .pmoney{color:#D03A2F}
+.picons{display:flex; gap:2px; flex:none}
+.picons:empty{display:none}
+.ico{display:block; width:15px; height:15px; font-style:normal}
+.ico svg{display:block; width:100%; height:100%}
+.ico.jail{color:#3B8FC2}.ico.pelni{color:#2C4F9E}.ico.threat{color:var(--danger); animation:blink 1s steps(2) infinite}.ico.baliho{color:#C98F00}.ico.broke{color:#555}
+.pchip.active{transform:translateY(1px) scale(1.06); box-shadow:inset 0 -4px 0 var(--pc), 0 0 0 3px #FFE27A, 0 3px 0 var(--panel-edge), 0 8px 18px rgba(10,40,70,.35)}
+.pchip.out{filter:grayscale(1); opacity:.5}
 @keyframes blink{50%{opacity:.55}}
+/* players detail panel */
+#players .sheet{width:min(760px,100%); gap:12px}
+.pl-head{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.pl-head .eyebrow{color:var(--ink-soft)}
+.pl-list{display:flex; flex-direction:column; gap:8px}
+.plrow{display:grid; grid-template-columns:48px minmax(0,1fr) auto; gap:12px; align-items:center; background:#fff; border-radius:14px; padding:8px 12px; box-shadow:inset 5px 0 0 var(--pc)}
+.plrow canvas{width:48px; height:58px}
+.plrow.active{box-shadow:inset 5px 0 0 var(--pc), 0 0 0 3px #FFE27A}
+.plrow.out{opacity:.55; filter:grayscale(.8)}
+.plmain{min-width:0; display:flex; flex-direction:column; gap:2px}
+.plname{font:900 16px var(--f-body)}
+.plchar{font-size:13px; color:var(--ink-soft)}
+.plpsv{font-size:12.5px; color:#8A7560}.plpsv b{color:#2C7A55}
+.pltag{font:900 10.5px var(--f-body); letter-spacing:.05em; text-transform:uppercase; color:#FFE27A; background:var(--ink); padding:2px 7px; border-radius:99px; vertical-align:2px}
+.pltag.cur{background:#FFE27A; color:var(--ink)}
+.plst{display:flex; flex-wrap:wrap; gap:4px; margin-top:2px}
+.plchip{display:inline-flex; align-items:center; gap:4px; font:800 12px var(--f-body); padding:2px 8px 2px 5px; border-radius:99px; background:#F3EBDA}
+.plchip svg{width:13px; height:13px}
+.plchip.jail{color:#2D78A8}.plchip.pelni{color:#2C4F9E}.plchip.threat{color:#B8322A}.plchip.baliho{color:#9A6A00}.plchip.broke{color:#555}
+.plok{font-size:12px; color:#2E9E5B; font-weight:900}
+.plnum{display:flex; flex-direction:column; align-items:flex-end; gap:1px; text-align:right}
+.plmoney{font:800 18px var(--f-display); font-variant-numeric:tabular-nums}
+.plassets,.plprops{font-size:12px; color:var(--ink-soft); font-variant-numeric:tabular-nums}
+/* passive banner */
+#psvBanner{position:absolute; left:50%; top:10px; transform:translateX(-50%); z-index:6; display:flex; align-items:center; gap:10px; max-width:min(520px, 92%); box-sizing:border-box; background:linear-gradient(#FFFDF4,#FFF1CC); border-radius:16px; padding:4px 16px 4px 6px; box-shadow:0 4px 0 #E9C46A, 0 10px 24px rgba(10,40,70,.3); pointer-events:none}
+#psvBanner canvas{width:40px; height:48px; flex:none}
+#psvBanner .ptx{display:flex; flex-direction:column; min-width:0; line-height:1.2}
+#psvBanner .pk{font:900 10.5px var(--f-body); letter-spacing:.08em; text-transform:uppercase; color:#2C7A55}
+#psvBanner b{font:800 17px var(--f-display)}
+#psvBanner span.pt{font-size:13.5px; color:var(--ink-soft)}
+#psvBanner.run{animation:psvIn .45s cubic-bezier(.2,.9,.3,1.3) both}
+@keyframes psvIn{from{transform:translate(-50%,-30px) scale(.9); opacity:0}}
+#stage.psv #toasts{top:74px}
+/* lobby player slots */
+.slots{display:flex; flex-direction:column; gap:8px}
+.slot{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.slot-n{font:900 15px var(--f-body); width:24px}
+.slot .seg{flex:1 1 180px}
+.slot .seg button{min-height:44px; font-size:16px}
+.slot .slot-lvl{flex:1.4 1 220px}
+#actionbar .hint.npc{background:rgba(74,52,38,.92); color:#FFE27A; box-shadow:0 4px 0 rgba(0,0,0,.25)}
+#cine.done{cursor:pointer}
+#stage.storyhold #actionbar,#stage.storyhold #camBtn{visibility:hidden}
+#cineSkip.done{background:linear-gradient(#FFD34D, var(--gold)); box-shadow:0 5px 0 var(--gold-deep), 0 9px 16px rgba(20,40,60,.28), inset 0 2px 0 rgba(255,255,255,.65); animation:npcpk .6s ease-in-out infinite alternate}
 
 #actionbar{position:absolute; left:50%; bottom:max(16px, env(safe-area-inset-bottom, 0px)); transform:translateX(-50%); display:flex; gap:10px; flex-wrap:wrap; justify-content:center; width:max-content; max-width:92%; z-index:3}
 #actionbar .hint{background:rgba(255,248,236,.95); padding:10px 16px; border-radius:var(--r-md); font-weight:900; box-shadow:0 4px 0 var(--panel-edge)}
@@ -170,28 +222,27 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
   .overlay{padding:8px}
   .overlay .sheet{padding:14px 18px; gap:10px; max-height:calc(100vh - 16px)}
   .sheet h2{font-size:22px}
-  #handoff .sheet{flex-direction:row; flex-wrap:wrap; justify-content:center; column-gap:18px; width:min(560px,100%)}
-  #handoff canvas{width:96px; height:118px}
-  #handoff h2{font-size:26px}
-  .ho-char{font-size:15px}
-  #handoff .eyebrow{width:100%}
-  #modal.compact{padding:8px max(10px, env(safe-area-inset-right, 0px)) 8px 10px; align-items:flex-start}
   .toast{font-size:13px; padding:6px 12px}
   #toasts{top:4px}
-  #modal.compact .sheet{width:min(340px, 46vw); padding:10px 14px; gap:6px; max-height:calc(100vh - 16px)}
-  #modal.compact .modal-top canvas{display:none}
-  body:has(#modal:not([hidden])) #camBtn{visibility:hidden}
-  #modal.compact .sheet h2{font-size:18px}
-  #modal.compact .btn{min-height:42px; font-size:15px; padding:6px 12px}
-  #modal.compact .facts{font-size:13px; gap:2px 10px}
-  #modal.compact .wallet{font-size:12px}
+  #game{gap:4px}
+  .pchip{height:38px; padding:2px 7px 2px 3px; gap:5px}
+  .pchip .pav canvas{width:26px; height:32px}
+  .pchip .pname{font-size:10.5px; max-width:68px}
+  .pchip .pmoney{font-size:14px}
+  #topbar .btn.small{min-height:38px; padding:4px 12px; font-size:14px}
+  #players .sheet{width:min(720px,100%)}
+  .plrow{grid-template-columns:40px minmax(0,1fr) auto; padding:5px 10px; gap:10px}
+  .plrow canvas{width:40px; height:48px}
+  #psvBanner{top:6px}
+  #stage.psv #toasts{top:58px}
+  .slot{gap:6px}
+  .slot .seg button{min-height:40px; font-size:15px}
   .btn{min-height:44px}
   #actionbar{bottom:max(8px, env(safe-area-inset-bottom, 0px)); max-width:calc(100% - 190px)}
   #camBtn{bottom:max(8px, env(safe-area-inset-bottom, 0px))}
 }
 @media (prefers-reduced-motion: reduce){.rot-phone{animation:none; transform:rotate(-90deg)}}
 .wallet.rentpaid{background:#FDECEA; color:#A52A1E; font-weight:800; padding:8px 12px; border-radius:12px}
-.ho-char{display:block; font:800 20px var(--f-body); color:#8A7560; margin-top:6px; letter-spacing:0}
 @media (max-width:620px){.srow{flex-wrap:wrap}.sacts{width:100%; justify-content:flex-end}}
 #toasts{position:absolute; top:10px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; gap:6px; align-items:center; z-index:5; pointer-events:none; width:min(460px, 90%)}
 .toast{background:rgba(255,248,236,.97); color:var(--ink); padding:8px 14px; border-radius:var(--r-sm); font-weight:800; font-size:15px; box-shadow:0 4px 0 var(--panel-edge), 0 6px 16px rgba(0,0,0,.2); text-align:center; animation:tin .25s ease-out}
@@ -206,19 +257,28 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
 .modal-top{display:flex; gap:14px; align-items:center}
 .modal-top canvas{width:150px; height:130px; flex:none}
 .eyebrow{font-size:12px; text-transform:uppercase; letter-spacing:.1em; font-weight:900}
-.facts{display:grid; grid-template-columns:auto 1fr; gap:4px 14px; font-size:15px}
+.facts{display:grid; grid-template-columns:auto 1fr; gap:4px 14px; font-size:15px; margin:0}
 .facts dt{color:var(--ink-soft); font-weight:800}
 .facts dd{margin:0; font-weight:900; font-variant-numeric:tabular-nums}
 .opts{display:flex; flex-direction:column; gap:12px}
-#modal.compact{background:transparent; align-items:flex-end; justify-content:flex-end; pointer-events:none; padding:0 max(14px, env(safe-area-inset-right, 0px)) max(92px, calc(env(safe-area-inset-bottom, 0px) + 92px)) 14px}
-#modal.compact .sheet{pointer-events:auto; width:min(380px, 92vw); padding:16px 18px; gap:10px; border-radius:22px; animation:sheetIn .28s cubic-bezier(.2,.9,.3,1.15) both}
-#modal.compact .sheet h2{font-size:22px}
+/* prompt card: small, top-left under the player bar (top-right when the token is there) */
+#modal.compact{background:transparent; align-items:flex-start; justify-content:flex-start; pointer-events:none; padding:var(--mtop,72px) 0 0 max(12px, env(safe-area-inset-left, 0px))}
+#modal.compact.right{justify-content:flex-end; padding-left:0; padding-right:max(12px, env(safe-area-inset-right, 0px))}
+#modal.compact .sheet{pointer-events:auto; width:300px; max-height:calc(100% - var(--mtop,72px) - 10px); padding:12px 14px; gap:8px; border-radius:20px; animation:sheetIn .28s cubic-bezier(.2,.9,.3,1.15) both}
+#modal.compact .sheet h2{font-size:19px}
 #modal.compact .modal-top{gap:10px}
-#modal.compact .modal-top canvas{width:96px; height:84px}
-#modal.compact .opts{gap:8px}
-#modal.compact .btn{min-height:48px; font-size:17px; padding:8px 16px}
-#modal.compact .wallet{font-size:13px}
-@keyframes sheetIn{from{opacity:0; transform:translateY(24px) scale(.96)}to{opacity:1; transform:none}}
+#modal.compact .modal-top canvas{width:76px; height:66px}
+#modal.compact .opts{gap:7px}
+#modal.compact .btn{min-height:44px; font-size:16px; padding:6px 14px}
+#modal.compact .opt-sub{font-size:12px}
+#modal.compact .facts{font-size:13.5px; gap:2px 12px}
+#modal.compact .wallet{font-size:12.5px}
+#modal.npcturn .sheet{pointer-events:none}
+body:has(#modal.compact.right:not([hidden])) #camBtn{visibility:hidden}
+#modal.npcturn .sheet::before{content:'NPC memilih...'; align-self:flex-start; font:900 11px var(--f-body); letter-spacing:.08em; text-transform:uppercase; color:#fff; background:var(--ink); padding:2px 8px; border-radius:99px}
+.btn.npcpick{outline:4px solid #2E9E5B; outline-offset:2px; animation:npcpk .35s ease-in-out 2 alternate}
+@keyframes npcpk{to{transform:scale(1.04)}}
+@keyframes sheetIn{from{opacity:0; transform:translateY(-14px) scale(.96)}to{opacity:1; transform:none}}
 @media (prefers-reduced-motion: reduce){#modal.compact .sheet{animation:none}}
 .opt-sub{display:block; font:700 13px var(--f-body); opacity:.75}
 .wallet{font-size:14px; color:var(--ink-soft); font-weight:800}
@@ -228,9 +288,6 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
 .cardface.bad{background:linear-gradient(160deg,#FF7A6B,#D8392E); box-shadow:inset 0 2px 0 rgba(255,255,255,.4), 0 6px 0 #962219}
 .cardface h3{font-size:34px; margin:6px 0}
 .cardface p{font-size:18px; margin:0}
-#handoff .sheet{align-items:center; text-align:center}
-#handoff canvas{width:160px; height:196px}
-#handoff h2{font-size:42px}
 .result-list{display:flex; flex-direction:column; gap:8px}
 .result-row{display:grid; grid-template-columns:28px 44px 1fr auto; gap:10px; align-items:center; background:#fff; border-radius:var(--r-sm); padding:6px 10px}
 .result-row canvas{width:44px; height:54px}
@@ -244,6 +301,22 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
   .side{flex-wrap:nowrap; overflow-x:auto; justify-content:flex-start; padding-bottom:6px}
   .pcard{flex:0 0 190px}
   .char-grid{grid-template-columns:repeat(2, minmax(0,1fr))}
+}
+@media (max-height:520px){
+  #modal.compact .sheet{width:248px; padding:9px 11px; gap:5px; border-radius:16px}
+  #modal.compact .modal-top canvas{display:none}
+  #modal.compact .sheet h2{font-size:16px}
+  #modal.compact .eyebrow{font-size:10px}
+  #modal.compact .btn{min-height:32px; font-size:13.5px; line-height:1.1; padding:3px 8px; border-radius:11px; box-shadow:0 3px 0 var(--gold-deep), inset 0 2px 0 rgba(255,255,255,.6)}
+  #modal.compact .btn.ghost{box-shadow:0 3px 0 #CDB68A, inset 0 2px 0 #fff}
+  #modal.compact .btn.red{box-shadow:0 3px 0 #A92E25, inset 0 2px 0 rgba(255,255,255,.4)}
+  #modal.compact .btn.small{min-height:28px; font-size:13px}
+  #modal.compact .opt-sub{font-size:10.5px; line-height:1.15}
+  #modal.compact .opts{gap:5px}
+  #modal.compact .facts{font-size:11.5px; gap:0 8px}
+  #modal.compact .wallet{font-size:10.5px; line-height:1.25}
+  #modal.compact .wallet.rentpaid{padding:3px 8px}
+  #modal.compact.npcturn .sheet::before{font-size:9.5px}
 }
 @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} }
 </style>
@@ -265,6 +338,7 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
       <h2>Siapkan permainan</h2>
       <div class="field"><span class="label">Tema</span><div class="seg" id="segTheme"></div><span class="wallet" id="themeHint"></span></div>
       <div class="field"><span class="label">Jumlah pemain</span><div class="seg" id="segCount"></div></div>
+      <div class="field"><span class="label">Siapa yang main</span><div class="slots" id="slotList"></div><span class="wallet" id="slotHint"></span></div>
       <div class="field"><span class="label">Batas ronde</span><div class="seg" id="segLimit"></div></div>
       <div class="field"><span class="label">Modal awal</span><div class="seg" id="segMoney"></div><label class="wallet" for="moneyInput">Atau atur sendiri (Rp)</label><input type="text" inputmode="numeric" id="moneyInput" autocomplete="off"></div>
       <div class="field"><span class="label">Cara bangun</span><div class="seg" id="segBuild"></div><span class="wallet" id="buildHint"></span></div>
@@ -284,29 +358,28 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
   </section>
 
   <section id="game" hidden>
-    <div id="topbar"><div class="side" id="sideL"></div><button class="btn ghost small" id="speedBtn" aria-label="Kecepatan game">1x</button><button class="btn ghost small" id="menuBtn">Menu</button></div>
+    <div id="topbar"><div class="side" id="sideL" role="button" tabindex="0" aria-label="Lihat detail semua pemain"></div><button class="btn ghost small" id="speedBtn" aria-label="Kecepatan game">1x</button><button class="btn ghost small" id="menuBtn">Menu</button></div>
     <div id="stage">
       <canvas id="board"></canvas>
       <div id="toasts"></div>
+      <div id="psvBanner" hidden aria-live="polite"><canvas id="psvFace"></canvas><div class="ptx"><span class="pk">Pasif</span><b id="psvName">Pasif</b><span class="pt" id="psvText"></span></div></div>
       <div id="actionbar"></div>
       <button class="btn ghost small" id="camBtn">Lihat semua</button>
     </div>
   </section>
 </div>
 
-<div class="overlay" id="handoff" hidden>
-  <div class="sheet">
-    <span class="eyebrow" id="hoRound">Ronde 1</span>
-    <canvas id="hoFace" width="320" height="392"></canvas>
-    <h2 id="hoName">Giliran</h2>
-    <button class="btn" id="hoGo">Ayo jalan!</button>
-  </div>
-</div>
 <div id="ott" hidden><div class="siren"></div><div class="bar t"></div><div class="bar b"></div><div class="flash"></div><div class="center"><span class="tag">BREAKING NEWS</span><canvas id="ottFace" width="340" height="416"></canvas><span class="ticker" id="ottName">OTT!</span></div></div>
 <div id="rotate" aria-live="polite"><div class="rot-phone"><i></i></div><h2>Putar HP-mu</h2><p>Kepulauan Cuan dimainkan miring (landscape).</p></div>
 <div id="cine" hidden><canvas id="cineCv"></canvas><div id="cineBar"><i id="cineProg"></i></div><button type="button" class="btn ghost" id="cineSkip">Skip &rsaquo;</button></div>
 <div id="news" hidden><div class="card"><span class="eyebrow" id="newsEyebrow" style="color:#E2483D">Kabar Nusantara</span><h3 id="newsTitle">Kabar</h3><p id="newsText"></p></div></div>
 <div class="overlay" id="modal" hidden><div class="sheet" id="modalBody"></div></div>
+<div class="overlay" id="players" hidden>
+  <div class="sheet">
+    <div class="pl-head"><div><span class="eyebrow" id="plRound">Ronde 1</span><h2>Para Pemain</h2></div><button class="btn ghost small" id="plClose">Tutup</button></div>
+    <div class="pl-list" id="plList"></div>
+  </div>
+</div>
 <div class="overlay" id="pause" hidden>
   <div class="sheet">
     <h2>Istirahat dulu</h2>
@@ -315,13 +388,16 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
       <button class="btn" id="pResume">Lanjut main</button>
       <button class="btn ghost" id="pMusic">Musik: Nyala</button>
       <button class="btn ghost" id="pSound">Efek suara: Nyala</button>
+      <button class="btn ghost" id="pCam">Kamera: Dinamis</button>
       <button class="btn ghost" id="pStudio">Sound Studio</button>
       <button class="btn ghost" id="pRules">Aturan singkat</button>
       <div class="rules" id="rulesBox" hidden>
         <p><b>Kota:</b> beli tanah, lalu bangun Rumah, Villa, Gedung. Di mode Bertahap, tiap kunjungan cuma naik satu level. Landmark baru bisa setelah lewat Start sekali, dan Landmark kebal Takeover.</p>
         <p><b>Sewa:</b> kuasai satu region penuh, sewanya x2. Pesta Rakyat bikin satu kota x2, dan kalau kamu merayakan kota yang sama lagi naik jadi x3 lalu x4. Total kelipatan sewa maksimal x6.</p>
         <p><b>Takeover:</b> mendarat di kota lawan, bayar sewa, lalu boleh ambil alih seharga 2x total investasinya.</p>
-        <p><b>Menang:</b> lawan bangkrut semua, 3 region penuh, 1 jalur penuh, 4 wisata, atau aset terbesar saat ronde habis.</p>
+        <p><b>Konsesi dan Transportasi:</b> wisata, PLN, dan PDAM satu jenis (Konsesi, ada 6). Makin banyak yang kamu punya, makin mahal sewanya. Transportasi juga begitu.</p>
+        <p><b>Politik:</b> tiap beli, bangun, atau gusur kena pajak transaksi 2% ke Kas Pungli. Tarif pungli dan parkir naik pelan-pelan selama game.</p>
+        <p><b>Menang:</b> lawan bangkrut semua, 3 region penuh, 1 jalur penuh, 5 konsesi, atau aset terbesar saat ronde habis.</p>
       </div>
       <button class="btn red" id="pQuit">Keluar ke menu</button>
     </div>

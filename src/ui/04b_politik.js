@@ -39,6 +39,7 @@ function buildingPol(i,cu,cv,z,lvl,own){
 }
 function decoWisataPol(d,cu,cv,z,now){
   var b=iso(cu,cv,z);
+  if(d==='pln'||d==='pdam')return decoUtility(d,cu,cv,z,now);
   if(d==='raja'){ell(b.x,b.y,TW*0.34,TH*0.3,'#1F7FA8');ell(b.x,b.y-TH*0.02,TW*0.3,TH*0.24,'#3FA3CC');
     box(cu,cv,0.3,0.3,TH*0.4,z,'#8C8C96','#6A6A75');box(cu,cv,0.36,0.36,TH*0.08,z+TH*0.4,'#F2C230');var tw=iso(cu+0.1,cv-0.1,z+TH*0.48),tt=iso(cu+0.1,cv-0.1,z+TH*1.3);
     g.strokeStyle='#E2483D';g.lineWidth=lw(0.02);g.beginPath();g.moveTo(tw.x-TW*0.05,tw.y);g.lineTo(tt.x,tt.y);g.lineTo(tw.x+TW*0.05,tw.y);g.stroke();var fl=0.6+0.4*Math.sin(now/120);ell(tt.x,tt.y-TH*0.08,TW*0.03*fl,TH*0.1*fl,'#FF8A1F');ell(tt.x,tt.y-TH*0.06,TW*0.015,TH*0.05,'#FFE27A');}

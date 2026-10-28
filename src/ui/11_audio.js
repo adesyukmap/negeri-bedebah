@@ -21,7 +21,8 @@ function syncMusic(){
   if(!S||$('game').hidden)return setMusic('menu');
   if(S.phase==='over')return setMusic('win');
   var tense=Object.keys(S.threats||{}).some(function(k){return S.threats[k];})||(S.turnLimit&&S.round>S.turnLimit-3);
-  setMusic(S.theme==='politik'?(typeof TRACKS!=='undefined'&&TRACKS.politik&&!tense?'politik':'tense'):(tense?'tense':'santai'));
+  var calm=(typeof TRACKS!=='undefined'&&TRACKS.politik)?'politik':'calm';
+  setMusic(tense?'tense':(S.theme==='politik'?calm:'santai'));
 }
 function tone(f,dur,type,vol,f2,delay){if(!AC||muted)return;var t=AC.currentTime+(delay||0),o=AC.createOscillator(),gn=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);gn.gain.setValueAtTime(0.0001,t);gn.gain.exponentialRampToValueAtTime(vol||0.2,t+0.01);gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(gn);gn.connect(AC.destination);o.start(t);o.stop(t+dur+0.02);}
 function noise(dur,vol,delay,hp){if(!AC||muted)return;var t=AC.currentTime+(delay||0),s=AC.createBufferSource(),f=AC.createBiquadFilter(),gn=AC.createGain();s.buffer=noiseBuf;f.type='bandpass';f.frequency.value=hp||1800;gn.gain.setValueAtTime(vol,t);gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);s.connect(f);f.connect(gn);gn.connect(AC.destination);s.start(t);s.stop(t+dur);}
@@ -75,5 +76,9 @@ function synthPlay(n,arg){switch(n){
   case 'broke':tone(330,0.35,'sawtooth',0.08,311);tone(294,0.35,'sawtooth',0.08,277,0.35);tone(262,0.7,'sawtooth',0.08,196,0.7);break;
   case 'alarm':for(var a=0;a<4;a++)tone(1200,0.07,'square',0.06,null,a*0.14);break;
   case 'win':[523,659,784,1047].forEach(function(f,i){tone(f,0.22,'triangle',0.1,null,i*0.12);});break;
-  case 'tap':tone(700,0.05,'sine',0.08);break;}}
+  case 'tap':tone(700,0.05,'sine',0.08);break;
+  case 'zap':for(var z=0;z<5;z++){noise(0.05,0.35,z*0.06,4500);tone(1800-z*200,0.05,'sawtooth',0.07,300,z*0.06);}tone(60,0.35,'square',0.08,40,0.05);break;
+  case 'construct':[0,0.22,0.44].forEach(function(d){tone(900,0.04,'square',0.06,null,d);noise(0.06,0.35,d,1500);tone(160,0.1,'triangle',0.18,100,d+0.02);});noise(0.35,0.15,0.7,800);break;
+  case 'omon':for(var om=0;om<7;om++)tone(180+Math.random()*90,0.11,'sawtooth',0.06,150+Math.random()*80,om*0.13);break;
+  case 'tease':tone(520,0.12,'square',0.07,700);tone(700,0.14,'square',0.07,500,0.14);tone(480,0.22,'triangle',0.08,820,0.3);break;}}
 

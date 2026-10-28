@@ -1,16 +1,18 @@
-/* ---------- cinematic overlays (10 s, skippable), quips, world actors, convoy ---------- */
+/* ---------- cinematic overlays (10 s scene, skippable; holds on last frame until tapped), quips, world actors, convoy ---------- */
 var SPEED=1;try{SPEED=Math.max(1,Math.min(3,+localStorage.getItem('kc-speed')||1));}catch(e){}
 function setSpeed(v){SPEED=v;try{localStorage.setItem('kc-speed',String(v));}catch(e){}var b=$('speedBtn');if(b)b.textContent=v+'x';}
 var CINE={open:false,q:[],cur:null,t0:0,el:0,last:0},CINE_DUR=10000,QUIPS=[],ACTORS=[],PEND=[],CONVOY=null;
 function cineBusy(){return CINE.open||CINE.q.length>0||!!CONVOY||(typeof storyBusy==='function'&&storyBusy());}
 function queueCine(kind,data){CINE.q.push({kind:kind,data:data||{}});if(!CINE.open)nextCine();}
-function nextCine(){var c=CINE.q.shift();if(!c){closeCineUI();return;}CINE.cur=c;CINE.open=true;CINE.t0=performance.now();CINE.el=0;CINE.last=CINE.t0;CINE.fired={};CINE.lastType=0;$('cine').hidden=false;refresh();requestAnimationFrame(cineFrame);}
+function nextCine(){var c=CINE.q.shift();if(!c){closeCineUI();return;}CINE.cur=c;CINE.open=true;CINE.t0=performance.now();CINE.el=0;CINE.last=CINE.t0;CINE.fired={};CINE.lastType=0;CINE.done=false;CINE.doneAt=0;var sk=$('cineSkip');if(sk){sk.innerHTML='Skip &rsaquo;';sk.classList.remove('done');}$('cine').hidden=false;$('cine').classList.remove('done');refresh();requestAnimationFrame(cineFrame);}
 function endCine(){if(!CINE.open)return;var c=CINE.cur;CINE.open=false;CINE.cur=null;if(c&&c.data.onEnd)try{c.data.onEnd(c.data);}catch(e){}
   if(CINE.q.length)nextCine();else closeCineUI();}
+function cineFinished(now){CINE.done=true;CINE.doneAt=now;var sk=$('cineSkip');if(sk){sk.textContent='Tutup';sk.classList.add('done');}$('cine').classList.add('done');}
+function cineTap(){if(CINE.open&&CINE.done){play('tap');endCine();}}
 function closeCineUI(){$('cine').hidden=true;holdMove=performance.now()+450;refresh();}
 function once(key,fn){if(!CINE.fired[key]){CINE.fired[key]=1;fn();}}
 function cineFrame(now){if(!CINE.open)return;requestAnimationFrame(cineFrame);
-  CINE.el+=Math.min(100,now-CINE.last)*SPEED;CINE.last=now;var el=CINE.el;if(el>=CINE_DUR){endCine();return;}$('cineProg').style.width=(el/CINE_DUR*100)+'%';
+  CINE.el+=Math.min(100,now-CINE.last)*SPEED;CINE.last=now;if(CINE.el>=CINE_DUR){CINE.el=CINE_DUR;if(!CINE.done)cineFinished(now);}var el=CINE.el;$('cineProg').style.width=(el/CINE_DUR*100)+'%';
   var cv2=$('cineCv'),w=window.innerWidth,h=window.innerHeight,d=Math.min(2,window.devicePixelRatio||1);
   if(cv2.width!==Math.round(w*d)||cv2.height!==Math.round(h*d)){cv2.width=Math.round(w*d);cv2.height=Math.round(h*d);}
   var c=cv2.getContext('2d'),old=g;c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);g=c;g.lineJoin='round';g.lineCap='round';
@@ -76,7 +78,7 @@ var CINE_SCENES={
     var tShake=t<6.6?Math.sin(now/40)*s*0.008:0;drawChar(p.char,tokX+tShake,fy,s,p.color,{vest:true,expr:t<6.6?(t>2.8?'sad':'shock'):null});
     var fs=Math.max(16,Math.min(w*0.022,h*0.036));
     if(t>0.8)once('host',function(){play('host');});
-    if(t>0.8&&t<9.6)speech(hostX+s*0.15,fy-s*1.05,typed('Bapak ketangkap kasus apa?',t,0.8,26),fs,w*0.3,{anchor:'l',W:w});
+    if(t>0.8&&t<6.6)speech(hostX+s*0.15,fy-s*1.05,typed((isFemale(p.char)?'Ibu':'Bapak')+' ketangkap kasus apa?',t,0.8,26),fs,w*0.3,{anchor:'l',W:w});
     if(t>2.8&&t<6.6)speech(tokX-s*0.1,fy-s*1.05,'"'+typed(e.caseText||'Saya cuma lewat, Mbak.',t,2.8,30)+'"',fs,w*0.34,{anchor:'r',W:w});
     if(t>=6.6){var pp=Math.max(0.3,easeBack((t-6.6)/0.35));speech(tokX,fy-s*1.05,'Saya akan lawan!',fs*1.35*pp,w*0.4,{bg:'#FFE27A',stroke:'#C62828',weight:900,W:w});once('lw',function(){play('slam',0.4);play('quip:lawan');});}
     flashes(w,h,t,11,6);

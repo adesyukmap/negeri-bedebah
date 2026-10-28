@@ -13,7 +13,7 @@ function drawTile(i,now){
   if(S.festival===i){g.save();g.globalAlpha=0.3+0.2*Math.sin(now/200);flatRect(r.u0+0.05,r.v0+0.05,r.u1-0.05,r.v1-0.05,h+0.5,'#FFD23F');g.restore();}
   var fsz=zn.corner?0.22:0.19,nm=tileName(i);
   if(buyable(i)){
-    var tag,bg;if(st.owner===null){tag=fmtTag(t.type==='city'?buyCost(i,0):assetPrice(i));bg=t.type==='city'?shade(REGIONS[t.region].color,-0.05):col.side;}else{tag=t.type==='utility'?('Dadu x'+short(UTIL_MUL[countType(st.owner,'utility')])):'Sewa '+short(rentOf(i));bg=S.players[st.owner].color;}
+    var tag,bg;if(st.owner===null){tag=fmtTag(t.type==='city'?buyCost(i,0):assetPrice(i));bg=t.type==='city'?shade(REGIONS[t.region].color,-0.2):col.side;}else{tag='Sewa '+short(rentOf(i));bg=S.players[st.owner].color;}
     var du=zn.axis==='u'?0:1,dv=zn.axis==='u'?1:0;
     isoText(nm,zn.lu-du*0.11,zn.lv-dv*0.11,h,zn.axis,fsz,0.9,INK);
     isoText(tag,zn.lu+du*0.15,zn.lv+dv*0.15,h,zn.axis,0.14,0.8,'#fff',{pill:bg});
@@ -26,7 +26,7 @@ function drawTile(i,now){
     var own=S.players[st.owner].color,b2=iso(zn.bu,zn.bv,h),tk=FX.take[i],bf=FX.build[i],wob=0,sx=1,sy=1,hide=false;
     if(off<0)wob=Math.sin(now/40)*TW*0.012;
     if(tk){var tt=(now-tk.t0)/TK_DUR;if(tt<0)own=tk.fromColor;if(tt>=0&&tt<1){var psh=(tt>0.4&&tt<0.5)||(tt>0.55&&tt<0.66);if(tt<0.66){own=tk.fromColor;wob=Math.sin(now/25)*TW*0.02*(psh?2.5:0.4);if(psh)sx=0.96;}else if(tt<0.78){hide=true;}else{var pt=(tt-0.78)/0.22;sy=pt<0.6?pt/0.6*1.12:1.12-0.12*(pt-0.6)/0.4;}}}
-    if(bf&&!tk){var bt=(now-bf.t0)/900;if(bt>=0&&bt<1){if(bt<0.35){scaffold(zn.bu,zn.bv,h,TH*0.9,bt/0.35);dust(b2.x,b2.y,TW*0.25,bt/0.35);hide=bf.level>0;}else{var pt2=(bt-0.35)/0.65;sy=pt2<0.55?0.3+pt2/0.55*0.82:1.12-0.12*(pt2-0.55)/0.45;sx=1+0.06*Math.sin(pt2*Math.PI);}}}
+    var bs=bf&&!tk?buildPhase(bf,now):null;if(bs){buildUnder(i,zn,h,bf,bs,now);hide=hide||bs.hide;sx=bs.sx;sy=bs.sy;}else if(bf&&now-bf.t0>(bf.dur||900)+200)delete FX.build[i];
     if(!hide){g.save();g.translate(b2.x+wob,b2.y);g.scale(sx,sy);g.translate(-b2.x,-b2.y);
       if(t.type==='city')building(i,zn.bu,zn.bv,h,st.level,own); else if(t.type==='wisata')wisataGate(zn.bu,zn.bv,h,own,zn.axis); else {var fq=iso(zn.bu-0.34,zn.bv+0.3,h);tinyFlag(fq.x,fq.y,TH*0.9,own);}
       g.restore();}

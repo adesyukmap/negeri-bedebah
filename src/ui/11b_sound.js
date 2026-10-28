@@ -1,11 +1,11 @@
 /* ---------- sound layer: your clips (Sound Studio) > built-in samples > synth ---------- */
 var SLOT_GROUPS=[
-  {id:'char',name:'Karakter',hint:'Suara giliran: diputar saat layar "Giliran kamu" muncul.',slots:function(){return CHARS.map(function(c){return {k:'voice:'+c.id,label:c.name,sub:'Suara giliran',char:c.id};});}},
+  {id:'char',name:'Karakter',hint:'Suara giliran: diputar saat giliran pindah ke karakter ini.',slots:function(){return CHARS.map(function(c){return {k:'voice:'+c.id,label:c.name,sub:'Suara giliran',char:c.id};});}},
   {id:'quip',name:'Celetukan & tokoh',hint:'Dialog tokoh fiktif di dalam game. Kosong = tanpa suara.',slots:function(){return [
     {k:'quip:lawan',label:'"Saya akan lawan!"',sub:'Token setelah OTT'},{k:'quip:sorry',label:'"Sorry ye!"',sub:'Setelah gusur'},
     {k:'quip:repot',label:'"Gitu aja kok repot!"',sub:'Pemilik dapat sewa besar'},{k:'quip:asing',label:'"Ini ulah antek-antek asing!"',sub:'Proyek mangkrak'},
-    {k:'host',label:'Mbak Host bertanya',sub:'"Bapak ketangkap kasus apa?"'},{k:'preman',label:'Preman pungli',sub:'"Uang keamanan, Bos!"'},
-    {k:'tukang',label:'Tukang parkir',sub:'"2rebu ga bikin lo miskin, boss!"'},{k:'mafia',label:'Bos Mafia lempar dadu',sub:'Tawa atau teriakan saat melempar'},
+    {k:'host',label:'Mbak Host bertanya',sub:'"Bapak/Ibu ketangkap kasus apa?"'},{k:'preman',label:'Preman pungli',sub:'"Uang keamanan, Bos!"'},
+    {k:'tukang',label:'Tukang parkir',sub:'"2rebu ga bikin lo miskin, boss!" (tarif ikut naik)'},{k:'mafia',label:'Bos Mafia lempar dadu',sub:'Tawa atau teriakan saat melempar'},
     {k:'mic',label:'Orasi kampanye',sub:'Awal adegan Kampanye Akbar'}];}},
   {id:'event',name:'Event',hint:'Ganti efek suara bawaan. Hapus untuk kembali ke bawaan.',slots:function(){return [
     {k:'tap',label:'Tombol'},{k:'rattle',label:'Kocok dadu'},{k:'slam',label:'Dadu mendarat'},{k:'hop',label:'Token melangkah'},
@@ -13,7 +13,7 @@ var SLOT_GROUPS=[
     {k:'card',label:'Ambil kartu'},{k:'coins',label:'Koin'},{k:'pay',label:'Bayar'},{k:'siren',label:'Sirene OTT'},{k:'sting',label:'Sting Breaking News'},{k:'news',label:'Breaking news (jingle)'},
     {k:'typing',label:'Teks diketik'},{k:'festival',label:'Kampanye / pesta'},{k:'fajar',label:'Serangan fajar'},{k:'quake',label:'Gempa'},
     {k:'fire',label:'Hutan terbakar'},{k:'cough',label:'Batuk'},{k:'splash',label:'Gorong-gorong / air'},{k:'pop',label:'Muncul'},
-    {k:'appeal',label:'Sidang banding'},{k:'uuk',label:'Orangutan senang'},{k:'birds',label:'Burung panik / rangkong'},{k:'plane',label:'Pesawat pemadam'},{k:'rain',label:'Hujan'},{k:'treesFall',label:'Pohon tumbang'},{k:'laugh',label:'Tawa Mafia Sawit'},{k:'horn',label:'Klakson truk'},{k:'ribbon',label:'Gunting pita + tepuk tangan'},{k:'windCreak',label:'Angin dan crane berderit'},{k:'flood',label:'Air banjir'},{k:'pile',label:'Palu tiang pancang'},{k:'bad',label:'Sial'},{k:'broke',label:'Bangkrut'},{k:'win',label:'Menang'}];}}];
+    {k:'appeal',label:'Sidang banding'},{k:'uuk',label:'Orangutan senang'},{k:'birds',label:'Burung panik / rangkong'},{k:'plane',label:'Pesawat pemadam'},{k:'rain',label:'Hujan'},{k:'treesFall',label:'Pohon tumbang'},{k:'laugh',label:'Tawa Mafia Sawit'},{k:'horn',label:'Klakson truk'},{k:'ribbon',label:'Gunting pita + tepuk tangan'},{k:'windCreak',label:'Angin dan crane berderit'},{k:'flood',label:'Air banjir'},{k:'pile',label:'Palu tiang pancang'},{k:'zap',label:'Listrik nyetrum (PLN)'},{k:'construct',label:'Bangunan berdiri'},{k:'omon',label:'Omon-omon'},{k:'tease',label:'Ledekan setelah gusur'},{k:'bad',label:'Sial'},{k:'broke',label:'Bangkrut'},{k:'win',label:'Menang'}];}}];
 var BUILTIN={sting:'sting',card:'card',typing:'typing',newsType:'keyboard',collapse:'fold',appeal:'tick'};
 var SILENT={host:1,preman:0,tukang:0,mafia:1,mic:0};
 var USER_RAW={},USER_META={},USER_BUF={},SAMPLE_BUF={},PLAYING={},SDB=null;
