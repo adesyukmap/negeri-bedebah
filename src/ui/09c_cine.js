@@ -134,7 +134,7 @@ function newsIcon(id,x,y,r,now){g.save();g.translate(x,y);g.fillStyle='#fff';g.s
 function afterOverlay(fn,extra){PEND.push({fn:fn,ready:null,extra:extra||0});}
 function processPend(now){var clear=!cineBusy()&&$('modal').hidden;for(var i=PEND.length-1;i>=0;i--){var p=PEND[i];if(!clear){p.ready=null;continue;}if(p.ready==null)p.ready=now+800+p.extra;if(now>=p.ready){PEND.splice(i,1);try{p.fn(now);}catch(e){console.error(e);}}}}
 /* quips: fictional characters' satirical one-liners */
-var QUIP_TEXT={sogok:'Hakimnya pengertian banget.',lawan:'Saya akan lawan!',sorry:'Sorry ye!',repot:'Gitu aja kok repot!',asing:'Ini ulah antek-antek asing!'};
+var QUIP_TEXT={mic:'Maaf, mic-nya mati.',sogok:'Hakimnya pengertian banget.',lawan:'Saya akan lawan!',sorry:'Sorry ye!',repot:'Gitu aja kok repot!',asing:'Ini ulah antek-antek asing!'};
 function addQuip(pid,text,dur,key){if(key)play('quip:'+key);QUIPS=QUIPS.filter(function(q){return q.pid!==pid;});QUIPS.push({pid:pid,text:text,t0:performance.now(),dur:dur||2800});}
 function drawQuips(now){QUIPS=QUIPS.filter(function(q){var t=(now-q.t0)/q.dur;if(t>1)return false;if(t<0)return true;if(CONVOY&&CONVOY.pid===q.pid)return true;var tp=tokenPos(q.pid,now),b=iso(tp.u,tp.v,tp.z+TW*0.62),sc=easeBack(Math.min(1,t*q.dur/250));
   g.save();g.globalAlpha=t>0.85?(1-t)/0.15:1;speech(b.x,b.y,q.text,Math.max(13,TW*0.13)*Math.max(0.3,sc),TW*2.4,{W:CW,weight:900,stroke:'#4A3426'});g.restore();return true;});}

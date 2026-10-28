@@ -115,6 +115,9 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
 .char-card:not([disabled]):active{transform:scale(.96)}
 .char-card:focus-visible{outline:3px solid var(--ink)}
 .pick-head{display:flex; align-items:center; gap:12px}
+.pick-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap}.pick-row .label{flex:1}
+.char-card .psv{display:block; font:700 11px var(--f-body); color:#8A7560; line-height:1.25; margin-top:2px}
+.char-card .psv b{color:#2C7A55}
 .dot{width:18px; height:18px; border-radius:50%; box-shadow:inset 0 -3px 0 rgba(0,0,0,.2), 0 2px 0 rgba(0,0,0,.15); flex:none}
 
 /* game */
@@ -233,6 +236,7 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
       <div class="field"><span class="label">Modal awal</span><div class="seg" id="segMoney"></div><label class="wallet" for="moneyInput">Atau atur sendiri (Rp)</label><input type="text" inputmode="numeric" id="moneyInput" autocomplete="off"></div>
       <div class="field"><span class="label">Cara bangun</span><div class="seg" id="segBuild"></div><span class="wallet" id="buildHint"></span></div>
       <div class="field"><span class="label" id="newsLabel">Kabar Nusantara</span><div class="seg" id="segNews"></div><span class="wallet">Tiap 3 ronde ada peristiwa yang mengubah aturan selama satu ronde.</span></div>
+      <div class="field" id="passiveField"><span class="label">Pasif karakter</span><div class="seg" id="segPassive"></div><span class="wallet">Tiap karakter punya satu kemampuan kecil. Mati = semua karakter sama, murni kosmetik.</span></div>
       <div class="row"><button class="btn ghost" id="lobbyBack">Kembali</button><button class="btn" id="lobbyNext">Pilih Karakter</button></div>
     </div>
   </section>
@@ -241,7 +245,7 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
     <div class="sheet">
       <div class="pick-head"><span class="dot" id="pickDot"></span><h2 id="pickTitle">Pemain 1</h2></div>
       <div class="field"><label for="nameInput">Nama</label><input type="text" id="nameInput" maxlength="12" autocomplete="off"></div>
-      <div class="field"><span class="label">Pilih karakter</span><div class="char-grid" id="charGrid"></div></div>
+      <div class="field"><div class="pick-row"><span class="label">Pilih karakter</span><button type="button" class="btn ghost small" id="pickRandom">Acak</button><button type="button" class="btn ghost small" id="pickRandomAll">Acak semua pemain</button></div><div class="char-grid" id="charGrid"></div></div>
       <div class="row"><button class="btn ghost" id="pickBack">Kembali</button></div>
     </div>
   </section>

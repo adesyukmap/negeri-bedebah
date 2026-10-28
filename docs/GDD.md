@@ -576,3 +576,18 @@ Target performa 60 fps di iPad M2 (target device), dan 120 fps kalau layarnya Pr
 - Bos Mafia pakai selempang "MAFIA SAWIT". Dadu putih polos tanpa pinggiran abu.
 - Pojok Start Politik: Gedung Wakil Rakyat (kubah hijau terbelah). Pojok Lapas: Gedung Antirasuah (menara putih berkepala merah) plus rutan. Tanpa logo dan tanpa nama lembaga.
 - Musik Politik sementara pakai track tense sampai Hermes kirim politik_loop. Sting Breaking News pakai synth sampai Hermes kirim sting_breaking. Brief: hermes-office/audio/kepulauan-cuan/BRIEF-stable-audio.md
+
+## 19. Banding (dikerjakan 28 Okt 21.30)
+- Banding turun dari Rp150rb ke Rp100rb (50% bebas). Alasan: di Rp150rb, rata-rata butuh 2 kali coba (sekitar Rp300rb), jadi selalu kalah dari Sogok hakim Rp250rb yang pasti bebas. Di Rp100rb pilihannya jadi adu nyali: hemat tapi untung-untungan, atau mahal tapi pasti.
+
+- Santai: Minta jemput Rp50rb (50%) vs Bayar Rp100rb (pasti).
+
+## 20. Batch 28 Okt 2026 (21.30)
+- Roster per tema. Politik: 21 tokoh satire fiktif (wajah chibi generik, dikenali dari kostum dan props, tanpa nama asli). Santai: 8 karakter lama. Arketipe lama (Pak Jenderal dkk) keluar dari roster.
+- Warna kulit beragam per karakter, tidak dilebih-lebihkan.
+- Pilih karakter: tombol Acak (pemain ini) dan Acak semua pemain.
+- Pasif karakter: opsi lobby (Politik saja), default Mati. Daftar pasif ada di PASSIVES (src/engine.js). Diuji 8000 game per varian: semua karakter di rentang 0,85x sampai 1,16x dari rata-rata, mirip sebaran acak tanpa pasif (0,88x sampai 1,05x). Penyesuaian: Joget Rp10rb, Tidur Siang Rp20rb, Narasumber Rp30rb, Iuran Partai Rp30rb, Prihatin ganti penuh, Ratu Pajak 20%, Pindah Kubu hanya ke kota yang lebih mahal (maks +Rp50rb), Lord ganti dari diskon bangun jadi diskon sewa 15%.
+- Kas Pungli Politik meledak di Rp100rb (Santai tetap Rp1jt).
+
+## 21. Usulan (belum disetujui): siklus event Kas Pungli
+Tiap kas penuh, board pindah tahap: Karhutla, Tanam Sawit, Bangun IKN, Proyek Mangkrak, Tambang Nikel, Reklamasi, Food Estate, Banjir Rob, lalu ulang. Catatan: di ambang Rp100rb siklus habis di tengah game; Rp250rb cukup untuk satu siklus per game.

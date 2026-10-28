@@ -3,7 +3,7 @@ function boot(){
   cv=$('board');ctx=cv.getContext('2d');bindBoard();
   new ResizeObserver(function(){if(!$('game').hidden)layout();}).observe($('stage'));
   window.addEventListener('pointerdown',audioUnlock,{passive:true});
-  var par=$('parade');CHARS.forEach(function(ch,i){var c=document.createElement('canvas');par.appendChild(c);requestAnimationFrame(function(){portrait(c,ch.id,PCOLORS[i%5]);});});
+  var par=$('parade');CHARS_POL.slice(0,11).forEach(function(ch,i){var c=document.createElement('canvas');par.appendChild(c);requestAnimationFrame(function(){portrait(c,ch.id,PCOLORS[i%5]);});});
   var sv=loadSave();if(sv&&sv.phase!=='over'&&sv.players)$('btnResume').hidden=false;
   $('btnNew').onclick=function(){audioUnlock();play('tap');setup.players=[];setup.picking=0;initLobby();show('lobby');};
   $('btnResume').onclick=function(){audioUnlock();var s=loadSave();if(!s)return;S=s;if(S.phase==='resolve')S.phase='end';if(S.phase==='moving'&&!S.anim)S.phase='end';enterGame();};
