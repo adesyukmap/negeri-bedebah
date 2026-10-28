@@ -268,7 +268,7 @@ function landCity(p,i){
   pay(p.id,rent,st.owner);
   if(S.phase==='over')return save();
   var sw=(!p.bankrupt&&st.owner!==null&&st.owner!==p.id)?swapCandidate(p,i):null;
-  if(!p.bankrupt && st.owner!==null && st.owner!==p.id && st.level<4 && (p.money>=takeoverPrice(i)||sw!=null)) return ask({type:'takeover',tile:i,swap:sw});
+  if(!p.bankrupt && st.owner!==null && st.owner!==p.id && st.level<4 && (p.money>=takeoverPrice(i)||sw!=null)) return ask({type:'takeover',tile:i,swap:sw,rent:rent,owner:st.owner});
   finish();
 }
 function landAsset(p,i){

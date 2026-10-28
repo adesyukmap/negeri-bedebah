@@ -7,7 +7,7 @@ function refresh(){
   var ab=$('actionbar');ab.innerHTML='';var p=cur();
   if(typeof cineBusy==='function'&&cineBusy()){$('handoff').hidden=true;return;}
   $('handoff').hidden=S.phase!=='handoff';
-  if(S.phase==='handoff'){var hk=S.round+':'+S.current;if(window._lastHand!==hk){window._lastHand=hk;setTimeout(function(){play('voice:'+cur().char);},350);}$('hoName').textContent='Giliran '+p.name+'!';$('hoRound').textContent=S.turnLimit?('Ronde '+S.round+' dari '+S.turnLimit):('Ronde '+S.round);requestAnimationFrame(function(){portrait($('hoFace'),p.char,p.color);});}
+  if(S.phase==='handoff'){var hk=S.round+':'+S.current;if(window._lastHand!==hk){window._lastHand=hk;setTimeout(function(){play('voice:'+cur().char);},350);}var hn=$('hoName');hn.textContent='Giliran '+p.name+'!';var hc=document.createElement('span');hc.className='ho-char';hc.textContent=charName(p.char);hn.appendChild(hc);$('hoRound').textContent=S.turnLimit?('Ronde '+S.round+' dari '+S.turnLimit):('Ronde '+S.round);requestAnimationFrame(function(){portrait($('hoFace'),p.char,p.color);});}
   if(S.phase==='turn'){
     if(p.pelni){var h=document.createElement('div');h.className='hint';h.textContent=(isPol()?'Gorong-gorong':'Kapal Pelni')+': tap tile tujuan '+p.name;ab.appendChild(h);}
     else{if(cup.phase==='idle'||cup.phase==='shake')ab.appendChild(shakeBtn(p.inJail?(isPol()?'Ikuti masa tahanan':'Kocok, cari double'):'Tahan untuk kocok',p.inJail?(isPol()?'kocok, double = bebas · sisa '+(jailMax(p)-p.jailTurns)+' giliran':'sisa '+(jailMax(p)-p.jailTurns)+' giliran'):null));
@@ -53,8 +53,9 @@ function renderModal(){
     if(st.level===3&&p.laps<1)opts.appendChild(note('Landmark terbuka setelah lewat Start sekali.'));
     opts.appendChild(btn('Nanti aja','ghost small',C('skip')));}
   if(pd.type==='takeover'){var st2=S.tiles[i],pr=takeoverPrice(i);body.appendChild(modalHead(i,isPol()?'Penggusuran':'Takeover',(isPol()?'Gusur ':'Ambil alih ')+tileName(i)+'?',st2.level));
+    if(pd.rent>0){var rn=note('Sewa '+fmt(pd.rent)+' sudah dibayar ke '+S.players[pd.owner!=null?pd.owner:st2.owner].name+'.');rn.className='wallet rentpaid';body.appendChild(rn);}
     body.appendChild(facts([['Pemilik',S.players[st2.owner].name],['Bangunan',LV[st2.level]],['Harga takeover',fmt(pr)]]));
-    opts.appendChild(btn(isPol()?'GUSUR!':'TAKEOVER!','red',C('yes'),p.money<pr,'Bayar '+fmt(pr)+' ke '+S.players[st2.owner].name));if(pd.swap!=null)opts.appendChild(btn('Pindah Kubu: tukar dengan '+tileName(pd.swap),'',C('swap'),false,'Pasif El Slepet, sekali per game'));opts.appendChild(btn('Nggak dulu','ghost small',C('no')));}
+    opts.appendChild(btn(isPol()?'GUSUR!':'TAKEOVER!','red',C('yes'),p.money<pr,'Bayar '+fmt(pr)+' ke '+S.players[st2.owner].name));if(pd.swap!=null)opts.appendChild(btn('Pindah Kubu: tukar dengan '+tileName(pd.swap),'',C('swap'),false,'Pasif El Slepet, sekali per game'));opts.appendChild(btn('Nggak dulu','ghost small',C('no'),false,pd.rent>0?'Cukup bayar sewa':null));}
   if(pd.type==='buywis'){var ty=T[i].type,wl=ty==='wisata'?TH_().wisataLabel:ty==='transport'?'Transportasi':'Utilitas',pr2=assetPrice(i);body.appendChild(modalHead(i,wl,'Ambil '+tileName(i)+'?',0));
     body.appendChild(facts(ty==='wisata'?[['Harga',fmt(pr2)],['Sewa','1 '+wl.toLowerCase()+' 50rb · 2: 150rb · 3: 400rb'],['Bonus','Punya 4 '+wl.toLowerCase()+' langsung menang']]:ty==='transport'?[['Harga',fmt(pr2)],['Sewa','1: 25rb · 2: 50rb · 3: 100rb · 4: 200rb']]:[['Harga',fmt(pr2)],['Sewa','Angka dadu x5rb, punya PLN dan PDAM jadi x12rb']]));
     opts.appendChild(btn('Ambil '+tileName(i),'',C('yes'),p.money<pr2,'Bayar '+fmt(pr2)));opts.appendChild(btn('Lewat dulu','ghost small',C('no')));}

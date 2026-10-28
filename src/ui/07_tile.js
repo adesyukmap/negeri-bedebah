@@ -25,7 +25,7 @@ function drawTile(i,now){
   if(st.owner!==null){
     var own=S.players[st.owner].color,b2=iso(zn.bu,zn.bv,h),tk=FX.take[i],bf=FX.build[i],wob=0,sx=1,sy=1,hide=false;
     if(off<0)wob=Math.sin(now/40)*TW*0.012;
-    if(tk){var tt=(now-tk.t0)/2400;if(tt<0)own=tk.fromColor;if(tt>=0&&tt<1){if(tt<0.5){own=tk.fromColor;wob=Math.sin(now/25)*TW*0.02*(tt>0.25?2:0.5);}else if(tt<0.62){hide=true;}else{var pt=(tt-0.62)/0.38;sy=pt<0.6?pt/0.6*1.12:1.12-0.12*(pt-0.6)/0.4;}}}
+    if(tk){var tt=(now-tk.t0)/TK_DUR;if(tt<0)own=tk.fromColor;if(tt>=0&&tt<1){var psh=(tt>0.4&&tt<0.5)||(tt>0.55&&tt<0.66);if(tt<0.66){own=tk.fromColor;wob=Math.sin(now/25)*TW*0.02*(psh?2.5:0.4);if(psh)sx=0.96;}else if(tt<0.78){hide=true;}else{var pt=(tt-0.78)/0.22;sy=pt<0.6?pt/0.6*1.12:1.12-0.12*(pt-0.6)/0.4;}}}
     if(bf&&!tk){var bt=(now-bf.t0)/900;if(bt>=0&&bt<1){if(bt<0.35){scaffold(zn.bu,zn.bv,h,TH*0.9,bt/0.35);dust(b2.x,b2.y,TW*0.25,bt/0.35);hide=bf.level>0;}else{var pt2=(bt-0.35)/0.65;sy=pt2<0.55?0.3+pt2/0.55*0.82:1.12-0.12*(pt2-0.55)/0.45;sx=1+0.06*Math.sin(pt2*Math.PI);}}}
     if(!hide){g.save();g.translate(b2.x+wob,b2.y);g.scale(sx,sy);g.translate(-b2.x,-b2.y);
       if(t.type==='city')building(i,zn.bu,zn.bv,h,st.level,own); else if(t.type==='wisata')wisataGate(zn.bu,zn.bv,h,own,zn.axis); else {var fq=iso(zn.bu-0.34,zn.bv+0.3,h);tinyFlag(fq.x,fq.y,TH*0.9,own);}

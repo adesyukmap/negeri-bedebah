@@ -27,10 +27,6 @@ function drawMafiaBody(s,cx,by,now,pw,thr){
   g.beginPath();g.moveTo(cx-s*0.13,sh-s*0.02);g.lineTo(cx,sh+s*0.2);g.lineTo(cx+s*0.13,sh-s*0.02);g.closePath();g.fillStyle=rgrad(cx,sh+s*0.03,s*0.2,'#EDB78C','#B87A50');g.fill();
   g.fillStyle='#2A2A34';[-1,1].forEach(function(d){g.beginPath();g.moveTo(cx+d*s*0.13,sh-s*0.03);g.lineTo(cx+d*s*0.02,sh+s*0.22);g.lineTo(cx+d*s*0.22,sh+s*0.05);g.closePath();g.fill();});
   g.restore();
-  // sash: MAFIA SAWIT
-  g.save();var sx0=cx-hw*0.78,sy0=sh+s*0.01,sx1=cx+hw*0.92,sy1=by-s*0.02,ang=Math.atan2(sy1-sy0,sx1-sx0),len=Math.hypot(sx1-sx0,sy1-sy0),sw=s*0.085;
-  g.translate(sx0,sy0);g.rotate(ang);g.fillStyle='#B71C1C';g.fillRect(0,-sw/2,len,sw);g.fillStyle='#F2C230';g.fillRect(0,-sw/2,len,sw*0.1);g.fillRect(0,sw/2-sw*0.1,len,sw*0.1);
-  g.font='900 '+(sw*0.62)+'px "Baloo 2", sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#FFD95A';g.font='900 '+(sw*0.55)+'px "Baloo 2", sans-serif';g.fillText('MAFIA SAWIT',len*0.2,sw*0.04);g.restore();
   // gold chain
   for(var c=0;c<15;c++){var a=Math.PI*(0.12+c/14*0.76),ex=cx+Math.cos(a)*s*0.12,ey=sh-s*0.02+Math.sin(a)*s*0.17;ell(ex,ey,s*0.016,s*0.012,c%2?'#E8B923':'#FFD95A');}
   rrect(cx-s*0.03,sh+s*0.15,s*0.06,s*0.07,s*0.015);g.fillStyle='#F2C230';g.fill();g.fillStyle='#8A6010';g.font='900 '+(s*0.05)+'px Nunito, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('$',cx,sh+s*0.188);
@@ -67,6 +63,10 @@ function drawMafiaBody(s,cx,by,now,pw,thr){
     g.beginPath();g.moveTo(shx-d*s*0.02,shy);g.quadraticCurveTo(ex+d*s*0.06,ey,hx2+d*s*0.04,fy+s*0.03);g.lineWidth=s*0.15;g.strokeStyle='#22222C';g.lineCap='round';g.stroke();
     g.lineWidth=s*0.04;g.strokeStyle='rgba(255,255,255,.06)';g.stroke();
     ell(hx2+d*s*0.02,fy+s*0.04,s*0.075,s*0.04,'#F4F1EA');});
+  // sash: MAFIA SAWIT
+  g.save();var sx0=cx-hw*0.78,sy0=sh+s*0.01,sx1=cx+hw*0.92,sy1=by-s*0.02,ang=Math.atan2(sy1-sy0,sx1-sx0),len=Math.hypot(sx1-sx0,sy1-sy0),sw=s*0.085;
+  g.translate(sx0,sy0);g.rotate(ang);g.fillStyle='#B71C1C';g.fillRect(0,-sw/2,len,sw);g.fillStyle='#F2C230';g.fillRect(0,-sw/2,len,sw*0.1);g.fillRect(0,sw/2-sw*0.1,len,sw*0.1);
+  g.font='900 '+(sw*0.62)+'px "Baloo 2", sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillStyle='#FFD95A';g.font='900 '+(sw*0.6)+'px "Baloo 2", sans-serif';g.fillText('MAFIA SAWIT',len*0.3,sw*0.04);g.restore();
   if(cup.phase==='shake'){miniDie2D(fx-s*0.02,fy-s*0.05,s*0.07,now/60,3);miniDie2D(fx+s*0.03,fy-s*0.04,s*0.07,-now/50,5);}
   if(MAF.laugh){var rb=Math.sin(now/110)*s*0.022;mafiaFist(fx-s*0.035,fy+rb,s,0,false);mafiaFist(fx+s*0.035,fy-rb,s,0,true);}else{mafiaFist(fx-spread*0.5,fy,s,open,false);mafiaFist(fx+spread*0.5,fy,s,open,true);}
   MAF.fist={x:fx,y:fy};

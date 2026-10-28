@@ -159,6 +159,39 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
 .sacts{display:flex; gap:6px; flex:none}
 .wallet.warn{color:#C0392B; font-weight:800}
 .wallet.okmsg{color:#1E7A45; font-weight:800}
+#rotate{display:none; position:fixed; inset:0; z-index:200; background:linear-gradient(#2E95C6,#1C6A9A); color:#fff; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center; padding:24px}
+#rotate h2{font:800 30px var(--f-display); margin:0}
+#rotate p{margin:0; font:700 16px var(--f-body); opacity:.9}
+.rot-phone{width:64px; height:110px; border:6px solid #fff; border-radius:16px; position:relative; animation:rotph 2.2s ease-in-out infinite}
+.rot-phone i{position:absolute; left:50%; bottom:8px; width:16px; height:4px; margin-left:-8px; border-radius:2px; background:#fff}
+@keyframes rotph{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+@media (orientation:portrait) and (pointer:coarse){#rotate{display:flex}}
+@media (max-height:520px){
+  .overlay{padding:8px}
+  .overlay .sheet{padding:14px 18px; gap:10px; max-height:calc(100vh - 16px)}
+  .sheet h2{font-size:22px}
+  #handoff .sheet{flex-direction:row; flex-wrap:wrap; justify-content:center; column-gap:18px; width:min(560px,100%)}
+  #handoff canvas{width:96px; height:118px}
+  #handoff h2{font-size:26px}
+  .ho-char{font-size:15px}
+  #handoff .eyebrow{width:100%}
+  #modal.compact{padding:8px max(10px, env(safe-area-inset-right, 0px)) 8px 10px; align-items:flex-start}
+  .toast{font-size:13px; padding:6px 12px}
+  #toasts{top:4px}
+  #modal.compact .sheet{width:min(340px, 46vw); padding:10px 14px; gap:6px; max-height:calc(100vh - 16px)}
+  #modal.compact .modal-top canvas{display:none}
+  body:has(#modal:not([hidden])) #camBtn{visibility:hidden}
+  #modal.compact .sheet h2{font-size:18px}
+  #modal.compact .btn{min-height:42px; font-size:15px; padding:6px 12px}
+  #modal.compact .facts{font-size:13px; gap:2px 10px}
+  #modal.compact .wallet{font-size:12px}
+  .btn{min-height:44px}
+  #actionbar{bottom:max(8px, env(safe-area-inset-bottom, 0px)); max-width:calc(100% - 190px)}
+  #camBtn{bottom:max(8px, env(safe-area-inset-bottom, 0px))}
+}
+@media (prefers-reduced-motion: reduce){.rot-phone{animation:none; transform:rotate(-90deg)}}
+.wallet.rentpaid{background:#FDECEA; color:#A52A1E; font-weight:800; padding:8px 12px; border-radius:12px}
+.ho-char{display:block; font:800 20px var(--f-body); color:#8A7560; margin-top:6px; letter-spacing:0}
 @media (max-width:620px){.srow{flex-wrap:wrap}.sacts{width:100%; justify-content:flex-end}}
 #toasts{position:absolute; top:10px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; gap:6px; align-items:center; z-index:5; pointer-events:none; width:min(460px, 90%)}
 .toast{background:rgba(255,248,236,.97); color:var(--ink); padding:8px 14px; border-radius:var(--r-sm); font-weight:800; font-size:15px; box-shadow:0 4px 0 var(--panel-edge), 0 6px 16px rgba(0,0,0,.2); text-align:center; animation:tin .25s ease-out}
@@ -270,6 +303,7 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
   </div>
 </div>
 <div id="ott" hidden><div class="siren"></div><div class="bar t"></div><div class="bar b"></div><div class="flash"></div><div class="center"><span class="tag">BREAKING NEWS</span><canvas id="ottFace" width="340" height="416"></canvas><span class="ticker" id="ottName">OTT!</span></div></div>
+<div id="rotate" aria-live="polite"><div class="rot-phone"><i></i></div><h2>Putar HP-mu</h2><p>Kepulauan Cuan dimainkan miring (landscape).</p></div>
 <div id="cine" hidden><canvas id="cineCv"></canvas><div id="cineBar"><i id="cineProg"></i></div><button type="button" class="btn ghost" id="cineSkip">Skip &rsaquo;</button></div>
 <div id="news" hidden><div class="card"><span class="eyebrow" id="newsEyebrow" style="color:#E2483D">Kabar Nusantara</span><h3 id="newsTitle">Kabar</h3><p id="newsText"></p></div></div>
 <div class="overlay" id="modal" hidden><div class="sheet" id="modalBody"></div></div>

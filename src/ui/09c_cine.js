@@ -180,5 +180,5 @@ function drawManhole(tile,openF,vis,now){if(vis<=0)return;var sp=tokenSpot(tile,
   var ox=c.x+openF*rx*1.6,oy=c.y-openF*ry*0.5;ell(ox,oy+ry*0.12,rx,ry,'#45454C');g.beginPath();g.ellipse(ox,oy,rx,ry,0,0,7);g.fillStyle=rgrad(ox-rx*0.3,oy-ry*0.3,rx*1.2,'#9A9AA2','#5E5E66');g.fill();
   g.strokeStyle='rgba(40,40,46,.7)';g.lineWidth=Math.max(1,TW*0.006);for(var k=-2;k<=2;k++){g.beginPath();g.moveTo(ox+k*rx*0.3,oy-ry*0.8*Math.sqrt(1-(k*0.3)*(k*0.3)));g.lineTo(ox+k*rx*0.3,oy+ry*0.8*Math.sqrt(1-(k*0.3)*(k*0.3)));g.stroke();}
   g.beginPath();g.ellipse(ox,oy,rx*0.85,ry*0.85,0,0,7);g.stroke();}
-function fxHold(now){if(PEND.length)return true;if(EVENTS.some(function(e){return e.t==='takeover';}))return true;for(var k in FX.take){var t0=FX.take[k].t0;if(t0===Infinity||now-t0<2300)return true;}return false;}
+function fxHold(now){if(PEND.length)return true;if(EVENTS.some(function(e){return e.t==='takeover';}))return true;for(var k in FX.take){var t0=FX.take[k].t0;if(t0===Infinity||now-t0<TK_DUR-100)return true;}return false;}
 var HOLDWAS=false;function checkHold(now){var h=fxHold(now);if(HOLDWAS&&!h)refresh();HOLDWAS=h;}
