@@ -23,6 +23,12 @@ function bodyPath(x,bt,bw,by){var tw=bw*0.78,rr=bw*0.22;g.beginPath();g.moveTo(x
 function hairCap(hx,hy,r,col,depth){g.beginPath();g.arc(hx,hy-r*0.05,r*1.03,Math.PI*1.02,Math.PI*1.98);g.quadraticCurveTo(hx+r*0.4,hy-r*(depth||0.45),hx,hy-r*0.55);g.quadraticCurveTo(hx-r*0.5,hy-r*0.4,hx-r*1.0,hy-r*0.12);g.closePath();g.fillStyle=col;g.fill();}
 function rgrad(x,y,r,a,b){var q=g.createRadialGradient(x,y,r*0.1,x,y,r);q.addColorStop(0,a);q.addColorStop(1,b);return q;}
 function glasses(hx,ey,r,s,col,dark){[-1,1].forEach(function(sx){g.beginPath();g.arc(hx+sx*r*0.38,ey,r*0.2,0,7);if(dark){g.fillStyle='rgba(20,20,30,.88)';g.fill();}g.strokeStyle=col;g.lineWidth=s*0.018;g.stroke();});g.beginPath();g.moveTo(hx-r*0.18,ey);g.lineTo(hx+r*0.18,ey);g.stroke();}
+/* generated sprites (assets/chars/*.webp, embedded by build.py as SPRITES); code-drawn chibi is the fallback */
+var SPR_CACHE={},SPR_OFF=false;
+try{SPR_OFF=localStorage.getItem('kc-sprites')==='0';}catch(e){}
+function sprImg(id){if(SPR_OFF||typeof SPRITES==='undefined'||!SPRITES[id])return null;var c=SPR_CACHE[id];
+  if(!c){var im=new Image();c=SPR_CACHE[id]={img:im,ok:false,ax:SPRITES[id].ax,ar:SPRITES[id].ar,wait:[]};im.onload=function(){c.ok=true;c.wait.forEach(function(f){f();});c.wait=[];};im.src=SPRITES[id].d;}
+  return c.ok?c:null;}
 function drawChar(id,x,y,s,ring,opt){
   opt=opt||{}; var o=Math.max(1,s*0.028),C=CH[id]||CH.juragan,sh=C.shirt,t=Date.now()/1000,seed=chHash(id),SK=C.skin?skinTone(C.skin):SKIN;
   var breathe=1+Math.sin(t*2.2+seed*6)*0.018,blink=((t+seed*4)%3.6)<0.13&&!opt.expr;
@@ -30,6 +36,10 @@ function drawChar(id,x,y,s,ring,opt){
   ell(x,y,s*0.36,s*0.11,'rgba(20,40,60,.3)');
   if(ring){ell(x,y-s*0.005,s*0.32,s*0.1,shade(ring,-0.35));ell(x,y-s*0.03,s*0.32,s*0.1,ring);ell(x-s*0.08,y-s*0.05,s*0.14,s*0.035,'rgba(255,255,255,.35)');}
   g.translate(x,y);g.scale(1,breathe);if(id==='gemoy')g.rotate(Math.sin(t*4.2)*0.07);if(opt.expr==='tease'){g.rotate(Math.sin(t*12)*0.11);g.scale(1+Math.sin(t*24)*0.03,1-Math.sin(t*24)*0.03);}g.translate(-x,-y);
+  var SP=opt.code?null:sprImg(id);
+  if(SP){var hh=s*1.06,ww=hh*SP.ar;g.drawImage(SP.img,x-ww*SP.ax,y-s*0.03-hh,ww,hh);
+    if(opt.cough){var ct0=(Date.now()/500)%1;for(var c0=0;c0<3;c0++){var cp0=(ct0+c0/3)%1;ell(x+s*(0.15+cp0*0.3),y-s*(0.62+cp0*0.2),s*(0.04+cp0*0.08),s*(0.04+cp0*0.08),'rgba(150,150,150,'+(0.7*(1-cp0))+')');}}
+    g.restore();return;}
   var bw=s*0.5*(C.bw||1),by=y-s*0.1,bt=y-s*0.5,hx=x,hy=y-s*0.7,r=s*0.25;
   [-1,1].forEach(function(d){rrect(x+d*s*0.1-s*0.06,by-s*0.04,s*0.12,s*0.1,s*0.04);g.fillStyle=C.pants;g.fill();ell(x+d*s*0.11,y-s*0.04,s*0.08,s*0.04,'#2A1E18');});
   // back hair / veils
@@ -139,7 +149,7 @@ function drawChar(id,x,y,s,ring,opt){
   if(opt.cough){var ct=(Date.now()/500)%1;for(var c2=0;c2<3;c2++){var cp=(ct+c2/3)%1;ell(hx+r*(0.6+cp*1.2),hy+r*(0.4-cp*0.8),r*(0.15+cp*0.3),r*(0.15+cp*0.3),'rgba(150,150,150,'+(0.7*(1-cp))+')');}}
   g.restore();
 }
-function portrait(cv,id,color,opt){var c=cv.getContext('2d'),dpr=Math.min(3,window.devicePixelRatio||1),w=cv.clientWidth||cv.width,h=cv.clientHeight||cv.height;cv.width=w*dpr;cv.height=h*dpr;c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);var old=g;g=c;drawChar(id,w/2,h*0.95,Math.min(h*0.9,w*1.1),color,opt);g=old;}
+function portrait(cv,id,color,opt){if(!sprImg(id)&&SPR_CACHE[id]&&!SPR_CACHE[id].ok){SPR_CACHE[id].wait.push(function(){portrait(cv,id,color,opt);});}var c=cv.getContext('2d'),dpr=Math.min(3,window.devicePixelRatio||1),w=cv.clientWidth||cv.width,h=cv.clientHeight||cv.height;cv.width=w*dpr;cv.height=h*dpr;c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);var old=g;g=c;drawChar(id,w/2,h*0.95,Math.min(h*0.9,w*1.1),color,opt);g=old;}
 
 /* ---------- political satire figures: costume, props, hair (generic chibi faces) ---------- */
 function peci(hx,hy,r,col){rrect(hx-r*0.78,hy-r*1.14,r*1.56,r*0.5,r*0.12);g.fillStyle=col||'#141416';g.fill();g.fillStyle='rgba(255,255,255,.12)';g.fillRect(hx-r*0.72,hy-r*1.06,r*1.44,r*0.06);}

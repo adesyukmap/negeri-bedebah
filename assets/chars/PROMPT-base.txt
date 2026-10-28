@@ -1,0 +1,12 @@
+Create an image.
+
+CHARACTER (highest priority, must be followed exactly):
+{CHAR}
+
+STYLE: cute 2D chibi illustration for a board game token set, clean cel shading with 2-3 tones, thin dark brown outline of consistent thickness around the whole silhouette, big round glossy dark brown eyes with a white highlight, small simple nose and mouth, soft pink cheek blush, smooth even skin in the skin tone given in CHARACTER (default warm light tan). Every character in this conversation must look like it belongs to the same set: same drawing style, line weight, eye style, head size and proportions as the earlier images in this chat. Do NOT copy hairstyle, clothing or accessories from earlier images; those come only from the CHARACTER section. Every item under MUST HAVE must be clearly visible.
+
+Format: one character only, full body, standing upright, three-quarter front view turned slightly to the left, eye level camera. Portrait 4:5. Plain flat solid pure green #00FF00 background, perfectly uniform, no gradient, no ground, no shadow, no other objects.
+
+Proportions: total height about 2.3 heads, head about 45% of the height, round head slightly wider than tall, short rounded torso, short stubby legs, small rounded shoes visible, short arms with simple rounded hands, no visible neck. The character fills 80% of the image height, feet near the bottom, centered, with empty green margin on all sides.
+
+Generic cartoon chibi face (not a portrait of any real person). Clothes simplified into big clean shapes; accessories slightly oversized so they read at small size. No green tint or green halo on the character. No text, letters, numbers or logos anywhere.

@@ -8,7 +8,10 @@ eng=open(P('src/engine.js')).read()
 ui=''.join(open(f).read() for f in sorted(glob.glob(P('src/ui/*.js')))).replace('/*@@CHARS@@*/',open(P('src/chars.js')).read())
 tracks='var TRACKS={'+','.join("%s:'%s'"%(os.path.basename(f)[:-4],b64(f)) for f in sorted(glob.glob(P('assets/music/*.m4a'))))+'};'
 samples='var SAMPLES={'+','.join("%s:'%s'"%(os.path.basename(f)[:-4],b64(f)) for f in sorted(glob.glob(P('assets/sfx/*.m4a'))))+'};'
-out=shell+'<script id="engine">'+eng+'</script>\n<script>'+ui+'</script>\n<script>'+tracks+samples+'</script>\n'
+import json
+_meta=json.load(open(P('assets/chars/meta.json'))) if os.path.exists(P('assets/chars/meta.json')) else {}
+sprites='var SPRITES={'+','.join("%s:{d:'data:image/webp;base64,%s',ax:%s,ar:%s}"%(k,b64(P('assets/chars/%s.webp'%k)),v['ax'],v['ar']) for k,v in sorted(_meta.items()))+'};'
+out=shell+'<script id="engine">'+eng+'</script>\n<script>'+ui+'</script>\n<script>'+sprites+tracks+samples+'</script>\n'
 os.makedirs(P('dist'),exist_ok=True)
 open(P('dist/index.html'),'w').write(out)
 if os.environ.get('LOCAL_COPY','1')=='1': open(P('index.html'),'w').write(out)
