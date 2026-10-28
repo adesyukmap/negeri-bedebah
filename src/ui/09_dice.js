@@ -18,9 +18,9 @@ function drawDie3(cu,cv,cz,R,hs,alpha){
   var quads=vis.map(function(o){var f=o.f,n=f.n,a=f.a,b=f.b;return [[-1,-1],[1,-1],[1,1],[-1,1]].map(function(c){return P([n[0]*hs+a[0]*c[0]*hs+b[0]*c[1]*hs,n[1]*hs+a[1]*c[0]*hs+b[1]*c[1]*hs,n[2]*hs+a[2]*c[0]*hs+b[2]*c[1]*hs]);});});
   g.lineJoin='round';var edgeW=Math.max(3,hs*TW*0.5);
   // rounded silhouette: fat round-joined stroke, slightly darker = soft bevel edge
-  quads.forEach(function(q,k){var br=0.8+0.18*Math.max(0,dot(vis[k].nw,LIGHT));path(q);var c='rgb('+Math.round(232*br)+','+Math.round(234*br)+','+Math.round(242*br)+')';g.fillStyle=c;g.fill();g.strokeStyle=c;g.lineWidth=edgeW;g.stroke();});
+  quads.forEach(function(q,k){var br=0.87+0.13*Math.max(0,dot(vis[k].nw,LIGHT));path(q);var c='rgb('+Math.round(244*br)+','+Math.round(245*br)+','+Math.round(250*br)+')';g.fillStyle=c;g.fill();g.strokeStyle=c;g.lineWidth=edgeW;g.stroke();});
   quads.forEach(function(q,k){var o=vis[k],f=o.f,n=f.n,a=f.a,b=f.b,lt=Math.max(0,dot(o.nw,LIGHT)),br=0.88+0.12*lt;
-    var cx=(q[0].x+q[2].x)/2,cy=(q[0].y+q[2].y)/2,ins=q.map(function(p){return {x:cx+(p.x-cx)*0.9,y:cy+(p.y-cy)*0.9};});
+    var cx=(q[0].x+q[2].x)/2,cy=(q[0].y+q[2].y)/2,ins=q.map(function(p){return {x:cx+(p.x-cx)*0.95,y:cy+(p.y-cy)*0.95};});
     roundPoly(ins,0.42);var gr=g.createLinearGradient(ins[0].x,ins[0].y,ins[2].x,ins[2].y),hi=Math.min(1,br+0.1);
     gr.addColorStop(0,'rgb('+Math.round(255*hi)+','+Math.round(255*hi)+','+Math.round(255*hi)+')');gr.addColorStop(1,'rgb('+Math.round(238*br)+','+Math.round(240*br)+','+Math.round(246*br)+')');g.fillStyle=gr;g.fill();
     var vis2=dot(o.nw,VIEW);

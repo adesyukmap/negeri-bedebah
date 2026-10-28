@@ -69,13 +69,13 @@ var THEMES={
       {id:'krismon',name:'Krismon',text:'Harga-harga naik. Semua pemain bayar 10% uang tunai ke kas.'},
       {id:'demo',name:'Jalan Ditutup Karnaval',text:'Satu kota dipakai karnaval. Sewanya nol selama ronde ini.'}],
     fajarName:'Bagi-bagi Angpao', fajarText:'Ronde terakhir! Semua pemain dapat amplop, kecuali yang lagi terdampar.'},
-  politik:{id:'politik',name:'Politik',tag:'Negeri Cuan: bangun pabrik, rebut konsesi, hindari OTT.',levels:['Izin Lahan','Pabrik','Tambang','Kawasan Industri','Proyek Strategis'],
+  politik:{id:'politik',name:'Politik',tag:'Negeri Para Koruptor: bangun pabrik, rebut konsesi, hindari OTT.',levels:['Izin Lahan','Pabrik','Tambang','Kawasan Industri','Proyek Strategis'],
     typeNames:{start:'Gajian Pejabat',jail:'Lapas',festival:'Kampanye Akbar',pelni:'Gorong-gorong',tax:'Pungli',chance:'Manuver',dana:'Dana Hibah',parkir:'Parkir Liar'},
     names:{'Raja Ampat':'Konsesi Laut','Borobudur':'Konsesi Nikel','Danau Toba':'Reklamasi','Gunung Bromo':'Kebun Sawit','Bandara':'Bandara Sepi','Pelabuhan':'Pelabuhan Tikus','Stasiun Kereta Cepat':'Kereta Cepat','Terminal Bus':'Terminal Bayangan'},
-    ottCases:['Maling dana bansos, Mbak.','Proyek KTP elektronik.','Saya dituduh korupsi impor gula, padahal nggak!','Izin tambang timah.','Kuota haji tambahan.','Bakar hutan buat buka lahan sawit.','Izin ekspor minyak goreng waktu lagi langka.','Proyek menara BTS di pelosok.','Dana pensiun dan asuransi negara.','Proyek wisma atlet yang mangkrak.','Suap hakim biar vonis ringan.','Dana desa buat beli mobil.','Jual beli jabatan di daerah.','Pengadaan alat kesehatan waktu pandemi.','Impor daging sapi.','Ekspor benih lobster.','BBM dioplos, Mbak.','Proyek simulator SIM.','Dana hibah dipotong buat kampanye.','Pengadaan seragam dan sepatu dinas.'],
+    ottCases:['Maling dana bansos, Mbak.','Saya cuma maling duit rakyat dikit, Mbak.','Proyek KTP elektronik.','Saya dituduh korupsi impor gula, padahal nggak!','Izin tambang timah.','Kuota haji tambahan.','Bakar hutan buat buka lahan sawit.','Izin ekspor minyak goreng waktu lagi langka.','Proyek menara BTS di pelosok.','Dana pensiun dan asuransi negara.','Proyek wisma atlet yang mangkrak.','Suap hakim biar vonis ringan.','Dana desa buat beli mobil.','Jual beli jabatan di daerah.','Pengadaan alat kesehatan waktu pandemi.','Impor daging sapi.','Ekspor benih lobster.','BBM dioplos, Mbak.','Proyek simulator SIM.','Dana hibah dipotong buat kampanye.','Pengadaan seragam dan sepatu dinas.'],
     wisataLabel:'Konsesi', chanceName:'Manuver', danaName:'Dana Hibah', kasName:'Kas Pungli', newsName:'Breaking News', jailVerb:'ditahan',
     chance:[
-      K('Kena OTT!','Tertangkap tangan. Pakai rompi oranye, langsung ke Lapas.','bad','jail',0,{anim:'ott'}),
+      K('Kena OTT!','Ketahuan maling duit rakyat. Pakai rompi oranye, langsung ke Lapas.','bad','jail',0,{anim:'ott'}),
       K('Pelantikan','Dilantik jadi pejabat baru. Maju ke Gajian Pejabat.','good','toStart'),
       K('Mundur Teratur','Kebijakan diprotes. Mundur 3 langkah.','bad','back',3),
       K('Pemutihan Izin','Izin bermasalah diputihkan. Upgrade gratis 1 level (bukan Proyek Strategis).','good','upgrade'),
@@ -195,7 +195,8 @@ function payAppeal(){var p=cur(); if(S.phase!=='turn'||!p.inJail||p.money<APPEAL
   if(Math.random()<0.5){p.inJail=false;p.jailTurns=0;toast((S.theme==='politik'?'Banding dikabulkan! ':'Berhasil! ')+p.name+' bebas. Silakan kocok dadu','good big');emit({t:'appeal',ok:true,pid:p.id});}
   else{toast((S.theme==='politik'?'Banding ditolak. ':'Gagal. ')+p.name+' tetap '+TH_().jailVerb+'. Masih bisa coba double','bad big');emit({t:'appeal',ok:false,pid:p.id});}
   save();}
-function payJail(){var p=cur(); if(S.phase!=='turn'||!p.inJail||p.money<JAIL_FEE)return; payBank(p.id,JAIL_FEE); p.inJail=false; p.jailTurns=0; toast(p.name+' bayar '+fmt(JAIL_FEE)+' dan bebas. Silakan kocok dadu'); save();}
+function jailFee(){return S&&S.theme==='politik'?250000:JAIL_FEE;}
+function payJail(){var p=cur(),fee=jailFee(); if(S.phase!=='turn'||!p.inJail||p.money<fee)return; payBank(p.id,fee); p.inJail=false; p.jailTurns=0; if(S.theme==='politik')emit({t:'quip',pid:p.id,key:'sogok'}); toast(p.name+(S.theme==='politik'?' sogok hakim ':' bayar ')+fmt(fee)+' dan bebas. Silakan kocok dadu'); save();}
 function pelniTo(i){var p=cur(); if(S.phase!=='turn'||!p.pelni||i===p.pos)return; p.pelni=false; p.rolledDouble=false; toast(p.name+(S.theme==='politik'?' blusukan lewat gorong-gorong ke ':' berlayar ke ')+tileName(i)); walkTo(p,i,S.theme==='politik'?'sewer':'ship');}
 function parkirFee(){return PARKIR_PER*Math.max(1,S.lastSum||1);}
 
@@ -206,7 +207,8 @@ function land(){
   emit({t:'landed',pid:p.id,tile:i});
   switch(t.type){
     case 'start': return finish();
-    case 'jail': p.inJail=true;p.jailTurns=0;p.rolledDouble=false;p.doubles=0; toast(p.name+' '+TH_().jailVerb+'! Butuh double atau bayar untuk keluar','bad'); sfx('bad'); return finish();
+    case 'jail': if(S.theme==='politik'){var cs2=TH_().ottCases;emit({t:'ott',pid:p.id,caseText:cs2[Math.floor(Math.random()*cs2.length)]});emit({t:'quip',pid:p.id,key:'lawan'});}
+      p.inJail=true;p.jailTurns=0;p.rolledDouble=false;p.doubles=0; toast(p.name+' '+TH_().jailVerb+'! '+(S.theme==='politik'?'Pilih: ikuti masa tahanan, banding, atau sogok hakim':'Butuh double atau bayar untuk keluar'),'bad'); sfx('bad'); return finish();
     case 'festival': if(ownedCities(p.id).length)return ask({type:'festival'}); toast(tileName(i)+'! Sayang belum punya kota buat dirayakan'); return finish();
     case 'pelni': if(p.money>=PELNI_FEE)return ask({type:'pelni'}); toast('Uang belum cukup buat '+tileName(i)); return finish();
     case 'parkir': var pf=parkirFee(); emit({t:'parkir',pid:p.id,amt:pf}); toast('Parkir Rp2.000 x '+(S.lastSum||1)+' langkah = '+fmt(pf),'bad'); sfx('pay'); payBank(p.id,pf); if(S.phase==='over')return save(); return finish();

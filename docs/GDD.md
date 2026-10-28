@@ -567,3 +567,12 @@ Target performa 60 fps di iPad M2 (target device), dan 120 fps kalau layarnya Pr
 - Sound Studio (menu utama dan menu Istirahat): tab Karakter (suara giliran per karakter), Celetukan & tokoh (4 celetukan, Mbak Host, preman, tukang parkir, Bos Mafia, orasi), Event (25 efek). Upload m4a/mp3/wav maks 3 MB, putar, ganti, hapus. Disimpan di IndexedDB perangkat. Prioritas: file kamu > sampel bawaan > synth.
 - Suara dari Hermes (hermes-office/audio/tdj-reel-01): yang dipakai card_out v2 (kartu), typewriter v3 (teks diketik), keyboard v3 (teks berita), fold v1 (runtuh/mangkrak), clock_tick v2 (sidang banding), music v1 (musik tema Santai). Yang tidak dipakai karena hasilnya noise penuh: pop, button, check, send, mic, brush (semua < 1 detik), hit_soft, clutter, conveyor_start, conveyor_loop.
 - Repo publik: kode MIT, audio Stability AI Community License (ASSETS.md), aturan konten satire di CONTRIBUTING.md, deploy otomatis ke GitHub Pages lewat branch gh-pages.
+
+## 18. Batch 28 Okt 2026 (20.00)
+- Mendarat di Lapas (Politik) = event OTT: adegan talkshow lalu ditahan. Kartu "Kena OTT!" di Manuver tetap ada (teks: ketahuan maling duit rakyat).
+- Tiga opsi saat ditahan (Politik): Ikuti masa tahanan (kocok, double = bebas, maks 3 giliran), Banding Rp150rb (50% bebas), Sogok hakim Rp250rb (pasti bebas). Santai tetap Bayar Rp100rb.
+- Modal beli/bangun/gusur jadi kartu kecil di kanan bawah dan muncul 1 detik setelah token sampai (0,6 detik untuk kartu), supaya board tetap kelihatan.
+- Judul board Politik: NEGERI PARA KORUPTOR. Mode malam dihapus.
+- Bos Mafia pakai selempang "MAFIA SAWIT". Dadu putih polos tanpa pinggiran abu.
+- Pojok Start Politik: Gedung Wakil Rakyat (kubah hijau terbelah). Pojok Lapas: Gedung Antirasuah (menara putih berkepala merah) plus rutan. Tanpa logo dan tanpa nama lembaga.
+- Musik Politik sementara pakai track tense sampai Hermes kirim politik_loop. Sting Breaking News pakai synth sampai Hermes kirim sting_breaking. Brief: hermes-office/audio/kepulauan-cuan/BRIEF-stable-audio.md

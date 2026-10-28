@@ -33,7 +33,7 @@ function flashes(w,h,t,seed,n){for(var k=0;k<(n||5);k++){var ph=(t*1.7+hash(k,se
 function skyline(w,y,h,col,seed){g.fillStyle=col;g.beginPath();g.moveTo(0,y);var x=0;var k=0;while(x<w){var bw=w*(0.03+hash(k,seed)*0.05),bh=h*(0.3+hash(k,seed+1)*0.7);g.lineTo(x,y-bh);g.lineTo(x+bw,y-bh);x+=bw;k++;}g.lineTo(w,y);g.closePath();g.fill();}
 var CINE_SCENES={
   news:function(w,h,t,e,now){var pol=isPol();if(t>1.0)once('kb',function(){play('newsType');});
-    once('s',function(){play('news');});if(t>0.35)once('hit',function(){play('slam',0.6);});
+    once('s',function(){play('news');});if(t>0.35)once('hit',function(){play('sting');play('slam',0.6);});
     var bg=g.createLinearGradient(0,0,0,h);bg.addColorStop(0,pol?'#1A0A12':'#0A2338');bg.addColorStop(1,pol?'#3A0E16':'#12456A');g.fillStyle=bg;g.fillRect(0,0,w,h);
     g.save();g.globalAlpha=0.08;g.fillStyle='#fff';for(var k=0;k<14;k++){var x=((k*w/7+now*0.05)%(w*2))-w*0.5;g.beginPath();g.moveTo(x,0);g.lineTo(x+w*0.06,0);g.lineTo(x-w*0.2,h);g.lineTo(x-w*0.26,h);g.fill();}g.restore();
     var sk=Math.max(0,1-t/0.6),shx=(t>0.35&&t<0.6)?(Math.random()-0.5)*16*sk:0;g.save();g.translate(shx,0);
@@ -51,7 +51,7 @@ var CINE_SCENES={
       g.font='700 '+Math.max(16,fs*0.36)+'px Nunito, sans-serif';g.fillStyle='#F4F1EA';var tx=typed(e.text,t,1.0,40);wrapLines(tx,w*0.6).forEach(function(l,i){g.fillText(l,w*0.3,h*0.62+i*fs*0.46);});g.restore();}
     g.restore();
     var ty=h*0.86,th2=Math.max(34,h*0.06);g.fillStyle=pol?'#D7261E':'#E9A21F';g.fillRect(0,ty,w*0.2,th2);g.fillStyle='#F4F1EA';g.fillRect(w*0.2,ty,w*0.8,th2);
-    g.font='900 '+(th2*0.48)+'px Nunito, sans-serif';g.textBaseline='middle';g.textAlign='center';g.fillStyle='#fff';g.fillText(pol?'NEGERI CUAN TV':'NUSANTARA',w*0.1,ty+th2/2);
+    g.font='900 '+(th2*0.48)+'px Nunito, sans-serif';g.textBaseline='middle';g.textAlign='center';g.fillStyle='#fff';g.fillText(pol?'NPK TV':'NUSANTARA',w*0.1,ty+th2/2);
     g.save();g.beginPath();g.rect(w*0.2,ty,w*0.8,th2);g.clip();var tick=(e.name+' • '+e.text+' • ').toUpperCase();g.textAlign='left';g.fillStyle='#16161E';var tw=g.measureText(tick).width,off=w*0.2+w*0.8-((now*0.12)%(tw));for(var r=-1;r<4;r++)g.fillText(tick,off+r*tw-w*0.8,ty+th2/2);g.restore();},
   ott:function(w,h,t,e,now){var p=S.players[e.pid];
     once('s',function(){play('siren');setTimeout(function(){play('camera');},500);setTimeout(function(){play('camera');},800);});
@@ -134,7 +134,7 @@ function newsIcon(id,x,y,r,now){g.save();g.translate(x,y);g.fillStyle='#fff';g.s
 function afterOverlay(fn,extra){PEND.push({fn:fn,ready:null,extra:extra||0});}
 function processPend(now){var clear=!cineBusy()&&$('modal').hidden;for(var i=PEND.length-1;i>=0;i--){var p=PEND[i];if(!clear){p.ready=null;continue;}if(p.ready==null)p.ready=now+800+p.extra;if(now>=p.ready){PEND.splice(i,1);try{p.fn(now);}catch(e){console.error(e);}}}}
 /* quips: fictional characters' satirical one-liners */
-var QUIP_TEXT={lawan:'Saya akan lawan!',sorry:'Sorry ye!',repot:'Gitu aja kok repot!',asing:'Ini ulah antek-antek asing!'};
+var QUIP_TEXT={sogok:'Hakimnya pengertian banget.',lawan:'Saya akan lawan!',sorry:'Sorry ye!',repot:'Gitu aja kok repot!',asing:'Ini ulah antek-antek asing!'};
 function addQuip(pid,text,dur,key){if(key)play('quip:'+key);QUIPS=QUIPS.filter(function(q){return q.pid!==pid;});QUIPS.push({pid:pid,text:text,t0:performance.now(),dur:dur||2800});}
 function drawQuips(now){QUIPS=QUIPS.filter(function(q){var t=(now-q.t0)/q.dur;if(t>1)return false;if(t<0)return true;if(CONVOY&&CONVOY.pid===q.pid)return true;var tp=tokenPos(q.pid,now),b=iso(tp.u,tp.v,tp.z+TW*0.62),sc=easeBack(Math.min(1,t*q.dur/250));
   g.save();g.globalAlpha=t>0.85?(1-t)/0.15:1;speech(b.x,b.y,q.text,Math.max(13,TW*0.13)*Math.max(0.3,sc),TW*2.4,{W:CW,weight:900,stroke:'#4A3426'});g.restore();return true;});}

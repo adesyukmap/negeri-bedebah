@@ -10,8 +10,8 @@ function refresh(){
   if(S.phase==='handoff'){var hk=S.round+':'+S.current;if(window._lastHand!==hk){window._lastHand=hk;setTimeout(function(){play('voice:'+cur().char);},350);}$('hoName').textContent='Giliran '+p.name+'!';$('hoRound').textContent=S.turnLimit?('Ronde '+S.round+' dari '+S.turnLimit):('Ronde '+S.round);requestAnimationFrame(function(){portrait($('hoFace'),p.char,p.color);});}
   if(S.phase==='turn'){
     if(p.pelni){var h=document.createElement('div');h.className='hint';h.textContent=(isPol()?'Gorong-gorong':'Kapal Pelni')+': tap tile tujuan '+p.name;ab.appendChild(h);}
-    else{if(cup.phase==='idle'||cup.phase==='shake')ab.appendChild(shakeBtn(p.inJail?'Kocok, cari double':'Tahan untuk kocok'));
-      if(p.inJail&&cup.phase==='idle'){ab.appendChild(btn('Bayar '+short(JAIL_FEE),'ghost',act(payJail),p.money<JAIL_FEE));if(!p.appealed)ab.appendChild(btn(isPol()?'Banding '+short(APPEAL_FEE):'Minta jemput '+short(APPEAL_FEE),'ghost',act(payAppeal),p.money<APPEAL_FEE,'50% bebas'));}}
+    else{if(cup.phase==='idle'||cup.phase==='shake')ab.appendChild(shakeBtn(p.inJail?(isPol()?'Ikuti masa tahanan':'Kocok, cari double'):'Tahan untuk kocok',p.inJail?(isPol()?'kocok, double = bebas · sisa '+(3-p.jailTurns)+' giliran':'sisa '+(3-p.jailTurns)+' giliran'):null));
+      if(p.inJail&&cup.phase==='idle'){if(!p.appealed)ab.appendChild(btn(isPol()?'Banding '+short(APPEAL_FEE):'Minta jemput '+short(APPEAL_FEE),'ghost',act(payAppeal),p.money<APPEAL_FEE,'50% bebas'));ab.appendChild(btn((isPol()?'Sogok hakim ':'Bayar ')+short(jailFee()),'ghost',act(payJail),p.money<jailFee(),'pasti bebas'));}}
   }
   if(S.phase==='end')ab.appendChild(btn(p.bankrupt?'Lanjut':'Selesai','',act(endTurn)));
   renderModal();
@@ -35,6 +35,9 @@ function renderModal(){
   var m=$('modal'),body=$('modalBody');
   if(S.phase!=='prompt'){if(!detailOpen)m.hidden=true;return;}
   if(fxHold(performance.now())){m.hidden=true;return;}
+  var mk=S.round+':'+S.current+':'+JSON.stringify(S.pending),nw=performance.now();if(mk!==renderModal.key){renderModal.key=mk;var dl=(S.pending.type==='card'?600:1000)/(typeof SPEED!=='undefined'?SPEED:1);renderModal.at=nw+dl;setTimeout(refresh,dl+20);}
+  if(nw<renderModal.at){m.hidden=true;return;}
+  m.classList.toggle('compact',S.pending.type!=='card'&&S.pending.type!=='festival');
   detailOpen=false;m.hidden=false;body.innerHTML='';var pd=S.pending,p=cur(),i=pd.tile,opts=document.createElement('div');opts.className='opts';
   var C=function(o){return act(function(){choose(o);});};
   if(pd.type==='buy'){var L=tileL(i);body.appendChild(modalHead(i,REGIONS[T[i].region].name,(isPol()?'Ambil ':'Beli ')+tileName(i)+'?',stepMode()?0:4));
@@ -70,14 +73,14 @@ function renderModal(){
 var detailOpen=false;
 function openDetail(i){
   if(S.phase==='prompt'||S.phase==='moving'||S.phase==='over')return;
-  var t=T[i],st=S.tiles[i],m=$('modal'),body=$('modalBody');body.innerHTML='';detailOpen=true;m.hidden=false;
+  var t=T[i],st=S.tiles[i],m=$('modal'),body=$('modalBody');body.innerHTML='';detailOpen=true;m.hidden=false;m.classList.remove('compact');
   if(t.type==='city'){body.appendChild(modalHead(i,REGIONS[t.region].name,t.name,st.owner!==null?st.level:4));
     var rows=[['Pemilik',st.owner!==null?S.players[st.owner].name:'Belum ada'],['Landmark',t.landmark]];
     if(st.owner!==null){rows.push(['Bangunan',LV[st.level]],['Sewa sekarang',fmt(cityRent(i))]);if(S.festival===i)rows.push([tileName(IDX.fest),'x'+(S.festLevel||2)]);if(st.level<4)rows.push(['Harga takeover',fmt(takeoverPrice(i))]);}
     rows.push(['Sewa per level',RENTM.map(function(r){return short(tileL(i)*r);}).join(' · ')]);body.appendChild(facts(rows));}
   else if(t.type==='transport'||t.type==='utility'){body.appendChild(modalHead(i,t.type==='transport'?'Transportasi':'Utilitas',tileName(i),0));body.appendChild(facts([['Pemilik',st.owner!==null?S.players[st.owner].name:'Belum ada'],['Harga',fmt(assetPrice(i))],['Sewa',t.type==='transport'?'1: 25rb · 2: 50rb · 3: 100rb · 4: 200rb':'Angka dadu x5rb, punya dua jadi x12rb']]));}
   else if(t.type==='wisata'){body.appendChild(modalHead(i,TH_().wisataLabel,tileName(i),0));body.appendChild(facts([['Pemilik',st.owner!==null?S.players[st.owner].name:'Belum ada'],['Harga',fmt(WIS_PRICE)],['Sewa sekarang',st.owner!==null?fmt(wisRent(i)):'-']]));}
-  else{var pol=isPol(),info={start:(pol?'Gajian pejabat: ':'')+'Lewat atau mendarat di sini dapat gaji '+fmt(salaryAmt())+'.',jail:(pol?'Mendarat di sini langsung ditahan':'Mendarat di sini bikin terdampar')+' maksimal 3 giliran. Keluar dengan double atau bayar '+fmt(JAIL_FEE)+'.',festival:'Pilih satu kotamu, sewanya jadi x2. Rayakan kota yang sama lagi untuk x3 dan x4.',pelni:pol?'Bayar '+fmt(PELNI_FEE)+', giliran berikutnya blusukan lewat gorong-gorong ke tile mana saja.':'Bayar '+fmt(PELNI_FEE)+', giliran berikutnya bebas pilih tujuan.',chance:'Ambil satu kartu '+TH_().chanceName+'. Bisa untung, bisa buntung.',dana:'Ambil satu kartu '+TH_().danaName+'.',tax:'Bayar 10% dari total nilai propertimu. Uangnya masuk '+TH_().kasName+'.',parkir:'Tukang parkir dadakan minta Rp2.000 per langkah dadumu. Uangnya masuk '+TH_().kasName+'.'}[t.type];
+  else{var pol=isPol(),info={start:(pol?'Gajian pejabat: ':'')+'Lewat atau mendarat di sini dapat gaji '+fmt(salaryAmt())+'.',jail:(pol?'Mendarat di sini langsung kena OTT dan ditahan maksimal 3 giliran. Pilih: ikuti masa tahanan (kocok, double = bebas), banding '+fmt(APPEAL_FEE)+' (50% bebas), atau sogok hakim '+fmt(jailFee())+' (pasti bebas).':'Mendarat di sini bikin terdampar maksimal 3 giliran. Keluar dengan double atau bayar '+fmt(jailFee())+'.'),festival:'Pilih satu kotamu, sewanya jadi x2. Rayakan kota yang sama lagi untuk x3 dan x4.',pelni:pol?'Bayar '+fmt(PELNI_FEE)+', giliran berikutnya blusukan lewat gorong-gorong ke tile mana saja.':'Bayar '+fmt(PELNI_FEE)+', giliran berikutnya bebas pilih tujuan.',chance:'Ambil satu kartu '+TH_().chanceName+'. Bisa untung, bisa buntung.',dana:'Ambil satu kartu '+TH_().danaName+'.',tax:'Bayar 10% dari total nilai propertimu. Uangnya masuk '+TH_().kasName+'.',parkir:'Tukang parkir dadakan minta Rp2.000 per langkah dadumu. Uangnya masuk '+TH_().kasName+'.'}[t.type];
     body.appendChild(modalHead(i,'Tile spesial',tileName(i),0));body.appendChild(note(info));}
   var o=document.createElement('div');o.className='opts';o.appendChild(btn('Tutup','ghost',function(){detailOpen=false;m.hidden=true;}));body.appendChild(o);
 }
@@ -91,7 +94,7 @@ function showResult(){
 }
 
 
-function shakeBtn(label){var b=document.createElement('button');b.type='button';b.className='btn shake';b.textContent=label;
+function shakeBtn(label,sub){var b=document.createElement('button');b.type='button';b.className='btn shake';b.textContent=label;if(sub){var sp=document.createElement('span');sp.className='opt-sub';sp.textContent=sub;b.appendChild(sp);}
   var down=function(e){e.preventDefault();audioUnlock();cupStart();b.classList.add('held');},up=function(e){e.preventDefault();b.classList.remove('held');cupRelease();};
   b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',function(e){if(cup.phase==='shake')up(e);});
   b.addEventListener('keydown',function(e){if((e.key===' '||e.key==='Enter')&&cup.phase==='idle'){e.preventDefault();cupStart();cupRelease();}});return b;}

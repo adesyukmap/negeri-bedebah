@@ -21,11 +21,12 @@ function syncMusic(){
   if(!S||$('game').hidden)return setMusic('menu');
   if(S.phase==='over')return setMusic('win');
   var tense=Object.keys(S.threats||{}).some(function(k){return S.threats[k];})||(S.turnLimit&&S.round>S.turnLimit-3);
-  setMusic(tense?'tense':(S.theme==='santai'?'santai':'calm'));
+  setMusic(S.theme==='politik'?(typeof TRACKS!=='undefined'&&TRACKS.politik&&!tense?'politik':'tense'):(tense?'tense':'santai'));
 }
 function tone(f,dur,type,vol,f2,delay){if(!AC||muted)return;var t=AC.currentTime+(delay||0),o=AC.createOscillator(),gn=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);gn.gain.setValueAtTime(0.0001,t);gn.gain.exponentialRampToValueAtTime(vol||0.2,t+0.01);gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(gn);gn.connect(AC.destination);o.start(t);o.stop(t+dur+0.02);}
 function noise(dur,vol,delay,hp){if(!AC||muted)return;var t=AC.currentTime+(delay||0),s=AC.createBufferSource(),f=AC.createBiquadFilter(),gn=AC.createGain();s.buffer=noiseBuf;f.type='bandpass';f.frequency.value=hp||1800;gn.gain.setValueAtTime(vol,t);gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);s.connect(f);f.connect(gn);gn.connect(AC.destination);s.start(t);s.stop(t+dur);}
 function synthPlay(n,arg){switch(n){
+  case 'sting':tone(55,1.1,'sawtooth',0.22,41);tone(110,0.9,'sawtooth',0.12,82);noise(0.5,0.45,0,180);[392,466,587].forEach(function(f){tone(f,0.7,'sawtooth',0.05,f*0.94,0.05);});break;
   case 'tukang':for(var w=0;w<2;w++){tone(2600,0.12,'square',0.05,2900,w*0.2);}break;
   case 'preman':tone(160,0.25,'sawtooth',0.1,120);tone(130,0.3,'sawtooth',0.08,100,0.22);break;
   case 'fajar':for(var c3=0;c3<6;c3++)tone(1200+c3*90,0.07,'square',0.04,null,c3*0.09);break;

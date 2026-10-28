@@ -174,6 +174,16 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
 .facts dt{color:var(--ink-soft); font-weight:800}
 .facts dd{margin:0; font-weight:900; font-variant-numeric:tabular-nums}
 .opts{display:flex; flex-direction:column; gap:12px}
+#modal.compact{background:transparent; align-items:flex-end; justify-content:flex-end; pointer-events:none; padding:0 max(14px, env(safe-area-inset-right, 0px)) max(92px, calc(env(safe-area-inset-bottom, 0px) + 92px)) 14px}
+#modal.compact .sheet{pointer-events:auto; width:min(380px, 92vw); padding:16px 18px; gap:10px; border-radius:22px; animation:sheetIn .28s cubic-bezier(.2,.9,.3,1.15) both}
+#modal.compact .sheet h2{font-size:22px}
+#modal.compact .modal-top{gap:10px}
+#modal.compact .modal-top canvas{width:96px; height:84px}
+#modal.compact .opts{gap:8px}
+#modal.compact .btn{min-height:48px; font-size:17px; padding:8px 16px}
+#modal.compact .wallet{font-size:13px}
+@keyframes sheetIn{from{opacity:0; transform:translateY(24px) scale(.96)}to{opacity:1; transform:none}}
+@media (prefers-reduced-motion: reduce){#modal.compact .sheet{animation:none}}
 .opt-sub{display:block; font:700 13px var(--f-body); opacity:.75}
 .wallet{font-size:14px; color:var(--ink-soft); font-weight:800}
 .wallet b{color:var(--ink); font-variant-numeric:tabular-nums}

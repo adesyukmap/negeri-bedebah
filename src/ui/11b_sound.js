@@ -10,11 +10,11 @@ var SLOT_GROUPS=[
   {id:'event',name:'Event',hint:'Ganti efek suara bawaan. Hapus untuk kembali ke bawaan.',slots:function(){return [
     {k:'tap',label:'Tombol'},{k:'rattle',label:'Kocok dadu'},{k:'slam',label:'Dadu mendarat'},{k:'hop',label:'Token melangkah'},
     {k:'buy',label:'Beli / ambil aset'},{k:'build',label:'Bangun'},{k:'takeover',label:'Gusur / takeover'},{k:'collapse',label:'Bangunan runtuh / mangkrak'},
-    {k:'card',label:'Ambil kartu'},{k:'coins',label:'Koin'},{k:'pay',label:'Bayar'},{k:'siren',label:'Sirene OTT'},{k:'news',label:'Breaking news'},
+    {k:'card',label:'Ambil kartu'},{k:'coins',label:'Koin'},{k:'pay',label:'Bayar'},{k:'siren',label:'Sirene OTT'},{k:'sting',label:'Sting Breaking News'},{k:'news',label:'Breaking news (jingle)'},
     {k:'typing',label:'Teks diketik'},{k:'festival',label:'Kampanye / pesta'},{k:'fajar',label:'Serangan fajar'},{k:'quake',label:'Gempa'},
     {k:'fire',label:'Hutan terbakar'},{k:'cough',label:'Batuk'},{k:'splash',label:'Gorong-gorong / air'},{k:'pop',label:'Muncul'},
     {k:'appeal',label:'Sidang banding'},{k:'bad',label:'Sial'},{k:'broke',label:'Bangkrut'},{k:'win',label:'Menang'}];}}];
-var BUILTIN={card:'card',typing:'typing',newsType:'keyboard',collapse:'fold',appeal:'tick'};
+var BUILTIN={sting:'sting',card:'card',typing:'typing',newsType:'keyboard',collapse:'fold',appeal:'tick'};
 var SILENT={host:1,preman:0,tukang:0,mafia:1,mic:0};
 var USER_RAW={},USER_META={},USER_BUF={},SAMPLE_BUF={},PLAYING={},SDB=null;
 function sdb(cb){if(SDB)return cb(SDB);try{var r=indexedDB.open('kc-sound',1);r.onupgradeneeded=function(){r.result.createObjectStore('clips');};r.onsuccess=function(){SDB=r.result;cb(SDB);};r.onerror=function(){cb(null);};}catch(e){cb(null);}}
@@ -43,7 +43,7 @@ function renderStudio(){var box=$('studioBody');box.innerHTML='';var G=SLOT_GROU
     if(sl.char){var cvp=document.createElement('canvas');cvp.className='sface';row.appendChild(cvp);requestAnimationFrame(function(){portrait(cvp,sl.char,'#F2C230');});}
     var tx=document.createElement('div');tx.className='stext';var l=document.createElement('b');l.textContent=sl.label;tx.appendChild(l);
     var st=document.createElement('span');var mine=USER_META[sl.k];st.className='spill'+(mine?' mine':'');
-    st.textContent=mine?('File kamu: '+mine.name):(BUILTIN[sl.k]?'Bawaan (Hermes)':(sl.k.indexOf('voice:')===0||sl.k.indexOf('quip:')===0||SILENT[sl.k]===1)?'Kosong':'Bawaan (synth)');
+    st.textContent=mine?('File kamu: '+mine.name):(BUILTIN[sl.k]&&typeof SAMPLES!=='undefined'&&SAMPLES[BUILTIN[sl.k]]?'Bawaan (Hermes)':(sl.k.indexOf('voice:')===0||sl.k.indexOf('quip:')===0||SILENT[sl.k]===1)?'Kosong':'Bawaan (synth)');
     if(sl.sub){var sb=document.createElement('span');sb.className='ssub';sb.textContent=sl.sub;tx.appendChild(sb);}tx.appendChild(st);row.appendChild(tx);
     var acts=document.createElement('div');acts.className='sacts';
     var pb=document.createElement('button');pb.type='button';pb.className='btn ghost small';pb.textContent='Putar';pb.onclick=function(){audioUnlock();var was=muted;muted=false;var b=bufFor(sl.k);if(b)playBuf(b,'_preview');else if(USER_RAW[sl.k])setTimeout(function(){var b2=bufFor(sl.k);if(b2)playBuf(b2,'_preview');},250);else if(!(sl.k.indexOf('voice:')===0||sl.k.indexOf('quip:')===0||SILENT[sl.k]===1))synthPlay(sl.k,0.6);muted=was;};
