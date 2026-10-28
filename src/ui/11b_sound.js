@@ -11,10 +11,13 @@ var SLOT_GROUPS=[
     {k:'tap',label:'Tombol'},{k:'rattle',label:'Kocok dadu'},{k:'slam',label:'Dadu mendarat'},{k:'hop',label:'Token melangkah'},
     {k:'buy',label:'Beli / ambil aset'},{k:'build',label:'Bangun'},{k:'takeover',label:'Gusur / takeover'},{k:'collapse',label:'Bangunan runtuh / mangkrak'},
     {k:'card',label:'Ambil kartu'},{k:'coins',label:'Koin'},{k:'pay',label:'Bayar'},{k:'siren',label:'Sirene OTT'},{k:'sting',label:'Sting Breaking News'},{k:'news',label:'Breaking news (jingle)'},
-    {k:'typing',label:'Teks diketik'},{k:'festival',label:'Kampanye / pesta'},{k:'fajar',label:'Serangan fajar'},{k:'quake',label:'Gempa'},
+    {k:'typing',label:'Teks diketik'},{k:'festival',label:'Kampanye / pesta'},{k:'fajar',label:'Musik Serangan Fajar'},{k:'quake',label:'Gempa'},
     {k:'fire',label:'Hutan terbakar'},{k:'cough',label:'Batuk'},{k:'splash',label:'Gorong-gorong / air'},{k:'pop',label:'Muncul'},
-    {k:'appeal',label:'Sidang banding'},{k:'uuk',label:'Orangutan senang'},{k:'birds',label:'Burung panik / rangkong'},{k:'plane',label:'Pesawat pemadam'},{k:'rain',label:'Hujan'},{k:'treesFall',label:'Pohon tumbang'},{k:'laugh',label:'Tawa Mafia Sawit'},{k:'horn',label:'Klakson truk'},{k:'ribbon',label:'Gunting pita + tepuk tangan'},{k:'windCreak',label:'Angin dan crane berderit'},{k:'flood',label:'Air banjir'},{k:'pile',label:'Palu tiang pancang'},{k:'zap',label:'Listrik nyetrum (PLN)'},{k:'construct',label:'Bangunan berdiri'},{k:'omon',label:'Omon-omon'},{k:'tease',label:'Ledekan setelah gusur'},{k:'bad',label:'Sial'},{k:'broke',label:'Bangkrut'},{k:'win',label:'Menang'}];}}];
-var BUILTIN={sting:'sting',card:'card',typing:'typing',newsType:'keyboard',collapse:'fold',appeal:'tick'};
+    {k:'appeal',label:'Sidang banding'},{k:'bedOtt',label:'Musik adegan OTT'},{k:'bedKampanye',label:'Musik adegan Kampanye'},{k:'chainsaw',label:'Gergaji mesin'},{k:'whistle',label:'Peluit'},{k:'sad',label:'Orangutan sedih'},{k:'forest',label:'Suasana hutan'},{k:'uuk',label:'Orangutan senang'},{k:'birds',label:'Burung panik / rangkong'},{k:'plane',label:'Pesawat pemadam'},{k:'rain',label:'Hujan'},{k:'treesFall',label:'Pohon tumbang'},{k:'laugh',label:'Tawa Mafia Sawit'},{k:'horn',label:'Klakson truk'},{k:'ribbon',label:'Gunting pita + tepuk tangan'},{k:'windCreak',label:'Angin dan crane berderit'},{k:'flood',label:'Air banjir'},{k:'pile',label:'Palu tiang pancang'},{k:'zap',label:'Listrik nyetrum (PLN)'},{k:'construct',label:'Bangunan berdiri'},{k:'omon',label:'Omon-omon'},{k:'tease',label:'Ledekan setelah gusur'},{k:'bad',label:'Sial'},{k:'broke',label:'Bangkrut'},{k:'win',label:'Menang'}];}}];
+var BUILTIN={appeal:'h_appeal',bedKampanye:'h_bedKampanye',bedOtt:'h_bedOtt',birds:'h_birds',buy:'h_buy',camera:'h_camera',chainsaw:'h_chainsaw',coins:'h_coins',cough:'h_cough',fajar:'h_fajar',festival:'h_festival',fire:'h_fire',flood:'h_flood',forest:'h_forest',horn:'h_horn',laugh:'h_laugh',pay:'h_pay',pile:'h_pile',plane:'h_plane',pop:'h_pop',rain:'h_rain',rattle:'h_rattle',ribbon:'h_ribbon',sad:'h_sad',siren:'h_siren',slam:'h_slam',stamp:'h_stamp',sting:'h_sting',takeover:'h_takeover',tap:'h_tap',treesFall:'h_treesFall',uuk:'h_uuk',whistle:'h_whistle',whoosh:'h_whoosh',windCreak:'h_windCreak',card:'card',typing:'typing',newsType:'keyboard',collapse:'fold',coin:'h_coins',bulldoze:'h_takeover'};
+var SVOL={tap:0.45,rain:0.5,fire:0.5,forest:0.4,fajar:0.55,bedKampanye:0.55,bedOtt:0.55,pop:0.6,stamp:0.7,rattle:0.7,coins:0.7,coin:0.6};
+var SRC={};
+function stopSnd(n){var s=SRC[n];if(s){try{s.stop();}catch(e){}delete SRC[n];PLAYING[n]=0;}}
 var SILENT={host:1,preman:0,tukang:0,mafia:1,mic:0};
 var USER_RAW={},USER_META={},USER_BUF={},SAMPLE_BUF={},PLAYING={},SDB=null;
 function sdb(cb){if(SDB)return cb(SDB);try{var r=indexedDB.open('kc-sound',1);r.onupgradeneeded=function(){r.result.createObjectStore('clips');};r.onsuccess=function(){SDB=r.result;cb(SDB);};r.onerror=function(){cb(null);};}catch(e){cb(null);}}
@@ -26,10 +29,10 @@ function deleteUserClip(k,cb){delete USER_RAW[k];delete USER_META[k];delete USER
 function decodeInto(map,k,ab){if(!AC||map[k]===false||map[k])return;map[k]=false;try{AC.decodeAudioData(ab.slice(0),function(b){map[k]=b;},function(){map[k]=null;});}catch(e){map[k]=null;}}
 function warmSounds(){if(!AC)return;for(var k in USER_RAW)decodeInto(USER_BUF,k,USER_RAW[k]);if(typeof SAMPLES!=='undefined')for(var s in SAMPLES)if(!SAMPLE_BUF[s])decodeInto(SAMPLE_BUF,s,b64buf(SAMPLES[s]));}
 function bufFor(n){if(USER_RAW[n]){if(USER_BUF[n])return USER_BUF[n];decodeInto(USER_BUF,n,USER_RAW[n]);return null;}var b=BUILTIN[n];if(b&&SAMPLE_BUF[b])return SAMPLE_BUF[b];return null;}
-function playBuf(b,n,vol){var s=AC.createBufferSource(),gn=AC.createGain();s.buffer=b;gn.gain.value=vol==null?0.9:vol;s.connect(gn);gn.connect(AC.destination);s.start();PLAYING[n]=AC.currentTime+b.duration;return s;}
+function playBuf(b,n,vol){var s=AC.createBufferSource(),gn=AC.createGain();s.buffer=b;gn.gain.value=vol==null?(SVOL[n]!=null?SVOL[n]:0.9):vol;s.connect(gn);gn.connect(AC.destination);s.start();PLAYING[n]=AC.currentTime+b.duration;SRC[n]=s;s.onended=function(){if(SRC[n]===s)delete SRC[n];};return s;}
 function hasSound(n){return !!(USER_RAW[n]||(BUILTIN[n]&&typeof SAMPLES!=='undefined'&&SAMPLES[BUILTIN[n]]));}
 function play(n,arg){if(!AC||muted)return;warmSounds();var b=bufFor(n);
-  if(b){if((n==='rattle'||n==='typing'||n==='newsType'||n.indexOf('voice:')===0||n.indexOf('quip:')===0)&&PLAYING[n]>AC.currentTime)return;playBuf(b,n);return;}
+  if(b){if((n==='rattle'||n==='fajar'||n==='bedOtt'||n==='bedKampanye'||n==='rain'||n==='fire'||n==='typing'||n==='newsType'||n.indexOf('voice:')===0||n.indexOf('quip:')===0)&&PLAYING[n]>AC.currentTime)return;playBuf(b,n);return;}
   if(USER_RAW[n])return; // still decoding: stay quiet this once
   if(n.indexOf('voice:')===0||n.indexOf('quip:')===0||SILENT[n]===1||n==='newsType')return;
   synthPlay(n,arg);}

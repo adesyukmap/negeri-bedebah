@@ -15,14 +15,15 @@ function applyMusic(){
   if(!AC)return; var want=musicOff?null:musicWant; if(want===musicNow)return; musicNow=want;
   var t=AC.currentTime;if(musicNode){var old=musicNode;old.g.gain.cancelScheduledValues(t);old.g.gain.setValueAtTime(old.g.gain.value,t);old.g.gain.linearRampToValueAtTime(0.0001,t+1.2);setTimeout(function(){try{old.s.stop();}catch(e){}},1400);musicNode=null;}
   if(!want)return;
-  getTrack(want,function(buf){if(musicNow!==want)return;var s=AC.createBufferSource(),gn=AC.createGain();s.buffer=buf;s.loop=want!=='win';var t2=AC.currentTime;gn.gain.setValueAtTime(0.0001,t2);gn.gain.linearRampToValueAtTime(want==='win'?0.6:0.42,t2+1.2);s.connect(gn);gn.connect(AC.destination);s.start();musicNode={s:s,g:gn};});
+  getTrack(want,function(buf){if(musicNow!==want)return;var s=AC.createBufferSource(),gn=AC.createGain();s.buffer=buf;s.loop=want!=='win'&&want!=='pwin';var t2=AC.currentTime;gn.gain.setValueAtTime(0.0001,t2);gn.gain.linearRampToValueAtTime((want==='win'||want==='pwin')?0.6:0.42,t2+1.2);s.connect(gn);gn.connect(AC.destination);s.start();musicNode={s:s,g:gn};});
 }
 function syncMusic(){
   if(!S||$('game').hidden)return setMusic('menu');
-  if(S.phase==='over')return setMusic('win');
+  if(S.phase==='over')return setMusic(S.theme==='politik'&&typeof TRACKS!=='undefined'&&TRACKS.pwin?'pwin':'win');
   var tense=Object.keys(S.threats||{}).some(function(k){return S.threats[k];})||(S.turnLimit&&S.round>S.turnLimit-3);
   var calm=(typeof TRACKS!=='undefined'&&TRACKS.politik)?'politik':'calm';
-  setMusic(tense?'tense':(S.theme==='politik'?calm:'santai'));
+  var tn=(S.theme==='politik'&&typeof TRACKS!=='undefined'&&TRACKS.ptense)?'ptense':'tense';
+  setMusic(tense?tn:(S.theme==='politik'?calm:'santai'));
 }
 function tone(f,dur,type,vol,f2,delay){if(!AC||muted)return;var t=AC.currentTime+(delay||0),o=AC.createOscillator(),gn=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);gn.gain.setValueAtTime(0.0001,t);gn.gain.exponentialRampToValueAtTime(vol||0.2,t+0.01);gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(gn);gn.connect(AC.destination);o.start(t);o.stop(t+dur+0.02);}
 function noise(dur,vol,delay,hp){if(!AC||muted)return;var t=AC.currentTime+(delay||0),s=AC.createBufferSource(),f=AC.createBiquadFilter(),gn=AC.createGain();s.buffer=noiseBuf;f.type='bandpass';f.frequency.value=hp||1800;gn.gain.setValueAtTime(vol,t);gn.gain.exponentialRampToValueAtTime(0.0001,t+dur);s.connect(f);f.connect(gn);gn.connect(AC.destination);s.start(t);s.stop(t+dur);}
