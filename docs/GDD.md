@@ -1,4 +1,4 @@
-# Kepulauan Cuan: Game Design Document
+# Negeri Bedebah: Game Design Document
 
 Versi 0.2 · 28 Okt 2026 · Status: plan, belum dieksekusi
 

@@ -1,4 +1,4 @@
-# Kepulauan Cuan
+# Negeri Bedebah
 
 Monopoli ala GetRich untuk 2 sampai 5 pemain bergantian di satu iPad (hotseat). Jalan di browser, satu file HTML, tanpa server.
 

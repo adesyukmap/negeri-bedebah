@@ -149,7 +149,7 @@ function drawChar(id,x,y,s,ring,opt){
   if(opt.cough){var ct=(Date.now()/500)%1;for(var c2=0;c2<3;c2++){var cp=(ct+c2/3)%1;ell(hx+r*(0.6+cp*1.2),hy+r*(0.4-cp*0.8),r*(0.15+cp*0.3),r*(0.15+cp*0.3),'rgba(150,150,150,'+(0.7*(1-cp))+')');}}
   g.restore();
 }
-function portrait(cv,id,color,opt){if(!sprImg(id)&&SPR_CACHE[id]&&!SPR_CACHE[id].ok){SPR_CACHE[id].wait.push(function(){portrait(cv,id,color,opt);});}var c=cv.getContext('2d'),dpr=Math.min(3,window.devicePixelRatio||1),w=cv.clientWidth||cv.width,h=cv.clientHeight||cv.height;cv.width=w*dpr;cv.height=h*dpr;c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);var old=g;g=c;drawChar(id,w/2,h*0.95,Math.min(h*0.9,w*1.1),color,opt);g=old;}
+function portrait(cv,id,color,opt){if(typeof SPRITES==='undefined'&&!(opt&&opt._r>20)){var o2=Object.assign({},opt||{});o2._r=(o2._r||0)+1;setTimeout(function(){portrait(cv,id,color,o2);},150);}if(!sprImg(id)&&SPR_CACHE[id]&&!SPR_CACHE[id].ok){SPR_CACHE[id].wait.push(function(){portrait(cv,id,color,opt);});}var c=cv.getContext('2d'),dpr=Math.min(3,window.devicePixelRatio||1),w=cv.clientWidth||cv.width,h=cv.clientHeight||cv.height;cv.width=w*dpr;cv.height=h*dpr;c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);var old=g;g=c;drawChar(id,w/2,h*0.95,Math.min(h*0.9,w*1.1),color,opt);g=old;}
 
 /* ---------- political satire figures: costume, props, hair (generic chibi faces) ---------- */
 function peci(hx,hy,r,col){rrect(hx-r*0.78,hy-r*1.14,r*1.56,r*0.5,r*0.12);g.fillStyle=col||'#141416';g.fill();g.fillStyle='rgba(255,255,255,.12)';g.fillRect(hx-r*0.72,hy-r*1.06,r*1.44,r*0.06);}

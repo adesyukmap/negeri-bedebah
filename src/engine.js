@@ -66,7 +66,7 @@ var JALUR=[[1,9],[11,19],[21,29],[31,39]].map(function(r){var a=[];for(var i=r[0
 /* ---- theme packs: names, cards and news per theme (effects are shared) ---- */
 function K(name,text,kind,fx,amt,extra){var c={name:name,text:text,kind:kind,fx:fx,amt:amt||0};if(extra)for(var k in extra)c[k]=extra[k];return c;}
 var THEMES={
-  santai:{id:'santai',name:'Santai',tag:'Keliling Indonesia, kuasai kotanya.',levels:['Tanah','Rumah','Villa','Gedung','Landmark'],
+  santai:{id:'santai',name:'Santai',tag:'Liburan Keliling Nusantara: keliling Indonesia, kuasai kotanya.',levels:['Tanah','Rumah','Villa','Gedung','Landmark'],
     typeNames:{start:'Start',jail:'Pulau Terdampar',festival:'Pesta Rakyat',pelni:'Kapal Pelni',tax:'Pajak Juragan',chance:'Kesempatan',dana:'Dana Umum',parkir:'Parkir Liar'}, names:{},
     wisataLabel:'Wisata', chanceName:'Kesempatan', danaName:'Dana Umum', kasName:'Kas Pesisir', newsName:'Kabar Nusantara', jailVerb:'terdampar',
     chance:[
