@@ -13,7 +13,7 @@ Perubahan dari v0.1:
 
 | | |
 |---|---|
-| Genre | Board game ala Monopoly dengan rasa GetRich (cepat, chaotic, banyak comeback) |
+| Genre | Board game ala Monopoly yang cepat, chaotic, dan banyak comeback |
 | Platform | iPad, Safari, dipasang lewat Add to Home Screen (PWA, fullscreen, offline) |
 | Mode | Hotseat lokal, 1 iPad dioper gantian |
 | Pemain | 2 sampai 5 orang, tanpa bot |
@@ -368,7 +368,7 @@ Target performa 60 fps di iPad M2 (target device), dan 120 fps kalau layarnya Pr
 
 **Selesai kalau:** 5 orang bisa menyelesaikan satu game penuh tanpa bug yang menghentikan permainan.
 
-### Fase 2: Rasa GetRich
+### Fase 2: Cepat dan chaotic
 - 24 Kartu Kesempatan + slot Kartu Kemampuan
 - Pesta Rakyat, Kapal Pelni, Pulau Terdampar lengkap, Ancaman Monopoli
 - Simulasi balancing 1.000 game
@@ -429,7 +429,7 @@ Target performa 60 fps di iPad M2 (target device), dan 120 fps kalau layarnya Pr
 - Dadu bersudut tumpul (chamfer)
 - Dikocok di gelas bambu: tekan-tahan untuk mengocok, lepas untuk banting, gelas diangkat untuk menampilkan hasil
 - Meter kekuatan kocokan saat ditahan (kecil sebentar vs kencang lama), memengaruhi animasi
-- KEPUTUSAN TERBUKA: kekuatan kocokan murni visual, atau ikut memengaruhi hasil seperti gauge GetRich
+- KEPUTUSAN TERBUKA: kekuatan kocokan murni visual, atau ikut memengaruhi hasil seperti gauge kekuatan
 
 **Animasi**
 - Tile terinjak dan memantul tiap dilewati, riak cahaya, bangunan bergoyang
@@ -520,7 +520,7 @@ Target performa 60 fps di iPad M2 (target device), dan 120 fps kalau layarnya Pr
 - OTT: adegan talkshow fiktif. Token berompi oranye digiring polisi, Mbak Host bertanya "Bapak ketangkap kasus apa?", token menjawab acak dari 20 kasus (tanpa nama orang):
   1. Maling dana bansos
   2. Proyek KTP elektronik
-  3. "Saya dituduh korupsi impor gula, padahal nggak"
+  3. "Saya dituduh korupsi impor gula di Negeri Konoha, padahal nggak"
   4. Izin tambang timah
   5. Kuota haji tambahan
   6. Bakar hutan buat buka lahan sawit
@@ -572,7 +572,7 @@ Target performa 60 fps di iPad M2 (target device), dan 120 fps kalau layarnya Pr
 - Mendarat di Lapas (Politik) = event OTT: adegan talkshow lalu ditahan. Kartu "Kena OTT!" di Manuver tetap ada (teks: ketahuan maling duit rakyat).
 - Tiga opsi saat ditahan (Politik): Ikuti masa tahanan (kocok, double = bebas, maks 3 giliran), Banding Rp150rb (50% bebas), Sogok hakim Rp250rb (pasti bebas). Santai tetap Bayar Rp100rb.
 - Modal beli/bangun/gusur jadi kartu kecil di kanan bawah dan muncul 1 detik setelah token sampai (0,6 detik untuk kartu), supaya board tetap kelihatan.
-- Judul board Politik: NEGERI PARA KORUPTOR. Mode malam dihapus.
+- Judul board Politik: NEGERI BEDEBAH. Mode malam dihapus.
 - Bos Mafia pakai selempang "MAFIA SAWIT". Dadu putih polos tanpa pinggiran abu.
 - Pojok Start Politik: Gedung Wakil Rakyat (kubah hijau terbelah). Pojok Lapas: Gedung Antirasuah (menara putih berkepala merah) plus rutan. Tanpa logo dan tanpa nama lembaga.
 - Musik Politik sementara pakai track tense sampai Hermes kirim politik_loop. Sting Breaking News pakai synth sampai Hermes kirim sting_breaking. Brief: hermes-office/audio/kepulauan-cuan/BRIEF-stable-audio.md
@@ -637,6 +637,13 @@ Status: dibangun kecuali yang ditandai.
 - **Masuk ke kas:** pungli 40% (sisanya raib), pajak transaksi/tahunan, denda, sogok, kartu bayar. Kas tidak bisa melebihi isi awal (lebihnya raib).
 - **Cerita tengah board maju saat kas menipis:** 90% Karhutla, 80% Pemadaman, 70% Tanam Sawit, 60% Panen Raya, 50% Proyek IKN, 40% Mangkrak, 27% Banjir Rob, 14% Reboisasi Pencitraan. Bar tengah: "Kas Negara X / Y · babak berikutnya di Z".
 - **Kosong pertama: Ngutang ke IMF** (adegan 20 dtk: brankas kosong, pejabat memohon, bankir kasih syarat, perjanjian distempel DISETUJUI). Kas diisi 50% dari isi awal, gaji dipotong 50% sampai game selesai.
-- **Kosong kedua: Negara Bubar** (adegan 14 dtk: mafia nangis, pejabat kabur ke luar negeri bawa koper). Game selesai, harta terbesar menang: "Negara Bubar · Koruptor Terakhir".
+- **Kosong kedua: Negara Bubar** (adegan 14 dtk: mafia nangis, pejabat kabur ke luar negeri bawa koper). Game selesai, harta terbesar menang: "Negara Bubar · Bedebah Terakhir".
 - Simulasi 200 game bot (25 ronde): IMF di hampir semua game, median ronde 17; Negara Bubar sekitar 12% game.
 - Bug diperbaiki: token sempat tampil di tujuan sebelum jalan (saat layar tengah dikunci). Sekarang token menunggu di petak asal; floater/adegan gajian muncul saat token benar-benar sampai Start.
+
+## 27. Penamaan aman (29 Okt 2026, 14.21)
+- Semua kata yang bersifat tuduhan diganti olokan: judul board dan akhir game jadi "Negeri Bedebah" / "Bedebah Terakhir".
+- Semua rujukan ke game komersial lain dihapus dari game, README, dan GDD.
+- Kasus OTT yang mirip kasus nyata tetap, ditambah "di Negeri Konoha" (KTP elektronik, impor gula, tambang timah, kuota haji, minyak goreng, BTS, dana pensiun, wisma atlet, alkes, daging sapi, benih lobster, BBM oplos, simulator SIM).
+- Penafian di layar judul: "Semua tokoh, kasus, dan negeri dalam game ini fiktif. Kemiripan hanya kebetulan."
+- Papan nama babak cerita di pulau tengah, tampil selama babak berjalan (Karhutla merah berkedip selama api menyala).

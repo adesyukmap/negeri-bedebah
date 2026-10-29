@@ -104,7 +104,7 @@ function render(now){
   box(MID,MID,BN+0.3,BN+0.3,DZ*0.8,-DZ*0.8,isPol()?'#D9CBB0':'#E8CC92',isPol()?'#A8977A':'#C9A66B');
   lagoonWater(now);
   var fsT=TW*0.22,ty=OY+TH*3.0;g.font='800 '+fsT+'px "Baloo 2", sans-serif';g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';
-  var title=isPol()?'NEGERI PARA KORUPTOR':'KEPULAUAN CUAN';if(isPol()){fsT=TW*0.15;g.font='800 '+fsT+'px "Baloo 2", sans-serif';}g.lineWidth=fsT*0.16;g.strokeStyle=isPol()?'#5A1410':'#7A4300';g.strokeText(title,OX,ty);g.fillStyle=isPol()?'#FFD9A0':'#FFE27A';g.fillText(title,OX,ty);
+  var title=isPol()?'NEGERI BEDEBAH':'KEPULAUAN CUAN';if(isPol()){fsT=TW*0.15;g.font='800 '+fsT+'px "Baloo 2", sans-serif';}g.lineWidth=fsT*0.16;g.strokeStyle=isPol()?'#5A1410':'#7A4300';g.strokeText(title,OX,ty);g.fillStyle=isPol()?'#FFD9A0':'#FFE27A';g.fillText(title,OX,ty);
   g.font='900 '+(TW*0.12)+'px Nunito, sans-serif';g.fillStyle='rgba(15,60,95,.85)';g.fillText(S.turnLimit?('Ronde '+S.round+' dari '+S.turnLimit):('Ronde '+S.round),OX,OY+TH*3.42);
   if(S.kas>0||isPol()){var kp=Math.min(1,(S.kas||0)/kasLimit()),kx=OX,ky=OY+TH*3.62,kw=TW*1.0;rrect(kx-kw/2,ky,kw,TH*0.12,TH*0.06);g.fillStyle='rgba(15,40,60,.35)';g.fill();rrect(kx-kw/2,ky,kw*kp,TH*0.12,TH*0.06);g.fillStyle=isPol()?'#E2483D':'#2E9E5B';g.fill();
     g.font='900 '+(TW*0.075)+'px Nunito, sans-serif';g.fillStyle='rgba(15,40,60,.85)';g.fillText(TH_().kasName+' '+short(S.kas||0)+' / '+short(kasLimit())+(isPol()?storyBarLabel():''),OX,ky+TH*0.3);}
@@ -136,7 +136,7 @@ function render(now){
     g.restore();}
   landFx=landFx.filter(function(f){var t=(now-f.t0)/1300;if(t>1)return false;var zn=ZN[f.tile],p=iso(zn.bu,zn.bv,DZ+TH*1.4);for(var k=0;k<18;k++){var a=k/18*Math.PI*2,r=TW*(0.2+t*0.95);ell(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r*0.6-t*TH,TW*0.045*(1-t),TW*0.045*(1-t),['#FFD23F','#FF5C7A','#4CC0F0','#7BD389'][k%4]);}return true;});
   drawTakeoverOverlay(now);
-  drawMafia(now);
+  drawMafia(now);storyPlate(now);
   drawCoins(now);
   if(typeof fxDraw==='function')try{fxDraw(now);}catch(err){console.error(err);}
   drawBirds(now);

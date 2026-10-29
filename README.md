@@ -1,12 +1,12 @@
 # Negeri Bedebah
 
-Monopoli ala GetRich untuk 2 sampai 5 pemain bergantian di satu iPad (hotseat). Jalan di browser, satu file HTML, tanpa server.
+Monopoli satire yang cepat dan chaotic untuk 2 sampai 5 pemain bergantian di satu iPad (hotseat). Jalan di browser, satu file HTML, tanpa server.
 
 **Main sekarang:** https://adesyukmap.github.io/negeri-bedebah/ (buka di Safari iPad, mode landscape, lalu Share > Add to Home Screen)
 
 ## Fitur
 - Board isometrik 40 tile: kota-kota Indonesia, wisata, transportasi, PLN dan PDAM, Parkir Liar, Pajak, Kesempatan, Dana Umum.
-- Dua tema: **Politik "Negeri Para Koruptor"** (satire fenomena, semua tokoh fiktif) dan **Santai**.
+- Dua tema: **Politik "Negeri Bedebah"** (satire fenomena; semua tokoh, kasus, dan negeri fiktif) dan **Santai**.
 - Adegan layar penuh dengan tombol Skip: Breaking News, OTT talkshow, Kampanye Akbar plus konvoi, Serangan Fajar.
 - 21 karakter satire fiktif (tema Politik) dan 8 karakter Santai, masing-masing dengan pasif opsional. Dadu 3D, Bos Mafia Sawit pengocok dadu, gorong-gorong, gusur.
 - Tombol kecepatan 1x, 2x, 3x.

@@ -241,6 +241,7 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
   #actionbar{bottom:max(8px, env(safe-area-inset-bottom, 0px)); max-width:calc(100% - 190px)}
   #camBtn{bottom:max(8px, env(safe-area-inset-bottom, 0px))}
 }
+#splash .disclaimer{font-size:12px;line-height:1.35;opacity:.75;max-width:440px;text-align:center;margin:4px auto 10px;padding:0 16px}
 @media (prefers-reduced-motion: reduce){.rot-phone{animation:none; transform:rotate(-90deg)}}
 .wallet.rentpaid{background:#FDECEA; color:#A52A1E; font-weight:800; padding:8px 12px; border-radius:12px}
 @media (max-width:620px){.srow{flex-wrap:wrap}.sacts{width:100%; justify-content:flex-end}}
@@ -324,8 +325,9 @@ body:has(#modal.compact.right:not([hidden])) #camBtn{visibility:hidden}
 <div id="app">
   <section id="splash" class="screen">
     <div class="logo">Negeri<br>Bedebah</div>
-    <div class="tag">Monopoli satire ala GetRich: urus izin, gusur lawan, hindari OTT.</div>
+    <div class="tag">Monopoli satire: urus izin, gusur lawan, hindari OTT.</div>
     <div class="char-parade" id="parade"></div>
+    <div class="disclaimer">Semua tokoh, kasus, dan negeri dalam game ini fiktif. Kemiripan hanya kebetulan.</div>
     <div class="stack">
       <button class="btn" id="btnNew">Main Baru</button>
       <button class="btn ghost" id="btnResume" hidden>Lanjutkan Game</button>

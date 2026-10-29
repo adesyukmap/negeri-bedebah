@@ -13,7 +13,7 @@ function renderSlots(){var box=$('slotList');if(!box)return;box.innerHTML='';
   var nh=humanSlots().length;$('slotHint').textContent=nh===0?'Semua NPC: game jalan sendiri, kamu tinggal nonton.':nh===setup.count?'Semua pemain manusia, gantian di satu perangkat.':nh+' manusia lawan '+(setup.count-nh)+' NPC. NPC jalan sendiri.';}
 function show(id){['splash','lobby','pick','game'].forEach(function(s){$(s).hidden=s!==id;});if(id==='game')setTimeout(layout,0);syncMusic();}
 function seg(el,opts,val,onPick){el.innerHTML='';opts.forEach(function(o){var b=document.createElement('button');b.type='button';b.textContent=o[1];b.setAttribute('aria-pressed',String(o[0]===val));b.onclick=function(){play('tap');onPick(o[0]);seg(el,opts,o[0],onPick);};el.appendChild(b);});}
-function buildHint(){var L=THEMES[setup.theme].levels;$('buildHint').textContent=setup.build==='bertahap'?'Tiap kunjungan naik satu level: '+L.slice(0,4).join(', ')+', lalu '+L[4]+'.':'Boleh langsung ambil sampai '+L[2]+' dan lompat level, seperti GetRich.';}
+function buildHint(){var L=THEMES[setup.theme].levels;$('buildHint').textContent=setup.build==='bertahap'?'Tiap kunjungan naik satu level: '+L.slice(0,4).join(', ')+', lalu '+L[4]+'.':'Boleh langsung ambil sampai '+L[2]+' dan lompat level.';}
 function themeHint(){$('themeHint').textContent=THEMES[setup.theme].tag;$('passiveField').hidden=setup.theme!=='politik';$('newsLabel').textContent=THEMES[setup.theme].newsName;}
 function syncMoneyInput(){var mi=$('moneyInput');if(mi&&document.activeElement!==mi)mi.value=setup.money;}
 function initLobby(){

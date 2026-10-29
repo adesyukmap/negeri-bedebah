@@ -213,4 +213,11 @@ function storyBanner(now){var bn=STV.banner;if(!bn)return;var t=now-bn.t0,D=4200
   g.font='800 '+fsS+'px Nunito, sans-serif';g.fillStyle='rgba(255,255,255,.92)';lines.forEach(function(l,k){g.fillText(l,0,fsE*1.6+fsT*1.2+fsS*0.7+k*fsS*1.3);});
   g.restore();}
 function wrapLn(text,maxW){var words=text.split(' '),lines=[],cur='';words.forEach(function(wd){var t=cur?cur+' '+wd:wd;if(g.measureText(t).width>maxW&&cur){lines.push(cur);cur=wd;}else cur=t;});if(cur)lines.push(cur);return lines;}
+/* nameplate on the island showing the current babak; Karhutla blinks red while the fire burns */
+function storyPlate(now){if(!isPol()||!S||(typeof cineBusy==='function'&&CINE.open))return;var st=stStage(),info=STORY[st];if(!info)return;var nm=(info.n||'').toUpperCase(),K=ISL,p=iso(MID+K*0.05,MID+K*0.9,0),fs=Math.max(10,TW*0.12),col=BABAK_COL[st%BABAK_COL.length];
+  var burning=st===1&&burnFrac(now)>0.02,blink=burning?0.55+0.45*Math.abs(Math.sin(now/260)):1;
+  g.save();g.font='900 '+fs+'px "Baloo 2", Nunito, sans-serif';var tw=g.measureText(nm).width,pw=tw+fs*1.1,ph=fs*1.45,py=p.y-TH*0.55;
+  g.strokeStyle='#5A4030';g.lineWidth=Math.max(1.5,fs*0.14);g.beginPath();g.moveTo(p.x-pw*0.3,py);g.lineTo(p.x-pw*0.3,p.y);g.moveTo(p.x+pw*0.3,py);g.lineTo(p.x+pw*0.3,p.y);g.stroke();
+  rrect(p.x-pw/2,py-ph+fs*0.12,pw,ph,fs*0.3);g.fillStyle='rgba(0,0,0,.25)';g.fill();rrect(p.x-pw/2,py-ph,pw,ph,fs*0.3);g.fillStyle=burning?'rgba(198,40,40,'+blink+')':col;g.fill();
+  g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=Math.max(1,fs*0.08);g.stroke();g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.fillText(nm,p.x,py-ph/2+fs*0.05);g.restore();}
 function storyBarLabel(){if(!S||!S.kasMax)return ' → '+storyNext();if(S.imf)return ' · utang IMF, gaji -50%';var st=stStage();if(st>=8)return ' · hampir bangkrut';var th=KAS_STEPS[st];return ' · '+STORY[st+1].n+' di '+short(Math.round(S.kasMax*th))+'';}

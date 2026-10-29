@@ -64,7 +64,7 @@ function kasEmpty(){if(!polKas()||S.phase==='over')return;
   negaraBubar();}
 function negaraBubar(){var best=alivePlayers().sort(function(a,b){return assets(b.id)-assets(a.id);})[0];
   emit({t:'bubar',pid:best.id});toast('NEGARA BUBAR! Utang IMF pun habis. Semua pejabat kabur ke luar negeri. '+best.name+' bawa harta paling banyak.','bad big');
-  S.winner={pid:best.id,how:'Negara Bubar · Koruptor Terakhir'};S.phase='over';S.pending=null;S.anim=null;sfx('win');save();}
+  S.winner={pid:best.id,how:'Negara Bubar · Bedebah Terakhir'};S.phase='over';S.pending=null;S.anim=null;sfx('win');save();}
 var STORY=[{n:'Hutan Lebat'},{n:'Karhutla',t:'Titik api muncul di tengah hutan. Api mulai menjalar.'},{n:'Pemadaman',t:'Pesawat pemadam dan hujan datang. Api padam, hutan tinggal arang.'},
   {n:'Tanam Sawit',t:'Hutan mati. Mafia Sawit datang, lahan jadi konsesi.'},{n:'Panen Raya',t:'Sawit berbuah lebat. Truk bolak-balik ke pabrik.'},
   {n:'Proyek IKN',t:'Peletakan batu pertama ibu kota baru. Crane mulai berputar.'},{n:'Mangkrak',t:'Proyek berhenti. Crane diam, rumput tumbuh di tiang beton.'},
@@ -120,10 +120,10 @@ var THEMES={
       {id:'krismon',name:'Krismon',text:'Harga-harga naik. Semua pemain bayar 10% uang tunai ke kas.'},
       {id:'demo',name:'Jalan Ditutup Karnaval',text:'Satu kota dipakai karnaval. Sewanya nol selama ronde ini.'}],
     fajarName:'Bagi-bagi Angpao', fajarText:'Ronde terakhir! Semua pemain dapat amplop, kecuali yang lagi terdampar.'},
-  politik:{id:'politik',name:'Politik',tag:'Negeri Para Koruptor: bangun pabrik, rebut konsesi, hindari OTT.',levels:['Izin Lahan','Pabrik','Tambang','Kawasan Industri','Proyek Strategis'],
+  politik:{id:'politik',name:'Politik',tag:'Negeri Bedebah: bangun pabrik, rebut konsesi, hindari OTT.',levels:['Izin Lahan','Pabrik','Tambang','Kawasan Industri','Proyek Strategis'],
     typeNames:{start:'Gajian Pejabat',jail:'Lapas',festival:'Kampanye Akbar',pelni:'Gorong-gorong',tax:'Pungli',chance:'Manuver',dana:'Dana Hibah',parkir:'Parkir Liar'},
     names:{'Raja Ampat':'Konsesi Laut','Borobudur':'Konsesi Nikel','Danau Toba':'Reklamasi','Gunung Bromo':'Kebun Sawit','Bandara':'Jet Pribadi Pejabat','Pelabuhan':'Pelabuhan Ekspor Nikel','Stasiun Kereta Cepat':'Kereta Cepat Utang','Terminal Bus':'Bus Studi Banding'},
-    ottCases:['Maling dana bansos, Mbak.','Saya cuma maling duit rakyat dikit, Mbak.','Proyek KTP elektronik.','Saya dituduh korupsi impor gula, padahal nggak!','Izin tambang timah.','Kuota haji tambahan.','Bakar hutan buat buka lahan sawit.','Izin ekspor minyak goreng waktu lagi langka.','Proyek menara BTS di pelosok.','Dana pensiun dan asuransi negara.','Proyek wisma atlet yang mangkrak.','Suap hakim biar vonis ringan.','Dana desa buat beli mobil.','Jual beli jabatan di daerah.','Pengadaan alat kesehatan waktu pandemi.','Impor daging sapi.','Ekspor benih lobster.','BBM dioplos, Mbak.','Proyek simulator SIM.','Dana hibah dipotong buat kampanye.','Pengadaan seragam dan sepatu dinas.'],
+    ottCases:['Maling dana bansos, Mbak.','Saya cuma maling duit rakyat dikit, Mbak.','Proyek KTP elektronik di Negeri Konoha.','Saya dituduh korupsi impor gula di Negeri Konoha, padahal nggak!','Izin tambang timah di Negeri Konoha.','Kuota haji tambahan di Negeri Konoha.','Bakar hutan buat buka lahan sawit.','Izin ekspor minyak goreng di Negeri Konoha waktu lagi langka.','Proyek menara BTS di pelosok Negeri Konoha.','Dana pensiun dan asuransi Negeri Konoha.','Proyek wisma atlet Negeri Konoha yang mangkrak.','Suap hakim biar vonis ringan.','Dana desa buat beli mobil.','Jual beli jabatan di daerah.','Pengadaan alat kesehatan di Negeri Konoha waktu pandemi.','Impor daging sapi di Negeri Konoha.','Ekspor benih lobster di Negeri Konoha.','BBM dioplos di Negeri Konoha, Mbak.','Proyek simulator SIM di Negeri Konoha.','Dana hibah dipotong buat kampanye.','Pengadaan seragam dan sepatu dinas.'],
     wisataLabel:'Konsesi', chanceName:'Manuver', danaName:'Dana Hibah', kasName:'Kas Negara', newsName:'Breaking News', jailVerb:'ditahan',
     chance:[
       K('Kena OTT!','Ketahuan maling duit rakyat. Pakai rompi oranye, langsung ke Lapas.','bad','jail',0,{anim:'ott'}),
