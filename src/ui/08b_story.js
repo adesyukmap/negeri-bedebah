@@ -13,7 +13,7 @@ function storySkip(){return; /* center events are not skippable (design: the mid
   if(tr&&tr.stage===3)cam.focusUntil=now+3300;else cam.focusUntil=Math.min(cam.focusUntil,now+700);}
 function stOnce(tr,key,te,at,fn){tr.f=tr.f||{};if(tr.f[key]||te<at)return;tr.f[key]=1;if(te<at+700)fn();}
 /* called from drainEvents */
-function onStoryEvent(e,now){var st=e.stage,len=st===2?SEQ2.end:st===3?7000:0;
+function onStoryEvent(e,now){if(typeof vo==='function')setTimeout(function(){vo('story_'+e.stage);},900);var st=e.stage,len=st===2?SEQ2.end:st===3?7000:0;
   STV.trans={stage:st,t0:now,len:len};STV.since=now;STV.stage=st;STV.banner={stage:st,t0:now};
   STV.hold=now+Math.max(len,lockMs());cam.focus={u:MID,v:MID+0.3,zoom:1.75};cam.focusUntil=STV.hold+200;
   if(st===1){play('fire');}

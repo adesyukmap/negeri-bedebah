@@ -34,7 +34,7 @@ function bandText(x,y,text,fs,bg,fg,skew,font){g.save();g.font=font||('900 '+fs+
 function flashes(w,h,t,seed,n){for(var k=0;k<(n||5);k++){var ph=(t*1.7+hash(k,seed))%1;if(ph<0.08){var a=1-ph/0.08,x=hash(k,seed+1)*w,y=h*0.15+hash(k,seed+2)*h*0.35;var gr=g.createRadialGradient(x,y,0,x,y,w*0.12);gr.addColorStop(0,'rgba(255,255,255,'+(0.9*a)+')');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(x-w*0.12,y-w*0.12,w*0.24,w*0.24);}}}
 function skyline(w,y,h,col,seed){g.fillStyle=col;g.beginPath();g.moveTo(0,y);var x=0;var k=0;while(x<w){var bw=w*(0.03+hash(k,seed)*0.05),bh=h*(0.3+hash(k,seed+1)*0.7);g.lineTo(x,y-bh);g.lineTo(x+bw,y-bh);x+=bw;k++;}g.lineTo(w,y);g.closePath();g.fill();}
 var CINE_SCENES={
-  news:function(w,h,t,e,now){var pol=isPol();if(t>1.0)once('kb',function(){play('newsType');});
+  news:function(w,h,t,e,now){var pol=isPol();if(t>1.0)once('kb',function(){play('newsType');});if(t>1.4)once('vonews',function(){vo('news_'+S.theme+'_'+e.id);});
     once('s',function(){play('news');});if(t>0.35)once('hit',function(){play('sting');play('slam',0.6);});
     var bg=g.createLinearGradient(0,0,0,h);bg.addColorStop(0,pol?'#1A0A12':'#0A2338');bg.addColorStop(1,pol?'#3A0E16':'#12456A');g.fillStyle=bg;g.fillRect(0,0,w,h);
     g.save();g.globalAlpha=0.08;g.fillStyle='#fff';for(var k=0;k<14;k++){var x=((k*w/7+now*0.05)%(w*2))-w*0.5;g.beginPath();g.moveTo(x,0);g.lineTo(x+w*0.06,0);g.lineTo(x-w*0.2,h);g.lineTo(x-w*0.26,h);g.fill();}g.restore();
@@ -79,7 +79,7 @@ var CINE_SCENES={
     var fs=Math.max(16,Math.min(w*0.022,h*0.036));
     if(t>0.8)once('host',function(){play('host');});
     if(t>0.8&&t<3.0)speech(hostX+s*0.1,fy-s*1.05,typed((isFemale(p.char)?'Ibu':'Bapak')+' ketangkap kasus apa?',t,0.8,26),fs,w*0.28,{anchor:'l',W:w});
-    if(t>3.0)once('vcase',function(){var ck=caseKey(e.caseText);if(ck)vo(ck);});
+    if(t>3.0)once('vcase',function(){var ck=caseKey(e.caseText);if(ck)vo(ck,e.pid);});
     if(t>3.0&&t<6.6)speech(tokX,fy-s*1.02,'"'+typed(e.caseText||'Saya cuma lewat, Mbak.',t,2.8,30)+'"',fs,w*0.34,{anchor:'r',W:w});
     if(t>=6.6){var pp=Math.max(0.3,easeBack((t-6.6)/0.35));speech(tokX,fy-s*1.05,'Saya akan lawan!',fs*1.35*pp,w*0.4,{bg:'#FFE27A',stroke:'#C62828',weight:900,W:w});once('lw',function(){play('slam',0.4);play('quip:lawan');});}
     flashes(w,h,t,11,6);
@@ -119,7 +119,7 @@ var CINE_SCENES={
     rrect(w/2-ts*0.3,sy-h*0.13-ts*0.3,ts*0.6,ts*0.3,ts*0.04);g.fillStyle='#E8E2D2';g.fill();
     var fs=Math.max(16,Math.min(w*0.022,h*0.036));
     if(t>0.8&&t<4.8)speech(w/2+ts*0.2,h*0.62,typed('Saudara-saudara! '+city+' akan kita bangun jadi kota cuan!',t,0.8,30),fs,w*0.34,{W:w,anchor:'l'});
-    var slg=sloganText(e.slogan||0,city);if(t>=5)once('slg',function(){vo('kamp_'+((e.slogan||0)%SLOGANS.length+1));});if(t>=5)speech(w/2+ts*0.2,h*0.62,typed(slg,t,5,30),fs,w*0.34,{W:w,bg:'#FFE27A',anchor:'l'});
+    var slg=sloganText(e.slogan||0,city);if(t>=5)once('slg',function(){vo('kamp_'+((e.slogan||0)%SLOGANS.length+1),e.pid);});if(t>=5)speech(w/2+ts*0.2,h*0.62,typed(slg,t,5,30),fs,w*0.34,{W:w,bg:'#FFE27A',anchor:'l'});
     for(var r=0;r<3;r++)for(var c=0;c<14;c++){var x=w*(c+0.5+(r%2)*0.5)/14,y=h*(0.84+r*0.07),bob=Math.abs(Math.sin(now/200+c*1.3+r))*h*0.015,sh=['#E2483D','#F2C230','#2F80ED','#2E9E5B','#fff'][(c+r)%5];
       g.strokeStyle='#5A4A3A';g.lineWidth=2;g.beginPath();g.moveTo(x+h*0.02,y-h*0.07-bob);g.lineTo(x+h*0.02,y-h*0.14-bob);g.stroke();g.fillStyle=(c+r)%3?p.color:'#fff';g.beginPath();g.moveTo(x+h*0.02,y-h*0.14-bob);g.lineTo(x+h*0.07+Math.sin(now/120+c)*h*0.006,y-h*0.125-bob);g.lineTo(x+h*0.02,y-h*0.11-bob);g.fill();
       drawMiniPerson(x,y-bob,h*0.1,sh,Math.sin(now/150+c),false);}
@@ -141,7 +141,7 @@ function afterOverlay(fn,extra){PEND.push({fn:fn,ready:null,extra:extra||0});}
 function processPend(now){var clear=!cineBusy()&&$('modal').hidden;for(var i=PEND.length-1;i>=0;i--){var p=PEND[i];if(!clear){p.ready=null;continue;}if(p.ready==null)p.ready=now+800+p.extra;if(now>=p.ready){PEND.splice(i,1);try{p.fn(now);}catch(e){console.error(e);}}}}
 /* quips: fictional characters' satirical one-liners */
 var QUIP_TEXT={mic:'Maaf, mic-nya mati.',sogok:'Hakimnya pengertian banget.',lawan:'Saya akan lawan!',sorry:'Sorry ye!',repot:'Gitu aja kok repot!',asing:'Ini ulah antek-antek asing!'};
-function addQuip(pid,text,dur,key){if(key)play('quip:'+key);QUIPS=QUIPS.filter(function(q){return q.pid!==pid;});QUIPS.push({pid:pid,text:text,t0:performance.now(),dur:dur||2800});}
+function addQuip(pid,text,dur,key){if(key)play('quip:'+key+(typeof isFem==='function'&&isFem(pid)&&key!=='mic'?'_f':''));QUIPS=QUIPS.filter(function(q){return q.pid!==pid;});QUIPS.push({pid:pid,text:text,t0:performance.now(),dur:dur||2800});}
 function drawQuips(now){QUIPS=QUIPS.filter(function(q){var t=(now-q.t0)/q.dur;if(t>1)return false;if(t<0)return true;if(CONVOY&&CONVOY.pid===q.pid)return true;var tp=tokenPos(q.pid,now),b=iso(tp.u,tp.v,tp.z+TW*0.62),sc=easeBack(Math.min(1,t*q.dur/250));
   g.save();g.globalAlpha=t>0.85?(1-t)/0.15:1;speech(b.x,b.y,q.text,Math.max(13,TW*0.13)*Math.max(0.3,sc),TW*2.4,{W:CW,weight:900,stroke:'#4A3426'});g.restore();return true;});}
 /* world actors: preman (pungli), tukang parkir */

@@ -40,7 +40,7 @@ CINE_SCENES.court=function(w,h,t,e,now){
   courtTitle(w,h,t,kind==='sogok'?'SIDANG TIPIKOR':'SIDANG BANDING');
   var hX=B.x-B.w*0.05,hY=h*0.56-s*1.08;
   if(kind==='sogok'){
-    if(t>0.8)once('v1',function(){vo('hakim_tanya');});if(t>3.0)once('v2',function(){vo('token_tertulis');});if(t>6.4)once('v3',function(){vo('hakim_kurang');});if(t>8.4)once('v4',function(){vo('sipir_lihat');});
+    if(t>0.8)once('v1',function(){vo('hakim_tanya');});if(t>3.0)once('v2',function(){vo('token_tertulis',e.pid);});if(t>6.4)once('v3',function(){vo('hakim_kurang');});if(t>8.4)once('v4',function(){vo('sipir_lihat');});
     if(t>0.8&&t<3.2)speech(hX,hY,typed('Terdakwa '+nm+', ada pembelaan?',t,0.8,30),fs,w*0.3,{anchor:'r',W:w});
     if(t>3.0&&t<6.0)speech(tokX,fy-s*1.25,'"'+typed('Ada, Yang Mulia. Ini pembelaan tertulis.',t,3.0,30)+'"',fs,w*0.32,{anchor:'r',W:w});
     if(t>3.8&&t<5.4){var k=easeOut((t-3.8)/1.4),sx=tokX-s*0.35,sy=fy-s*0.55,ex=B.x+B.w*0.2,ey=B.y+B.h*0.75;envelope(sx+(ex-sx)*k,sy+(ey-sy)*k-Math.sin(k*Math.PI)*h*0.12,s*1.1,k*0.5);once('env',function(){play('whoosh');});}
@@ -51,7 +51,7 @@ CINE_SCENES.court=function(w,h,t,e,now){
     bigVerdict(w,h,t,slamAt,'BEBAS!','Kurang bukti, Rp'+((e.fee||0)/1000)+'rb masuk laci','#2C9A55');
     if(t>8.4)speech(w*0.16,fy-s*1.15,typed('Saya nggak lihat apa-apa.',t,8.4,30),fs*0.92,w*0.26,{anchor:'l',W:w,bg:'#E8F0FF'});
   }else{
-    if(t>0.8)once('v1',function(){vo('hakim_banding');});if(t>2.4)once('v2',function(){vo('pengacara');});if(t>5.0)once('v3',function(){vo('hakim_putus');});if(t>slamAt+0.1)once('v4',function(){vo(e.ok?'hakim_kabul':'hakim_tolak');});if(t>slamAt+0.7&&e.ok)once('v5',function(){vo('token_bijak');});
+    if(t>0.8)once('v1',function(){vo('hakim_banding');});if(t>2.4)once('v2',function(){vo('pengacara');});if(t>5.0)once('v3',function(){vo('hakim_putus');});if(t>slamAt+0.1)once('v4',function(){vo(e.ok?'hakim_kabul':'hakim_tolak');});if(t>slamAt+0.7&&e.ok)once('v5',function(){vo('token_bijak',e.pid);});
     if(t>0.8&&t<3.0)speech(hX,hY,typed('Sidang banding '+bu+' '+nm+' dibuka.',t,0.8,30),fs,w*0.3,{anchor:'r',W:w});
     if(t>2.4&&t<5.0)speech(w*0.2,fy-s*1.25,typed('Klien saya korban kriminalisasi, Yang Mulia!',t,2.4,32),fs,w*0.32,{anchor:'l',W:w});
     if(t>5.0&&t<slamAt+0.1){speech(hX,hY,typed('Majelis memutuskan...',t,5.0,22),fs*1.05,w*0.3,{anchor:'r',W:w});once('drum',function(){play('rattle');});}
@@ -79,7 +79,7 @@ function courtCell(w,h,t,e,now,p,fs){
   g.fillStyle='#2A2E34';for(var b=0;b<14;b++){var bx=w*(0.02+b*0.075);g.fillRect(bx,0,w*0.012,h);g.fillStyle='rgba(255,255,255,.12)';g.fillRect(bx,0,w*0.003,h);g.fillStyle='#2A2E34';}
   g.fillRect(0,h*0.06,w,h*0.02);g.fillRect(0,h*0.78,w,h*0.02);
   courtTitle(w,h,t,'HARI KE-'+day+' DI SEL');
-  var pi=(e.pair||0)%SEL_PAIRS.length,pr=SEL_PAIRS[pi];if(t>0.9)once('k',function(){vo('sel_k'+(pi+1));});if(t>3.4)once('s',function(){vo('sel_s'+(pi+1));});
+  var pi=(e.pair||0)%SEL_PAIRS.length,pr=SEL_PAIRS[pi];if(t>0.9)once('k',function(){vo('sel_k'+(pi+1),e.pid);});if(t>3.4)once('s',function(){vo('sel_s'+(pi+1));});
   if(t>0.9&&t<3.4)speech(w*0.66,h*0.9-s*1.05,typed(pr[0],t,0.9,28),fs,w*0.3,{anchor:'r',W:w});
   if(t>3.4)speech(w*0.4,h*0.94-s*1.0,typed(pr[1],t,3.4,30),fs,w*0.32,{anchor:'l',W:w,bg:'#E8F0FF'});
   if(t>4.6)pill(w*0.5,h*0.16,'Masih '+(e.left||1)+' giliran lagi',Math.max(13,fs*0.85),'rgba(0,0,0,.7)','#FFD95A');
@@ -97,7 +97,7 @@ function courtGate(w,h,t,e,now,p,fs){
   drawChar(p.char,px,h*0.95,s*1.05,p.color,{expr:'happy'});
   flashes(w,h,t,21,8);if(t>0.6)once('cam',function(){play('camera');setTimeout(function(){play('camera');},350);});
   bigVerdict(w,h,t,2.4,'BEBAS!',e.how==='double'?'Double! Lolos dari jeruji':'Masa tahanan habis','#2C9A55');
-  if(t>3.4)once('vb',function(){vo('bebas');});
+  if(t>3.4)once('vb',function(){vo('bebas',e.pid);});
   if(t>3.4)speech(px,h*0.95-s*1.1,typed('Saya kembali untuk rakyat!',t,3.4,28),fs*1.1,w*0.32,{anchor:'r',W:w,bg:'#FFE27A',weight:900});
   irisIn(w,h,t);
 }

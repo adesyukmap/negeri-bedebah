@@ -24,6 +24,7 @@ var VO_LINES={
 (function(){SLOGANS.forEach(function(s,i){VO_LINES['kamp_'+(i+1)]=['orator',s.replace(/\{city\}/g,'kota ini')];});
   SEL_PAIRS.forEach(function(p,i){VO_LINES['sel_k'+(i+1)]=['token',p[0]];VO_LINES['sel_s'+(i+1)]=['sipir',p[1]];});
   if(typeof THEMES!=='undefined'&&THEMES.politik&&THEMES.politik.ottCases)THEMES.politik.ottCases.forEach(function(c,i){VO_LINES['case_'+(i+1)]=['token',c];});})();
-function vo(key){if(typeof play==='function')play('vo:'+key);}
+/* vo(key, pid): when the speaker is a female character, her line is the _f take (female voice) */
+function vo(key,pid){if(typeof play!=='function')return;if(pid!=null&&typeof isFem==='function'&&isFem(pid)&&VO_LINES[key+'_f'])key=key+'_f';play('vo:'+key);}
 function caseKey(text){var cs=(typeof THEMES!=='undefined'&&THEMES.politik&&THEMES.politik.ottCases)||[];var i=cs.indexOf(text);return i>=0?'case_'+(i+1):null;}
 function sloganText(i,city){return SLOGANS[i%SLOGANS.length].replace(/\{city\}/g,city);}

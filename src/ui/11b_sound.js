@@ -2,12 +2,13 @@
 var SLOT_GROUPS=[
   {id:'char',name:'Karakter',hint:'Suara giliran: diputar saat giliran pindah ke karakter ini.',slots:function(){return CHARS.map(function(c){return {k:'voice:'+c.id,label:c.name,sub:'Suara giliran',char:c.id};});}},
   {id:'quip',name:'Celetukan & tokoh',hint:'Dialog tokoh fiktif di dalam game. Kosong = tanpa suara.',slots:function(){return [
-    {k:'quip:lawan',label:'"Saya akan lawan!"',sub:'Token setelah OTT'},{k:'quip:sorry',label:'"Sorry ye!"',sub:'Setelah gusur'},
-    {k:'quip:repot',label:'"Gitu aja kok repot!"',sub:'Pemilik dapat sewa besar'},{k:'quip:asing',label:'"Ini ulah antek-antek asing!"',sub:'Proyek mangkrak'},
     {k:'host',label:'Mbak Host bertanya',sub:'"Bapak/Ibu ketangkap kasus apa?"'},{k:'preman',label:'Preman pungli',sub:'"Uang keamanan, Bos!"'},
     {k:'tukang',label:'Tukang parkir',sub:'"2rebu ga bikin lo miskin, boss!" (tarif ikut naik)'},{k:'mafia',label:'Bos Mafia lempar dadu',sub:'Tawa atau teriakan saat melempar'},
     {k:'mic',label:'Orasi kampanye',sub:'Awal adegan Kampanye Akbar'},{k:'semaksimal',label:'"Kami sudah berusaha semaksimal mungkin"',sub:'Gemoy raksasa saat pemadaman'}];}},
-  {id:'vo',name:'Voice over adegan',hint:'Suara dialog di adegan dan papan. Kosong = tanpa suara sampai file Hermes masuk.',slots:function(){var L=[{k:'quip:bayarDulu',label:'"Bayar dulu, Bos!"',sub:'Pemilik tanah, saat tidak bisa digusur'},{k:'quip:sialan',label:'"Sialan lu!"',sub:'Balasan token'}];Object.keys(typeof VO_LINES!=='undefined'?VO_LINES:{}).forEach(function(k){L.push({k:'vo:'+k,label:'"'+VO_LINES[k][1]+'"',sub:VO_LINES[k][0]});});return L;}},
+  {id:'vochr',name:'Suara karakter',hint:'Kalimat tiap karakter: dipilih, pasif aktif, menang. Karakter perempuan pakai suara perempuan.',slots:function(){var L=[];Object.keys(typeof VO_LINES!=='undefined'?VO_LINES:{}).forEach(function(k){if(k.indexOf('chr_')!==0||/_giliran$/.test(k))return;var id=k.split('_')[1],c=CHARS.filter(function(x){return x.id===id;})[0];L.push({k:'vo:'+k,label:'"'+VO_LINES[k][1]+'"',sub:(c?c.name:id)+' · '+k.split('_').pop(),char:id});});return L;}},
+  {id:'vo',name:'Voice over adegan',hint:'Suara dialog di adegan dan papan. Akhiran _f = versi suara perempuan untuk karakter perempuan. Kosong = tanpa suara sampai file Hermes masuk.',slots:function(){var L=[];Object.keys(QUIP_LINES).forEach(function(q){L.push({k:'quip:'+q,label:'"'+QUIP_LINES[q]+'"',sub:'Celetukan'+(q==='mic'?' (perempuan)':' (laki-laki)')});if(q!=='mic')L.push({k:'quip:'+q+'_f',label:'"'+QUIP_LINES[q]+'"',sub:'Celetukan (perempuan)'});});
+    Object.keys(typeof VO_LINES!=='undefined'?VO_LINES:{}).forEach(function(k){if(/^(chr_|story_|news_|card_|ev_)/.test(k))return;L.push({k:'vo:'+k,label:'"'+VO_LINES[k][1]+'"',sub:VO_LINES[k][0]});});return L;}},
+  {id:'vonar',name:'Narator: kartu, berita, cerita',hint:'Narator membacakan nama kartu, Breaking News, babak cerita, dan event besar.',slots:function(){var L=[];Object.keys(typeof VO_LINES!=='undefined'?VO_LINES:{}).forEach(function(k){if(/^(story_|news_|card_|ev_)/.test(k))L.push({k:'vo:'+k,label:'"'+VO_LINES[k][1]+'"',sub:k.split('_')[0]});});return L;}},
   {id:'event',name:'Event',hint:'Ganti efek suara bawaan. Hapus untuk kembali ke bawaan.',slots:function(){return [
     {k:'tap',label:'Tombol'},{k:'rattle',label:'Kocok dadu'},{k:'slam',label:'Dadu mendarat'},{k:'hop',label:'Token melangkah'},
     {k:'buy',label:'Beli / ambil aset'},{k:'build',label:'Bangun'},{k:'takeover',label:'Gusur / takeover'},{k:'collapse',label:'Bangunan runtuh / mangkrak'},
@@ -33,7 +34,7 @@ var WARM={q:null,on:false};
 function warmSounds(){if(!AC||WARM.q)return;WARM.q=[];for(var k in USER_RAW)WARM.q.push(['u',k]);if(typeof SAMPLES!=='undefined')for(var s in SAMPLES)WARM.q.push(['s',s]);
   (function step(){var n=0;while(WARM.q.length&&n<4){var it=WARM.q.shift();if(it[0]==='u'){if(!USER_BUF[it[1]])decodeInto(USER_BUF,it[1],USER_RAW[it[1]]);}else if(!SAMPLE_BUF[it[1]]){decodeInto(SAMPLE_BUF,it[1],b64buf(SAMPLES[it[1]]));n++;}}if(WARM.q.length)setTimeout(step,120);})();}
 function warmOne(b){if(b&&typeof SAMPLES!=='undefined'&&SAMPLES[b]&&!SAMPLE_BUF[b]&&!(SAMPLE_BUF._p&&SAMPLE_BUF._p[b])){(SAMPLE_BUF._p=SAMPLE_BUF._p||{})[b]=1;decodeInto(SAMPLE_BUF,b,b64buf(SAMPLES[b]));}}
-function builtinOf(n){return BUILTIN[n]||(n.indexOf('vo:')===0?'vo_'+n.slice(3):null);}
+function builtinOf(n){return BUILTIN[n]||(n.indexOf('vo:')===0?'vo_'+n.slice(3):n.indexOf('voice:')===0?'vo_chr_'+n.slice(6)+'_giliran':n.indexOf('quip:')===0?'v_quip_'+n.slice(5):null);}
 function bufFor(n){if(USER_RAW[n]){if(USER_BUF[n])return USER_BUF[n];decodeInto(USER_BUF,n,USER_RAW[n]);return null;}var b=builtinOf(n);if(b&&SAMPLE_BUF[b])return SAMPLE_BUF[b];warmOne(b);return null;}
 function playBuf(b,n,vol){var s=AC.createBufferSource(),gn=AC.createGain();s.buffer=b;gn.gain.value=vol==null?(SVOL[n]!=null?SVOL[n]:0.9):vol;s.connect(gn);gn.connect(AC.destination);s.start();PLAYING[n]=AC.currentTime+b.duration;SRC[n]=s;s.onended=function(){if(SRC[n]===s)delete SRC[n];};return s;}
 function hasSound(n){var b=builtinOf(n);return !!(USER_RAW[n]||(b&&typeof SAMPLES!=='undefined'&&SAMPLES[b]));}

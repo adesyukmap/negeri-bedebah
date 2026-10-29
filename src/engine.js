@@ -385,7 +385,7 @@ function liquidate(pid,need){
 }
 function goBankrupt(pid){var p=P(pid); p.bankrupt=true; p.inJail=false; p.pelni=false;
   var tl=ownedTiles(pid);emit({t:'collapse',tiles:tl.map(function(i){return {i:i,level:S.tiles[i].level,color:p.color};})}); tl.forEach(releaseTile);
-  toast(p.name+' BANGKRUT!','bad big'); sfx('broke'); checkWin();}
+  toast(p.name+' BANGKRUT!','bad big'); sfx('broke'); emit({t:'bankrupt',pid:pid}); checkWin();}
 function checkWin(){
   if(S.phase==='over')return true;
   var alive=alivePlayers(), w=null;

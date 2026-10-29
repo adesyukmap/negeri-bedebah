@@ -647,3 +647,11 @@ Status: dibangun kecuali yang ditandai.
 - Kasus OTT yang mirip kasus nyata tetap, ditambah "di Negeri Konoha" (KTP elektronik, impor gula, tambang timah, kuota haji, minyak goreng, BTS, dana pensiun, wisma atlet, alkes, daging sapi, benih lobster, BBM oplos, simulator SIM).
 - Penafian di layar judul: "Semua tokoh, kasus, dan negeri dalam game ini fiktif. Kemiripan hanya kebetulan."
 - Papan nama babak cerita di pulau tengah, tampil selama babak berjalan (Karhutla merah berkedip selama api menyala).
+
+## 28. Semua suara (29 Okt 2026, 14.30)
+- Registri suara lengkap: 336 file (`src/ui/09f_vo.js` + `09h_lines.js`). Brief MASTER VO di hermes-office bagian 13, status per file di `VO-STATUS.md`.
+- **Karakter:** tiap karakter punya kalimat giliran, dipilih di lobby, pasif aktif (Politik), dan menang. Karakter perempuan (Mak Banteng, Ratu Pajak, Mbak Mic Mati, Mbak Cuan, Nenek Licik, Dewi Penari) pakai kinta/vina.
+- **Kalimat token di adegan** punya versi `_f`; game otomatis memakai versi perempuan kalau pemainnya karakter perempuan. Celetukan juga (`quip:x_f`).
+- **Narator (kinta):** nama kartu saat diambil, Breaking News, tiap babak cerita, Proyek Strategis berdiri, penggusuran, bangkrut, serangan fajar.
+- Sound Studio dibagi: Suara karakter, Voice over adegan, Narator. Klip manual pemain tetap menang dari bawaan.
+- Impor: `python3 tools/import_vo.py <hermes-office>/audio/kepulauan-cuan` pilih take terbaik lewat transkrip whisper, potong ekor, simpan `assets/sfx/vo_<key>.m4a`, tandai VO-STATUS. File yang sudah ada tidak ditimpa.

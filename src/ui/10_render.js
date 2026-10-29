@@ -160,18 +160,19 @@ function hudEvent(e,now){
     else if(e.t==='sfx')play(e.n);
     else if(e.t==='dice'){startDiceRoll(now);onStoryRoll(now);}
     else if(e.t==='story'){onStoryEvent(e,now);}
-    else if(e.t==='landmark'){landFx.push({tile:e.tile,t0:now+600});focusTile(e.tile,2000);}
+    else if(e.t==='landmark'){landFx.push({tile:e.tile,t0:now+600});focusTile(e.tile,2000);vo(isPol()?'ev_landmark':'ev_landmark_s');}
+    else if(e.t==='bankrupt'){(function(){afterOverlay(function(){vo('ev_bangkrut');},300);})();}
     else if(e.t==='build'){FX.build[e.tile]={t0:now,level:e.level};focusTile(e.tile,1300);var bz=ZN[e.tile];coinBurst(tokenPos(S.current,now),{u:bz.bu,v:bz.bv,z:DZ+TH*0.5},5,now);}
-    else if(e.t==='takeover'){(function(e){var tk={t0:Infinity,fromColor:S.players[e.from].color,toColor:S.players[e.to].color};FX.take[e.tile]=tk;afterOverlay(function(n2){tk.t0=n2;EXPR[e.to]={e:'tease',until:n2+2600};focusTile(e.tile,TK_DUR+400);if(isPol()){play('bulldoze');setTimeout(function(){play('bulldoze');},1000);setTimeout(function(){play('stamp');FX.shake={t0:performance.now(),amt:TW*0.025,dur:300};},1750);setTimeout(function(){play('stamp');FX.shake={t0:performance.now(),amt:TW*0.03,dur:300};},2350);}else setTimeout(function(){play('stamp');},1400);setTimeout(function(){FX.shake={t0:performance.now(),amt:TW*0.05,dur:500};play('takeover');play('collapse');},2620);});})(e);}
+    else if(e.t==='takeover'){if(isPol())vo('ev_gusur');(function(e){var tk={t0:Infinity,fromColor:S.players[e.from].color,toColor:S.players[e.to].color};FX.take[e.tile]=tk;afterOverlay(function(n2){tk.t0=n2;EXPR[e.to]={e:'tease',until:n2+2600};focusTile(e.tile,TK_DUR+400);if(isPol()){play('bulldoze');setTimeout(function(){play('bulldoze');},1000);setTimeout(function(){play('stamp');FX.shake={t0:performance.now(),amt:TW*0.025,dur:300};},1750);setTimeout(function(){play('stamp');FX.shake={t0:performance.now(),amt:TW*0.03,dur:300};},2350);}else setTimeout(function(){play('stamp');},1400);setTimeout(function(){FX.shake={t0:performance.now(),amt:TW*0.05,dur:500};play('takeover');play('collapse');},2620);});})(e);}
     else if(e.t==='festival'){if(isPol()&&e.pid!=null)queueCine('kampanye',{pid:e.pid,tile:e.tile,slogan:Math.floor(Math.random()*SLOGANS.length),onEnd:startConvoy});else{landFx.push({tile:e.tile,t0:now});focusTile(e.tile,1800);}}
     else if(e.t==='money'&&S){var tp=tokenPos(e.pid,now);floaters.push({u:tp.u,v:tp.v,z:tp.z+TW*0.6,text:(e.d>0?'+':'-')+short(Math.abs(e.d)),color:e.d>0?'#1E8A4C':'#D03A2F',t0:now+floaters.length*90});
       if(Math.abs(e.d)>=100000)EXPR[e.pid]={e:e.d>0?'happy':'shock',until:now+1800};}
     else if(e.t==='transfer'){coinBurst(tokenPos(e.from,now),tokenPos(e.to,now),Math.min(12,3+Math.round(e.amt/80000)),now);}
     else if(e.t==='toKas'){coinBurst(tokenPos(e.from,now),{u:MID,v:MID,z:ZS*0.6},Math.min(10,3+Math.round(e.amt/80000)),now);}
     else if(e.t==='gain'){var tg=tokenPos(e.pid,now);coinRain(tg,6,now);}
-    else if(e.t==='lmUp'){landFx.push({tile:e.tile,t0:now});focusTile(e.tile,1600);FX.lmPop=FX.lmPop||{};FX.lmPop[e.tile]=now;vo('lm_up');(function(e){var q=ZN[e.tile];if(q)floaters.push({u:q.bu,v:q.bv,z:TW*1.6,text:'SEWA x'+e.mult,color:e.mult>=16?'#C62828':e.mult>=4?'#E07A1F':'#B8860B',t0:now+200,dur:2600,big:1.6});})(e);}
+    else if(e.t==='lmUp'){landFx.push({tile:e.tile,t0:now});focusTile(e.tile,1600);FX.lmPop=FX.lmPop||{};FX.lmPop[e.tile]=now;vo('lm_up',e.pid);(function(e){var q=ZN[e.tile];if(q)floaters.push({u:q.bu,v:q.bv,z:TW*1.6,text:'SEWA x'+e.mult,color:e.mult>=16?'#C62828':e.mult>=4?'#E07A1F':'#B8860B',t0:now+200,dur:2600,big:1.6});})(e);}
     else if(e.t==='nuke'){queueCine('nuke',{pid:e.pid,tile:e.tile,owner:e.owner,dur:8500,onEnd:function(){FX.collapse.push({i:e.tile,level:e.level,color:e.color,t0:performance.now()});play('collapse');focusTile(e.tile,1600);}});}
-    else if(e.t==='unseal'){landFx.push({tile:e.tile,t0:now});vo('segel_cabut');}
+    else if(e.t==='unseal'){landFx.push({tile:e.tile,t0:now});vo('segel_cabut',e.pid);}
     else if(e.t==='imf'){queueCine('imf',{dur:20000,amt:e.amt});}
     else if(e.t==='bubar'){queueCine('bubar',{dur:14000,pid:e.pid});}
     else if(e.t==='blusukan'){queueCine('blusukan',{pid:e.pid,tile:e.tile,dur:9600});}
@@ -184,7 +185,7 @@ function hudEvent(e,now){
     else if(e.t==='forest'){FX.forest={t0:now,from:e.stage-1,to:e.stage};cam.focus={u:MID,v:MID,zoom:1.6};cam.focusUntil=now+3600;play('cough');setTimeout(function(){play('cough');},1500);}
     else if(e.t==='beachParty'){FX.beach=now;cam.focus={u:MID,v:MID,zoom:1.6};cam.focusUntil=now+3000;}
     else if(e.t==='news'){queueCine('news',{id:e.id,name:e.name,text:e.text,tile:e.tile,onEnd:function(d){if(d.tile!=null)focusTile(d.tile,2200);}});}
-    else if(e.t==='fajar'){queueCine('fajar',e);}
+    else if(e.t==='fajar'){queueCine('fajar',e);vo('ev_fajar');}
     else if(e.t==='pungli'){addActor('preman',S.players[e.pid].pos,isPol()?'Uang keamanan, Bos!':'Bayar dulu, Bos!',e.amt);play('pay');}
     else if(e.t==='parkir'){var pf=typeof parkirFee==='function'?parkirFee():2000;addActor('tukang',S.players[e.pid].pos,String(Math.round(pf/100)/10).replace('.',',')+'rebu ga bikin lo miskin, boss!',e.amt);}
     else if((e.t==='kasTax'||e.t==='raib')&&S&&S.players[e.pid]&&e.amt>0){var tk2=tokenPos(e.pid,now);floaters.push({u:tk2.u,v:tk2.v,z:tk2.z+TW*0.9,text:(e.t==='raib'?'raib ':'kas ')+short(e.amt),color:e.t==='raib'?'#7A6150':'#B8322A',t0:now+300+floaters.length*90});}
@@ -269,7 +270,7 @@ function drawMarks(now,picker){
 var PSVQ=[],psvTimer=null;
 function placeToasts(){var bx=$('toasts'),L=$('sideL'),st=$('stage');if(!bx||!L||!st)return;var pv=$('psvBanner');if(pv&&pv.parentNode!==bx)bx.insertBefore(pv,bx.firstChild);var r=L.getBoundingClientRect(),r0=st.getBoundingClientRect();bx.style.top=Math.max(8,Math.round(r.bottom-r0.top+8))+'px';}
 function showPassive(e){placeToasts();PSVQ.push(e);if(!psvTimer&&!centerBusy())nextPassive();var el=$('psvBanner');if(el&&!el._tap){el._tap=1;el.addEventListener('pointerdown',function(ev){ev.stopPropagation();if(psvTimer){clearTimeout(psvTimer);nextPassive();}});}}
-function nextPassive(){var el=$('psvBanner');if(!el)return;if(centerBusy()){el.hidden=true;psvTimer=null;return;}var e=PSVQ.shift();if(!e){el.hidden=true;psvTimer=null;$('stage').classList.remove('psv');return;}
+function nextPassive(){var el=$('psvBanner');if(!el)return;if(centerBusy()){el.hidden=true;psvTimer=null;return;}var e=PSVQ.shift();if(!e){el.hidden=true;psvTimer=null;$('stage').classList.remove('psv');return;}if(e.key&&typeof vo==='function')vo('chr_'+e.key+'_pasif');
   var p=S&&S.players[e.pid];el.hidden=false;el.classList.remove('run');void el.offsetWidth;el.classList.add('run');$('stage').classList.add('psv');
   var nm=e.name||(typeof PASSIVES!=='undefined'&&PASSIVES[e.key]?PASSIVES[e.key].n:'Pasif');
   $('psvName').textContent=nm;$('psvText').textContent=e.text||(p?p.name:'');if(p)requestAnimationFrame(function(){portrait($('psvFace'),p.char,p.color,{expr:'happy'});});

@@ -37,7 +37,7 @@ function renderPick(){
     var b=document.createElement('button');b.type='button';b.className='char-card';b.disabled=by>=0;
     var c=document.createElement('canvas');b.appendChild(c);var s=document.createElement('span');s.textContent=ch.name;b.appendChild(s);if(psvOn&&PASSIVES[ch.id]){var pv=document.createElement('span');pv.className='psv';pv.innerHTML='<b>'+PASSIVES[ch.id].n+'</b> · '+PASSIVES[ch.id].d;b.appendChild(pv);}
     if(by>=0){var tk=document.createElement('span');tk.className='taken';tk.style.background=PCOLORS[by];tk.textContent=setup.players[by].name;b.appendChild(tk);}
-    b.onclick=function(){play('buy');pickChar(k,ch.id);};
+    b.onclick=function(){play('buy');if(typeof vo==='function')vo('chr_'+ch.id+'_pilih');pickChar(k,ch.id);};
     grid.appendChild(b);requestAnimationFrame(function(){portrait(c,ch.id,by>=0?PCOLORS[by]:null);});});
 }
 function shuffleArr(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t;}return a;}

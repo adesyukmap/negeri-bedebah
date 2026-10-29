@@ -39,7 +39,7 @@ function renderModal(){
   var mk=S.round+':'+S.current+':'+JSON.stringify(S.pending),nw=performance.now();if(mk!==renderModal.key){renderModal.key=mk;var dl=(S.pending.type==='card'?600:1000)/(typeof SPEED!=='undefined'?SPEED:1);renderModal.at=nw+dl;setTimeout(refresh,dl+20);}
   if(nw<renderModal.at){m.hidden=true;return;}
   var compact=S.pending.type!=='card'&&S.pending.type!=='festival'&&S.pending.type!=='nuke';m.classList.toggle('compact',compact);
-  if(m.hidden||renderModal.shownKey!==mk){renderModal.shownKey=mk;renderModal.visAt=nw;if(compact)placeCard(m);}
+  if(m.hidden||renderModal.shownKey!==mk){renderModal.shownKey=mk;renderModal.visAt=nw;if(compact)placeCard(m);if(S.pending.type==='card'&&typeof vo==='function'){var vc=TH_()[S.pending.deck||'chance'][S.pending.card];if(vc)vo('card_'+S.theme+'_'+slug(vc.name));}}
   detailOpen=false;m.hidden=false;body.innerHTML='';var pd=S.pending,p=cur(),i=pd.tile,opts=document.createElement('div');opts.className='opts';
   var C=function(o){return act(function(){if(cur().npc&&!NPC.choosing)return;choose(o);});};
   var OB=function(label,cls,o,dis,sub){var b=btn(label,cls,C(o),dis,sub);b.dataset.opt=String(o);return b;};
@@ -95,7 +95,7 @@ function openDetail(i){
   var o=document.createElement('div');o.className='opts';o.appendChild(btn('Tutup','ghost',function(){detailOpen=false;m.hidden=true;}));body.appendChild(o);
 }
 function showResult(){
-  var r=$('result');if(!r.hidden)return;r.hidden=false;var w=S.players[S.winner.pid];
+  var r=$('result');if(!r.hidden)return;r.hidden=false;var w=S.players[S.winner.pid];if(typeof vo==='function')setTimeout(function(){vo('chr_'+w.char+'_menang');},600);
   $('resHow').textContent=S.winner.how;$('resName').textContent=w.name+' jadi Raja Cuan!';requestAnimationFrame(function(){portrait($('resFace'),w.char,w.color);});
   var list=$('resList');list.innerHTML='';
   S.players.slice().sort(function(a,b){return (a.id===w.id?-1:b.id===w.id?1:0)||(a.bankrupt-b.bankrupt)||assets(b.id)-assets(a.id);}).forEach(function(p,k){
