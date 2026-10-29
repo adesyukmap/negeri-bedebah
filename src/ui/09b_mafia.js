@@ -78,11 +78,13 @@ function drawMafia(now){
   if(diceRoll&&diceRoll.pol){var el=now-diceRoll.t0;if(el<700)thr=el/700;}
   var w=Math.ceil(s*1.3),h=Math.ceil(s*1.05),d2=dpr;if(!MAF.cv)MAF.cv=document.createElement('canvas');var mc=MAF.cv;
   if(mc.width!==Math.ceil(w*d2)||mc.height!==Math.ceil(h*d2)){mc.width=Math.ceil(w*d2);mc.height=Math.ceil(h*d2);}
-  var c=mc.getContext('2d'),old=g;c.setTransform(d2,0,0,d2,0,0);c.clearRect(0,0,w,h);g=c;
-  var lcx=w/2,lby=h*0.86;drawMafiaBody(s,lcx,lby,now,pw,thr);
+  var lcx=w/2,lby=h*0.86,old=g,calm=cup.phase==='idle'&&!diceRoll&&thr==null,rk=w+'x'+h+':'+d2+':'+cup.phase+':'+(MAF.vis>0.98?1:Math.round(MAF.vis*20));
+  /* calm (no shake, no dice): redraw the offscreen mafia at ~8fps instead of every frame */
+  if(!calm||MAF.rk!==rk||now-(MAF.rAt||0)>120||!MAF.fl){MAF.rk=rk;MAF.rAt=now;var c=mc.getContext('2d');c.setTransform(d2,0,0,d2,0,0);c.clearRect(0,0,w,h);g=c;drawMafiaBody(s,lcx,lby,now,pw,thr);MAF.fl=MAF.fist;
   // fade lower body so he rises from behind the board
-  c.globalCompositeOperation='destination-in';var fg=c.createLinearGradient(0,h*0.78,0,h*0.98);fg.addColorStop(0,'rgba(0,0,0,1)');fg.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=fg;c.fillRect(0,0,w,h);c.globalCompositeOperation='source-over';
-  g=old;var ox=G.cx-lcx,oy=G.by-lby;
+  c.globalCompositeOperation='destination-in';var fg=c.createLinearGradient(0,h*0.78,0,h*0.98);fg.addColorStop(0,'rgba(0,0,0,1)');fg.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=fg;c.fillRect(0,0,w,h);c.globalCompositeOperation='source-over';g=old;}
+  else MAF.fist=MAF.fl?{x:MAF.fl.x,y:MAF.fl.y}:null;
+  var ox=G.cx-lcx,oy=G.by-lby;
   if(MAF.fist)MAF.fist={x:MAF.fist.x+ox,y:MAF.fist.y+oy};
   g.save();g.globalAlpha=Math.min(1,MAF.vis*1.6);g.drawImage(mc,ox,oy,w,h);g.restore();
   if(cup.phase==='idle'&&!diceRoll&&MAF.vis>0.5&&S.phase==='turn'){g.save();g.globalAlpha=Math.min(1,(MAF.vis-0.5)*6);pill(G.cx,G.by-s*0.05,'Tahan tombol, Bos kocok dadunya',Math.max(12,s*0.045),'rgba(20,20,28,.85)','#FFD95A');g.restore();}

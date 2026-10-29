@@ -11,7 +11,8 @@ function refresh(){
   else if(S.phase==='turn'){
     if(p.pelni){var h=document.createElement('div');h.className='hint';h.textContent=(isPol()?'Gorong-gorong':'Kapal Pelni')+': tap tile tujuan '+p.name;ab.appendChild(h);}
     else{if(cup.phase==='idle'||cup.phase==='shake')ab.appendChild(shakeBtn(p.inJail?(isPol()?'Ikuti masa tahanan':'Kocok, cari double'):'Tahan untuk kocok',p.inJail?(isPol()?'kocok, double = bebas · sisa '+(jailMax(p)-p.jailTurns)+' giliran':'sisa '+(jailMax(p)-p.jailTurns)+' giliran'):null));
-      if(p.inJail&&cup.phase==='idle'){if(!p.appealed)ab.appendChild(btn(isPol()?'Banding '+short(appealFee()):'Minta jemput '+short(appealFee()),'ghost',act(payAppeal),p.money<appealFee(),(hasP(p,'taro')?'75%':'50%')+' bebas'));ab.appendChild(btn((isPol()?'Sogok hakim ':'Bayar ')+short(jailFee()),'ghost',act(payJail),p.money<jailFee(),'pasti bebas'));}}
+      if(p.inJail&&cup.phase==='idle'){if(!p.appealed)ab.appendChild(btn(isPol()?'Banding '+short(appealFee()):'Minta jemput '+short(appealFee()),'ghost',act(payAppeal),p.money<appealFee(),(hasP(p,'taro')?'75%':'50%')+' bebas'));ab.appendChild(btn((isPol()?'Sogok hakim ':'Bayar ')+short(jailFee()),'ghost',act(payJail),p.money<jailFee(),'pasti bebas'));}
+      if(!p.inJail&&p.nuke>0&&cup.phase==='idle'){var ntg=nukeTargets(p);ab.appendChild(btn('\u2622 Pakai nuklir'+(p.nuke>1?' ('+p.nuke+')':''),'red',act(useNuke),!ntg.length,ntg.length?ntg.length+' target':'belum ada target'));}}
   }
   else if(S.phase==='end')ab.appendChild(btn(p.bankrupt?'Lanjut':'Selesai','',act(endTurn)));
   renderModal();
@@ -37,7 +38,7 @@ function renderModal(){
   if(fxHold(performance.now())){m.hidden=true;return;}
   var mk=S.round+':'+S.current+':'+JSON.stringify(S.pending),nw=performance.now();if(mk!==renderModal.key){renderModal.key=mk;var dl=(S.pending.type==='card'?600:1000)/(typeof SPEED!=='undefined'?SPEED:1);renderModal.at=nw+dl;setTimeout(refresh,dl+20);}
   if(nw<renderModal.at){m.hidden=true;return;}
-  var compact=S.pending.type!=='card'&&S.pending.type!=='festival';m.classList.toggle('compact',compact);
+  var compact=S.pending.type!=='card'&&S.pending.type!=='festival'&&S.pending.type!=='nuke';m.classList.toggle('compact',compact);
   if(m.hidden||renderModal.shownKey!==mk){renderModal.shownKey=mk;renderModal.visAt=nw;if(compact)placeCard(m);}
   detailOpen=false;m.hidden=false;body.innerHTML='';var pd=S.pending,p=cur(),i=pd.tile,opts=document.createElement('div');opts.className='opts';
   var C=function(o){return act(function(){if(cur().npc&&!NPC.choosing)return;choose(o);});};
@@ -62,10 +63,16 @@ function renderModal(){
     body.appendChild(facts(isTr?[['Harga',fmt(pr2)],['Sewa',rentLadder(typeof TRANS_RENT!=='undefined'?TRANS_RENT:[0,25000,50000,100000,200000])]]:[['Harga',fmt(pr2)],['Sewa',rentLadder(WIS_RENT)],['Bonus','Punya '+wisWin()+' '+wl.toLowerCase()+' langsung menang']]));
     opts.appendChild(OB('Ambil '+tileName(i),'','yes',p.money<pr2,'Bayar '+fmt(pr2)+taxSub(pr2)));opts.appendChild(OB('Lewat dulu','ghost small','no'));}
   if(pd.type==='festival'){body.appendChild(modalHead(IDX.fest,tileName(IDX.fest),isPol()?'Kampanye di kota mana?':'Pilih kota yang dirayakan',0));
-    body.appendChild(note('Kota yang sama dirayakan lagi: x2 jadi x3, lalu x4. Total kelipatan sewa maksimal x6.'));
-    ownedCities(p.id).forEach(function(ci){var same=S.festival===ci,lvlNow=S.festLevel||2,next=same?Math.min(4,lvlNow+1):2,now=cityRent(ci),base=tileL(ci)*RENTM[S.tiles[ci].level]*(regionFull(p.id,T[ci].region)?2:1),after=tileL(ci)*RENTM[S.tiles[ci].level]*Math.min(6,(regionFull(p.id,T[ci].region)?2:1)*next);
+    body.appendChild(note('Kota yang sama dirayakan lagi: x2 jadi x3, lalu x4. Total kelipatan sewa maksimal x6, Proyek Strategis sampai x32.'));
+    ownedCities(p.id).forEach(function(ci){var same=S.festival===ci,lvlNow=S.festLevel||2,next=same?Math.min(4,lvlNow+1):2,now=cityRent(ci),base=tileL(ci)*RENTM[S.tiles[ci].level]*(regionFull(p.id,T[ci].region)?2:1),after=S.tiles[ci].level===4?tileL(ci)*RENTM[4]*Math.min(32,lmLadder(ci)*next):tileL(ci)*RENTM[S.tiles[ci].level]*Math.min(6,(regionFull(p.id,T[ci].region)?2:1)*next);
       opts.appendChild(OB(same?(tileName(ci)+' · naikkan ke x'+next):tileName(ci),same?'':'ghost',ci,same&&lvlNow>=4,same&&lvlNow>=4?'Sudah maksimal x4':('Sewa '+fmt(now)+' jadi '+fmt(after))));});
     opts.appendChild(OB('Lewat','ghost small','skip'));}
+  if(pd.type==='unseal'){body.appendChild(modalHead(i,'Disegel','Cabut segel '+tileName(i)+'?',S.tiles[i].level));
+    body.appendChild(note('Kotamu disegel demo mahasiswa. Bayar denda ke '+TH_().kasName+' supaya segel dicabut, sewa jalan lagi, dan kamu bisa bangun'+(S.tiles[i].level===4?' atau naikkan pengali.':'.')));
+    opts.appendChild(OB('Bayar denda','','yes',p.money<pd.fee,'Bayar '+fmt(pd.fee)));opts.appendChild(OB('Biarin disegel','ghost small','no'));}
+  if(pd.type==='nuke'){var nh2=document.createElement('div');nh2.className='cardface flip bad';nh2.innerHTML='<div class="eyebrow">Telepon masuk</div><h3>Pilih kota untuk dinuklir</h3><p>Proyek Strategis lawan rata jadi '+escapeHtml(levelName(0))+'. Pengalinya balik ke x1.</p>';body.appendChild(nh2);
+    pd.targets.forEach(function(ti){var so=S.tiles[ti];opts.appendChild(OB(tileName(ti)+' · '+S.players[so.owner].name,'red',ti,false,'Sewa sekarang '+fmt(cityRent(ti))+' (x'+fmtMult(rentMult(ti))+')'));});
+    opts.appendChild(OB('Simpan dulu','ghost small','keep',false,'Pajak gudang '+fmt(nukeTax())+' tiap lewat '+tileName(0)));}
   if(pd.type==='pelni'){body.appendChild(modalHead(IDX.pelni,tileName(IDX.pelni),isPol()?'Blusukan?':'Naik kapal?',0));
     body.appendChild(note('Bayar '+fmt(PELNI_FEE)+'. Giliran berikutnya kamu bebas pilih tile tujuan. Lewat Start tetap dapat gaji.'));
     opts.appendChild(OB(isPol()?'Blusukan!':'Naik kapal','','yes',p.money<PELNI_FEE));opts.appendChild(OB('Nggak usah','ghost small','no'));}
@@ -79,7 +86,7 @@ function openDetail(i){
   var t=T[i],st=S.tiles[i],m=$('modal'),body=$('modalBody');body.innerHTML='';detailOpen=true;m.hidden=false;m.classList.remove('compact');
   if(t.type==='city'){body.appendChild(modalHead(i,REGIONS[t.region].name,t.name,st.owner!==null?st.level:4));
     var rows=[['Pemilik',st.owner!==null?S.players[st.owner].name:'Belum ada'],['Landmark',t.landmark]];
-    if(st.owner!==null){rows.push(['Bangunan',LV[st.level]],['Sewa sekarang',fmt(cityRent(i))]);if(S.festival===i)rows.push([tileName(IDX.fest),'x'+(S.festLevel||2)]);if(st.level<4)rows.push(['Harga takeover',fmt(takeoverPrice(i))]);}
+    if(st.owner!==null){rows.push(['Bangunan',LV[st.level]],['Sewa sekarang',fmt(cityRent(i))]);if(S.festival===i)rows.push([tileName(IDX.fest),'x'+(S.festLevel||2)]);if(st.level===4)rows.push(['Pengali','x'+fmtMult(rentMult(i))+' (tangga x'+lmLadder(i)+', naik saat pemilik mampir, maks x16, total x32)']);if(sealed(i))rows.push(['Segel','Pemilik bisa cabut dengan denda '+fmt(sealFee(i))]);if(st.level<4)rows.push(['Harga takeover',fmt(takeoverPrice(i))]);}
     rows.push(['Sewa per level',RENTM.map(function(r){return short(tileL(i)*r);}).join(' · ')]);body.appendChild(facts(rows));}
   else if(t.type==='transport'){body.appendChild(modalHead(i,'Transportasi',tileName(i),0));body.appendChild(facts([['Pemilik',st.owner!==null?S.players[st.owner].name:'Belum ada'],['Harga',fmt(assetPrice(i))],['Sewa',rentLadder(typeof TRANS_RENT!=='undefined'?TRANS_RENT:[0,25000,50000,100000,200000])]]));}
   else if(t.type==='wisata'){body.appendChild(modalHead(i,TH_().wisataLabel,tileName(i),0));body.appendChild(facts([['Pemilik',st.owner!==null?S.players[st.owner].name:'Belum ada'],['Harga',fmt(assetPrice(i))],['Sewa sekarang',st.owner!==null?fmt(typeof rentOf==='function'?rentOf(i):wisRent(i)):'-'],['Sewa',rentLadder(WIS_RENT)],['Bonus','Punya '+wisWin()+' '+TH_().wisataLabel.toLowerCase()+' langsung menang']]));}
@@ -110,3 +117,5 @@ function placeCard(m){var tb=$('topbar'),top=tb?Math.round(tb.getBoundingClientR
   try{if(S&&cv){var tp=tokenPos(S.current,performance.now()),q=iso(tp.u,tp.v,tp.z),r=cv.getBoundingClientRect(),x=q.x+r.left,y=q.y+r.top,cw=Math.min(320,window.innerWidth*0.42)+30;right=x<cw&&y>top-40;}}catch(e){}
   m.classList.toggle('right',right);}
 function taxSub(cost){var t=typeof txTaxAmt==='function'?txTaxAmt(cost):0;return t>0?' + pajak '+short(t):'';}
+
+function fmtMult(m){return (Math.round(m*10)/10).toString().replace('.',',');}

@@ -28,9 +28,13 @@ function saveUserClip(k,file,cb){var fr=new FileReader();fr.onload=function(){va
   tx.oncomplete=function(){USER_RAW[k]=data;USER_META[k]={name:file.name,size:file.size};delete USER_BUF[k];cb(null);};tx.onerror=function(){cb('Gagal menyimpan. Coba file yang lebih kecil.');};}catch(e){cb('Gagal menyimpan.');}});};fr.onerror=function(){cb('File tidak bisa dibaca.');};fr.readAsArrayBuffer(file);}
 function deleteUserClip(k,cb){delete USER_RAW[k];delete USER_META[k];delete USER_BUF[k];sdb(function(db){if(!db)return cb&&cb();try{var tx=db.transaction('clips','readwrite');tx.objectStore('clips').delete(k);tx.oncomplete=function(){cb&&cb();};}catch(e){cb&&cb();}});}
 function decodeInto(map,k,ab){if(!AC||map[k]===false||map[k])return;map[k]=false;try{AC.decodeAudioData(ab.slice(0),function(b){map[k]=b;},function(){map[k]=null;});}catch(e){map[k]=null;}}
-function warmSounds(){if(!AC)return;for(var k in USER_RAW)decodeInto(USER_BUF,k,USER_RAW[k]);if(typeof SAMPLES!=='undefined')for(var s in SAMPLES)if(!SAMPLE_BUF[s])decodeInto(SAMPLE_BUF,s,b64buf(SAMPLES[s]));}
+/* decode in small batches so the first tap doesn't freeze the page decoding ~100 clips at once */
+var WARM={q:null,on:false};
+function warmSounds(){if(!AC||WARM.q)return;WARM.q=[];for(var k in USER_RAW)WARM.q.push(['u',k]);if(typeof SAMPLES!=='undefined')for(var s in SAMPLES)WARM.q.push(['s',s]);
+  (function step(){var n=0;while(WARM.q.length&&n<4){var it=WARM.q.shift();if(it[0]==='u'){if(!USER_BUF[it[1]])decodeInto(USER_BUF,it[1],USER_RAW[it[1]]);}else if(!SAMPLE_BUF[it[1]]){decodeInto(SAMPLE_BUF,it[1],b64buf(SAMPLES[it[1]]));n++;}}if(WARM.q.length)setTimeout(step,120);})();}
+function warmOne(b){if(b&&typeof SAMPLES!=='undefined'&&SAMPLES[b]&&!SAMPLE_BUF[b]&&!(SAMPLE_BUF._p&&SAMPLE_BUF._p[b])){(SAMPLE_BUF._p=SAMPLE_BUF._p||{})[b]=1;decodeInto(SAMPLE_BUF,b,b64buf(SAMPLES[b]));}}
 function builtinOf(n){return BUILTIN[n]||(n.indexOf('vo:')===0?'vo_'+n.slice(3):null);}
-function bufFor(n){if(USER_RAW[n]){if(USER_BUF[n])return USER_BUF[n];decodeInto(USER_BUF,n,USER_RAW[n]);return null;}var b=builtinOf(n);if(b&&SAMPLE_BUF[b])return SAMPLE_BUF[b];return null;}
+function bufFor(n){if(USER_RAW[n]){if(USER_BUF[n])return USER_BUF[n];decodeInto(USER_BUF,n,USER_RAW[n]);return null;}var b=builtinOf(n);if(b&&SAMPLE_BUF[b])return SAMPLE_BUF[b];warmOne(b);return null;}
 function playBuf(b,n,vol){var s=AC.createBufferSource(),gn=AC.createGain();s.buffer=b;gn.gain.value=vol==null?(SVOL[n]!=null?SVOL[n]:0.9):vol;s.connect(gn);gn.connect(AC.destination);s.start();PLAYING[n]=AC.currentTime+b.duration;SRC[n]=s;s.onended=function(){if(SRC[n]===s)delete SRC[n];};return s;}
 function hasSound(n){var b=builtinOf(n);return !!(USER_RAW[n]||(b&&typeof SAMPLES!=='undefined'&&SAMPLES[b]));}
 function play(n,arg){if(!AC||muted)return;warmSounds();var b=bufFor(n);

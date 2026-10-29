@@ -21,7 +21,7 @@ function drawTile(i,now){
   if(!zn.corner&&t.type==='city'&&st.owner===null){g.save();g.setLineDash([lw(0.03),lw(0.03)]);g.strokeStyle='rgba(120,90,50,.35)';g.lineWidth=lw(0.012);path([iso(zn.bu-0.38,zn.bv-0.35,h+0.4),iso(zn.bu+0.38,zn.bv-0.35,h+0.4),iso(zn.bu+0.38,zn.bv+0.35,h+0.4),iso(zn.bu-0.38,zn.bv+0.35,h+0.4)]);g.stroke();g.restore();}
   decoTile(i,h,now);
   // collapse ghosts (bankrupt / sold)
-  FX.collapse.forEach(function(c){if(c.i!==i)return;var ct=(now-c.t0)/1300;if(ct<0||ct>1)return;var b=iso(zn.bu,zn.bv,h);g.save();g.translate(b.x+Math.sin(now/30)*TW*0.01*(1-ct),b.y+ct*TH*0.4);g.scale(1,Math.max(0.02,1-ct*1.1));g.translate(-b.x,-b.y);g.globalAlpha=1-ct*0.6;if(T[i].type==='city')building(i,zn.bu,zn.bv,h,c.level,c.color);else wisataGate(zn.bu,zn.bv,h,c.color,zn.axis);g.restore();dust(b.x,b.y,TW*0.3,ct);});
+  FX.collapse.forEach(function(c){if(c.i!==i)return;var ct=(now-c.t0)/1300;if(ct<0||ct>1)return;var b=iso(zn.bu,zn.bv,h);g.save();g.translate(b.x+Math.sin(now/30)*TW*(c.drop?0.025:0.01)*(1-ct),b.y+ct*TH*(c.drop?0.1:0.4));g.scale(1,c.drop?1-ct*0.3:Math.max(0.02,1-ct*1.1));g.translate(-b.x,-b.y);g.globalAlpha=c.drop?Math.max(0,1-ct*1.4):1-ct*0.6;if(T[i].type==='city')building(i,zn.bu,zn.bv,h,c.level,c.color);else wisataGate(zn.bu,zn.bv,h,c.color,zn.axis);g.restore();dust(b.x,b.y,TW*0.3,ct);});
   if(st.owner!==null){
     var own=S.players[st.owner].color,b2=iso(zn.bu,zn.bv,h),tk=FX.take[i],bf=FX.build[i],wob=0,sx=1,sy=1,hide=false;
     if(off<0)wob=Math.sin(now/40)*TW*0.012;
@@ -35,6 +35,7 @@ function drawTile(i,now){
   if(balihoOn(i)){var bb=iso(zn.bu+0.34,zn.bv-0.3,h),bh=TH*1.15,bw=TW*0.42;g.strokeStyle='#5A4030';g.lineWidth=lw(0.014);g.beginPath();g.moveTo(bb.x,bb.y);g.lineTo(bb.x,bb.y-bh);g.stroke();baliho(bb.x,bb.y-bh,bw,bh*0.6,isPol()?'PILIH SAYA!':'VIRAL!',isPol()?'#E2483D':'#6E56CF');}
   if(S.festival===i)drawParty(i,h,now);
   if(typeof sealed==='function'&&sealed(i))drawSeal(i,h,now);
+  if(st.owner!==null&&st.level===4&&t.type==='city'&&typeof rentMult==='function'){var mm=rentMult(i);if(mm>1){var lq=iso(zn.bu,zn.bv,h),pp=FX.lmPop&&FX.lmPop[i]?Math.max(0,1-(now-FX.lmPop[i])/600):0,sc=1+0.5*Math.sin(Math.min(1,pp)*Math.PI);g.save();g.translate(lq.x,lq.y-TH*1.95);g.scale(sc,sc);pill(0,0,'x'+fmtMult(mm),TW*0.13,mm>=16?'#C62828':mm>=4?'#E07A1F':'#E8B923',mm>=4?'#fff':'#16161E');g.restore();}}
   if(off<0||FX.press[i]!=null){var pt3=(now-FX.press[i])/700;if(pt3>=0&&pt3<1){g.save();g.globalAlpha=0.7*(1-pt3);g.strokeStyle=st.owner!==null?S.players[st.owner].color:'#FFFFFF';g.lineWidth=lw(0.025);var rc=iso(r.cu,r.cv,h+1);g.beginPath();g.ellipse(rc.x,rc.y,TW*(0.25+pt3*0.45)*r.w,TH*(0.25+pt3*0.45)*r.d,0,0,7);g.stroke();g.restore();}}
 }
 function drawParty(i,h,now){

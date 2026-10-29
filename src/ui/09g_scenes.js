@@ -60,3 +60,43 @@ CINE_SCENES.gajian=function(w,h,t,e,now){
   courtTitle(w,h,t,'GAJIAN PEJABAT');
   if(t<0.6){var cl=t<0.25?easeOut(t/0.25):1-easeOut((t-0.25)/0.35);g.fillStyle='#000';g.fillRect(0,0,w,h*0.5*cl);g.fillRect(0,h-h*0.5*cl,w,h*0.5*cl);}
 };
+/* Telepon dari Kim Jong Ah: red phone rings, the call, missile, mushroom cloud over the chosen city */
+function redPhone(x,y,s,ring){g.save();g.translate(x+(ring?Math.sin(performance.now()/30)*s*0.03:0),y);
+  rrect(-s*0.5,-s*0.1,s,s*0.45,s*0.08);g.fillStyle='#B71C1C';g.fill();rrect(-s*0.5,-s*0.1,s,s*0.12,s*0.06);g.fillStyle='#D32F2F';g.fill();
+  ell(0,s*0.15,s*0.16,s*0.12,'#7F1010');for(var k=0;k<10;k++){var a=k/10*Math.PI*2;ell(Math.cos(a)*s*0.11,s*0.15+Math.sin(a)*s*0.08,s*0.02,s*0.015,'#F4F1EA');}
+  if(!ring||Math.floor(performance.now()/90)%4){rrect(-s*0.55,-s*0.32,s*1.1,s*0.18,s*0.09);g.fillStyle='#C62828';g.fill();ell(-s*0.45,-s*0.2,s*0.14,s*0.1,'#C62828');ell(s*0.45,-s*0.2,s*0.14,s*0.1,'#C62828');}
+  g.restore();}
+CINE_SCENES.nuke=function(w,h,t,e,now){
+  var p=S.players[e.pid];if(!p)return;var fs=Math.max(14,Math.min(w*0.021,h*0.034)),s=Math.min(h*0.34,w*0.2),city=tileName(e.tile),ow=S.players[e.owner];
+  var boom=t>5.2,bt=Math.max(0,t-5.2);
+  var bg=g.createLinearGradient(0,0,0,h);if(!boom){bg.addColorStop(0,'#2B2140');bg.addColorStop(1,'#4A3A5E');}else{var f=Math.min(1,bt/0.4);bg.addColorStop(0,'rgb('+Math.round(255-60*f)+','+Math.round(240-130*f)+','+Math.round(200-170*f)+')');bg.addColorStop(1,'#3A2418');}
+  g.fillStyle=bg;g.fillRect(0,0,w,h);
+  if(t<4.4){/* office: phone + player */
+    g.fillStyle='#3A2C22';g.fillRect(0,h*0.72,w,h*0.28);g.fillStyle='#5A4232';g.fillRect(0,h*0.72,w,h*0.025);
+    drawChar(p.char,w*0.28,h*0.98,s,p.color,{expr:t>1.6?'shock':null});
+    redPhone(w*0.66,h*0.66,s*0.8,t<1.6);
+    if(t<1.6)once('ring',function(){play('alarm');});
+    if(t>0.3&&t<1.6){g.save();g.globalAlpha=0.6+0.4*Math.sin(now/80);pill(w*0.66,h*0.4,'KIM JONG AH memanggil...',Math.max(13,fs*0.95),'#16161E','#FFD95A');g.restore();}
+    if(t>1.6){speech(w*0.66,h*0.5,typed('Halo kawan! Saya titip satu nuklir. Pilih kotanya.',t,1.6,32),fs,w*0.36,{anchor:'r',W:w,bg:'#FFE2E2'});once('call',function(){vo('nuke_call');});}
+    if(t>3.4){speech(w*0.28,h*0.98-s*1.05,typed(city+'!',t,3.4,20),fs*1.1,w*0.26,{anchor:'l',W:w,weight:900,bg:'#FFE27A'});once('pick',function(){vo('nuke_pick');});}
+  } else {
+    /* city skyline, missile falls, flash, mushroom */
+    skyline(w,h*0.78,h*0.32,boom?'rgba(40,20,10,.85)':'#1C1630',21);g.fillStyle=boom?'#2A1A10':'#241C34';g.fillRect(0,h*0.78,w,h*0.22);
+    if(!boom){var mt=Math.min(1,(t-4.4)/0.8),mx=w*(0.85-0.35*mt),my=h*(-0.05+0.78*mt*mt);g.save();g.translate(mx,my);g.rotate(Math.atan2(0.78*2*mt*h,-0.35*w)+Math.PI);
+      rrect(-s*0.3,-s*0.05,s*0.6,s*0.1,s*0.05);g.fillStyle='#D8D8DC';g.fill();g.fillStyle='#C62828';g.beginPath();g.moveTo(-s*0.3,-s*0.05);g.lineTo(-s*0.42,0);g.lineTo(-s*0.3,s*0.05);g.fill();
+      ell(s*0.36,0,s*0.1+Math.random()*s*0.04,s*0.05,'rgba(255,170,40,.9)');g.restore();once('whoosh',function(){play('jet');});}
+    else{once('boom',function(){play('quake');play('collapse');vo('nuke_boom');});
+      if(bt<0.35){g.fillStyle='rgba(255,255,240,'+(1-bt/0.35)+')';g.fillRect(0,0,w,h);}
+      var gr=easeOut(Math.min(1,bt/1.4)),cx=w*0.5,base=h*0.78,stemH=h*0.42*gr,capR=s*1.1*gr;
+      g.fillStyle='#8A5A3A';rrect(cx-s*0.18*gr,base-stemH,s*0.36*gr,stemH,s*0.1);g.fill();
+      for(var k=0;k<9;k++){var a=k/9*Math.PI*2+bt*0.4;ell(cx+Math.cos(a)*capR*0.55,base-stemH-capR*0.25+Math.sin(a)*capR*0.25,capR*0.45,capR*0.32,k%2?'#C47A45':'#A8603A');}
+      ell(cx,base-stemH-capR*0.3,capR*0.6,capR*0.4,'#E09A55');ell(cx,base,capR*1.2,capR*0.22,'rgba(160,90,50,.8)');
+      if(t>6.4){var it=easeBack((t-6.4)/0.35);g.save();g.globalAlpha=Math.min(1,(t-6.4)/0.2);bandText(w*0.5,h*0.18,'RATA!',Math.min(w*0.09,h*0.13)*it,'#C62828','#fff',-0.1);
+        pill(w*0.5,h*0.18+Math.min(w*0.09,h*0.13)*0.95,city+' tinggal '+levelName(0),Math.max(14,fs),'#16161E','#FFD95A');g.restore();}
+      if(t>4.9){FX.shake=Math.max(FX.shake||0,0);}
+    }
+  }
+  if(t>=4.4)pill(w*0.5,h*0.92,city+(ow?' · milik '+ow.name:''),Math.max(13,fs),'#16161E','#fff');
+  courtTitle(w,h,t,'TELEPON MERAH');
+  if(t<0.6){var cl=t<0.25?easeOut(t/0.25):1-easeOut((t-0.25)/0.35);g.fillStyle='#000';g.fillRect(0,0,w,h*0.5*cl);g.fillRect(0,h-h*0.5*cl,w,h*0.5*cl);}
+};

@@ -18,7 +18,7 @@ var NPC_THINK={mudah:600,sedang:900,sulit:1200};
 function npcSig(){var p=cur();return [S.round,S.turnIdx,S.phase,JSON.stringify(S.pending),p.pos,p.inJail,p.jailTurns,!!p.appealed,p.pelni,p.money,(S.dice||[]).join('')].join('|');}
 function npcValid(a){if(!a||!a.a)return false;var p=cur(),ph=S.phase;
   if(a.a==='roll')return ph==='turn'&&!p.pelni;if(a.a==='pelni')return ph==='turn'&&p.pelni&&a.tile!=null&&a.tile!==p.pos;
-  if(a.a==='appeal')return ph==='turn'&&p.inJail&&!p.appealed&&p.money>=appealFee();if(a.a==='payJail')return ph==='turn'&&p.inJail&&p.money>=jailFee();
+  if(a.a==='appeal')return ph==='turn'&&p.inJail&&!p.appealed&&p.money>=appealFee();if(a.a==='payJail')return ph==='turn'&&p.inJail&&p.money>=jailFee();if(a.a==='nuke')return ph==='turn'&&p.nuke>0&&!p.inJail;
   if(a.a==='choose')return ph==='prompt'&&a.opt!==undefined;if(a.a==='end')return ph==='end';if(a.a==='start')return ph==='handoff';return false;}
 function npcFallback(){var p=cur(),ph=S.phase,pd=S.pending;
   if(ph==='end')return {a:'end'};
@@ -30,6 +30,8 @@ function npcFallback(){var p=cur(),ph=S.phase,pd=S.pending;
     if(pd.type==='takeover')return {a:'choose',opt:p.money>takeoverPrice(pd.tile)*1.6?'yes':'no'};
     if(pd.type==='festival'){var oc=ownedCities(p.id).sort(function(a,b){return cityRent(b)-cityRent(a);});return {a:'choose',opt:oc.length?oc[0]:'skip'};}
     if(pd.type==='card')return {a:'choose',opt:'ok'};
+    if(pd.type==='unseal')return {a:'choose',opt:p.money>pd.fee*3?'yes':'no'};
+    if(pd.type==='nuke')return {a:'choose',opt:pd.targets.length?pd.targets[0]:'keep'};
     if(pd.type==='buywis')return {a:'choose',opt:p.money>assetPrice(pd.tile)*1.5?'yes':'no'};
     if(pd.type==='pelni')return {a:'choose',opt:p.money>PELNI_FEE*6&&Math.random()<0.5?'yes':'no'};
     return {a:'choose',opt:'no'};}
@@ -37,7 +39,7 @@ function npcFallback(){var p=cur(),ph=S.phase,pd=S.pending;
 function npcExec(a,now){var p=cur();NPC.doneSig=npcSig();NPC.doneAt=now;
   if(a.a==='roll'){var pw=Math.max(0,Math.min(1,a.power==null?0.5:a.power));if(typeof npcRoll==='function'){npcRoll(pw);}else{cupStart();var hold=Math.max(420,pw*1600);NPC.timer=setTimeout(function(){if(cup.phase==='shake'){cup.t0=performance.now()-hold;doRelease(performance.now());}},hold/SPEED);}}
   else if(a.a==='pelni'){play('tap');pelniTo(a.tile);}
-  else if(a.a==='appeal')payAppeal();else if(a.a==='payJail')payJail();else if(a.a==='end')endTurn();else if(a.a==='start')startTurn();
+  else if(a.a==='appeal')payAppeal();else if(a.a==='payJail')payJail();else if(a.a==='nuke')useNuke();else if(a.a==='end')endTurn();else if(a.a==='start')startTurn();
   else if(a.a==='choose'){var b=document.querySelector('#modal [data-opt="'+String(a.opt)+'"]');if(b){b.classList.add('npcpick');}NPC.choosing=true;var sig=NPC.doneSig;
     NPC.timer=setTimeout(function(){NPC.choosing=false;if(!S||S.phase!=='prompt'||npcSig()!==sig)return;NPC.choosing=true;try{choose(a.opt);}finally{NPC.choosing=false;}refresh();},420/SPEED);return;}
   refresh();}

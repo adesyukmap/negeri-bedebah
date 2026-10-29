@@ -3,7 +3,7 @@ var cv,ctx,dpr=1,CW=0,CH_=0,anim=null,floaters=[],landFx=[],coins=[],parts=[],BA
 var cam={z:1,px:0,py:0,mode:'follow',focus:null,focusUntil:0};
 var EXPR={},holdMove=0,MARKS=[],HOVER=-1;
 function layout(){
-  var r=cv.getBoundingClientRect();dpr=Math.min(Math.min(screen.width,screen.height)<600?1.5:2,window.devicePixelRatio||1);CW=r.width;CH_=r.height;cv.width=Math.round(CW*dpr);cv.height=Math.round(CH_*dpr);
+  var r=cv.getBoundingClientRect();dpr=Math.min(Math.min(screen.width,screen.height)<600?1.5:2,window.devicePixelRatio||1,PERF.cap);CW=r.width;CH_=r.height;cv.width=Math.round(CW*dpr);cv.height=Math.round(CH_*dpr);
   var tw=Math.min(CW/(BN+0.45),CH_/(BN*0.5+1.45));BASEV={TW:tw,OX:CW/2,OY:(CH_-tw*(BN*0.5+1.45))/2+tw/2*2.35};
 }
 function applyCam(shx,shy){TW=BASEV.TW*cam.z;TH=TW/2;DZ=TH*0.32;ZS=TW*0.61;OX=CW/2+(BASEV.OX-CW/2)*cam.z+cam.px+(shx||0);OY=CH_/2+(BASEV.OY-CH_/2)*cam.z+cam.py+(shy||0);}
@@ -68,6 +68,12 @@ function shakeOffset(now){var sx=0,sy=0;if(FX.shake){var t=(now-FX.shake.t0)/(FX
 function nightTarget(){return 0;if(!S)return 0;var ph=((S.round-1)+S.turnIdx/Math.max(1,S.order.length))/8,v=(1-Math.cos(ph*Math.PI*2))/2;return Math.max(0,Math.min(0.62,v*0.9-0.06));}
 var lastBg=-1;
 var LASTF=0,IDLE_SINCE=0,CAMPREV={z:0,px:0,py:0};
+/* adaptive quality: when busy frames keep missing ~30fps, drop canvas resolution one step (2 -> 1.5 -> 1.25 -> 1) and cap busy fps at 30 */
+var PERF={cap:2,busyGap:0,win:[],lastAdj:0};
+function perfSample(now,dt){if(dt>250)return;PERF.win.push(dt);if(PERF.win.length<45)return;var a=PERF.win.slice().sort(function(x,y){return x-y;}),med=a[a.length>>1];PERF.win.length=0;
+  if(now-PERF.lastAdj<3000)return;
+  if(med>40){PERF.lastAdj=now;if(!PERF.busyGap)PERF.busyGap=33;else if(PERF.cap>1){PERF.cap=PERF.cap>1.5?1.5:PERF.cap>1.25?1.25:1;layout();}}
+  else if(med<20&&PERF.busyGap&&PERF.cap>=2){PERF.busyGap=0;PERF.lastAdj=now;}}
 function sceneBusy(now){if(anim||diceRoll||cup.phase!=='idle'||CINE.open||CONVOY||gest||coins.length||parts.length||floaters.length||landFx.length||EVENTS.length||FX.shake||FX.quake)return true;
   for(var k in FX.take)return true;for(var b in FX.build)if(now-FX.build[b].t0<1200)return true;if(FX.collapse&&FX.collapse.length)return true;
   if(STV.trans&&now-STV.trans.t0<8000)return true;if(STV.moment&&now-STV.moment.t0<3500)return true;if(QUIPS.length||ACTORS.length)return true;
@@ -75,7 +81,8 @@ function sceneBusy(now){if(anim||diceRoll||cup.phase!=='idle'||CINE.open||CONVOY
 function render(now){
   requestAnimationFrame(render);
   if(!S||$('game').hidden)return;
-  var busy=sceneBusy(now);if(busy)IDLE_SINCE=now;var gap=busy?0:(now-IDLE_SINCE>15000?50:33);if(now-LASTF<gap-2)return;LASTF=now;CAMPREV={z:cam.z,px:cam.px,py:cam.py};
+  if(FX.collapse&&FX.collapse.length)FX.collapse=FX.collapse.filter(function(c){return now-c.t0<1500;});
+  var busy=sceneBusy(now);if(busy)IDLE_SINCE=now;var idle=now-IDLE_SINCE,gap=busy?PERF.busyGap:(idle>15000?100:idle>2500?66:33);if(now-LASTF<gap-2)return;if(busy&&LASTF&&now-LASTF<400)perfSample(now,now-LASTF);LASTF=now;CAMPREV={z:cam.z,px:cam.px,py:cam.py};
   drainEvents(now);processPend(now);checkHold(now);updateConvoy(now);
   NIGHT+=(nightTarget()-NIGHT)*0.02;
   if(Math.abs(NIGHT-lastBg)>0.02){lastBg=NIGHT;var hi=mix('#4FB8E0','#1B2A55',NIGHT/0.82),lo=mix('#1C6A9A','#0B1430',NIGHT/0.82);document.body.style.background='radial-gradient(120% 90% at 50% 40%, '+hi+', '+lo+')';}
@@ -153,11 +160,14 @@ function hudEvent(e,now){
     else if(e.t==='transfer'){coinBurst(tokenPos(e.from,now),tokenPos(e.to,now),Math.min(12,3+Math.round(e.amt/80000)),now);}
     else if(e.t==='toKas'){coinBurst(tokenPos(e.from,now),{u:MID,v:MID,z:ZS*0.6},Math.min(10,3+Math.round(e.amt/80000)),now);}
     else if(e.t==='gain'){var tg=tokenPos(e.pid,now);coinRain(tg,6,now);}
+    else if(e.t==='lmUp'){landFx.push({tile:e.tile,t0:now});focusTile(e.tile,1600);FX.lmPop=FX.lmPop||{};FX.lmPop[e.tile]=now;vo('lm_up');(function(e){var q=ZN[e.tile];if(q)floaters.push({u:q.bu,v:q.bv,z:TW*1.6,text:'SEWA x'+e.mult,color:e.mult>=16?'#C62828':e.mult>=4?'#E07A1F':'#B8860B',t0:now+200,dur:2600,big:1.6});})(e);}
+    else if(e.t==='nuke'){queueCine('nuke',{pid:e.pid,tile:e.tile,owner:e.owner,dur:8500,onEnd:function(){FX.collapse.push({i:e.tile,level:e.level,color:e.color,t0:performance.now()});play('collapse');focusTile(e.tile,1600);}});}
+    else if(e.t==='unseal'){landFx.push({tile:e.tile,t0:now});vo('segel_cabut');}
     else if(e.t==='blusukan'){queueCine('blusukan',{pid:e.pid,tile:e.tile,dur:9600});}
-    else if(e.t==='salary'){if(S.theme==='politik')queueCine('gajian',{pid:e.pid,amt:e.amt,dur:9000});(function(pid,amt){setTimeout(function(){if(S&&S.players[pid]){var tp=tokenPos(pid,performance.now());floaters.push({u:tp.u,v:tp.v,z:tp.z+TW*1.1,text:'GAJIAN +'+short(amt||200000),color:'#1F6E52',t0:performance.now(),dur:2600,big:1.7});}},500);})(e.pid,e.amt);holdMove=Math.max(holdMove,0);(function(pid){setTimeout(function(){if(S&&S.players[pid])coinRain(tokenPos(pid,performance.now()),10,performance.now());},400);})(e.pid);}
+    else if(e.t==='salary'){if(S.theme==='politik'&&e.landed)queueCine('gajian',{pid:e.pid,amt:e.amt,dur:9000});(function(pid,amt){setTimeout(function(){if(S&&S.players[pid]){var tp=tokenPos(pid,performance.now());floaters.push({u:tp.u,v:tp.v,z:tp.z+TW*1.1,text:'GAJIAN +'+short(amt||200000),color:'#1F6E52',t0:performance.now(),dur:2600,big:1.7});}},500);})(e.pid,e.amt);holdMove=Math.max(holdMove,0);(function(pid){setTimeout(function(){if(S&&S.players[pid])coinRain(tokenPos(pid,performance.now()),10,performance.now());},400);})(e.pid);}
     else if(e.t==='collapse'){play('collapse');e.tiles.forEach(function(c){FX.collapse.push({i:c.i,level:c.level,color:c.color,t0:now});});}
-    else if(e.t==='quake'){FX.quake={t0:now,tile:e.tile,seed:Math.random()*99};FX.shake={t0:now,amt:TW*0.07,dur:1400};if(e.tile!=null){focusTile(e.tile,1900);FX.collapse.push({i:e.tile,level:e.level,color:e.color,t0:now+300});}}
-    else if(e.t==='mangkrak'){play('collapse');if(e.tile!=null){FX.mangkrak[e.tile]=now;focusTile(e.tile,2000);FX.collapse.push({i:e.tile,level:e.level,color:e.color,t0:now+200});}}
+    else if(e.t==='quake'){FX.quake={t0:now,tile:e.tile,seed:Math.random()*99};FX.shake={t0:now,amt:TW*0.07,dur:1400};if(e.tile!=null){focusTile(e.tile,1900);FX.collapse.push({i:e.tile,level:e.level,color:e.color,t0:now+300,drop:true});(function(q){floaters.push({u:q.bu,v:q.bv,z:TW*1.3,text:'TURUN 1 LEVEL',color:'#D03A2F',t0:now+700,dur:2000,big:1.3});})(ZN[e.tile]);}}
+    else if(e.t==='mangkrak'){play('collapse');if(e.tile!=null){FX.mangkrak[e.tile]=now;focusTile(e.tile,2000);FX.collapse.push({i:e.tile,level:e.level,color:e.color,t0:now+200,drop:true});}}
     else if(e.t==='ott'){queueCine('ott',{pid:e.pid,caseText:e.caseText});}
     else if(e.t==='karam'){holdMove=now+500;}
     else if(e.t==='forest'){FX.forest={t0:now,from:e.stage-1,to:e.stage};cam.focus={u:MID,v:MID,zoom:1.6};cam.focusUntil=now+3600;play('cough');setTimeout(function(){play('cough');},1500);}
@@ -188,7 +198,7 @@ function drawParts(now){parts=parts.filter(function(p){var t=(now-p.t0)/p.life;i
   else if(p.kind==='dust'){var a3=p.a/5*Math.PI*2;ell(q.x+Math.cos(a3)*TW*0.2*t,q.y+Math.sin(a3)*TH*0.15*t,TW*0.05*(1-t*0.4),TW*0.04*(1-t*0.4),'rgba(220,200,170,'+(0.7*(1-t))+')');}
   return true;});}
 function drawCracks(q,t){var c=q.tile!=null?iso(ZN[q.tile].bu,ZN[q.tile].bv,DZ):iso(MID,MID,0);g.save();g.globalAlpha=t<0.7?1:(1-t)/0.3;g.strokeStyle='rgba(50,30,15,.85)';g.lineWidth=lw(0.02);g.lineJoin='miter';
-  for(var k=0;k<6;k++){var a=k/6*Math.PI*2+q.seed,len=TW*(0.4+hash(k,q.seed)*0.9)*Math.min(1,t*3),x=c.x,y=c.y;g.beginPath();g.moveTo(x,y);for(var s=1;s<=5;s++){var f=s/5;x=c.x+Math.cos(a)*len*f+(hash(k,s)-0.5)*TW*0.12;y=c.y+Math.sin(a)*len*f*0.5+(hash(s,k)-0.5)*TH*0.12;g.lineTo(x,y);}g.stroke();}
+  for(var k=0;k<6;k++){var a=k/6*Math.PI*2+q.seed,len=TW*(q.tile!=null?0.22+hash(k,q.seed)*0.25:0.4+hash(k,q.seed)*0.9)*Math.min(1,t*3),x=c.x,y=c.y;g.beginPath();g.moveTo(x,y);for(var s=1;s<=5;s++){var f=s/5;x=c.x+Math.cos(a)*len*f+(hash(k,s)-0.5)*TW*0.12;y=c.y+Math.sin(a)*len*f*0.5+(hash(s,k)-0.5)*TH*0.12;g.lineTo(x,y);}g.stroke();}
   g.restore();}
 var TK_DUR=4000;
 function drawTakeoverOverlay(now){for(var key in FX.take){var tk=FX.take[key],t=(now-tk.t0)/TK_DUR;if(t<0)continue;if(t>1){delete FX.take[key];continue;}var i=+key,zn=ZN[i],h=DZ,b=iso(zn.bu,zn.bv,h);

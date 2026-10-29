@@ -619,4 +619,14 @@ Status: dibangun kecuali yang ditandai.
 - **VO tiap adegan:** registri `VO_LINES` (09f_vo.js) key -> [peran, kalimat]; diputar via `vo(key)` = `play('vo:'+key)`, diam kalau belum ada audio. File nanti `assets/sfx/vo_<key>.m4a`. Klip manual pemain di Sound Studio selalu menang.
 - **Casting suara (Pocket TTS, 4 suara stok + dede/vina/kinta):** hakim, sipir, pengacara, token = suara stok; sutradara/orator = dede; warga/wartawan = vina; narator = kinta. Brief di hermes-office BRIEF-stable-audio.md bagian 12.
 - **Ditunda:** Opsi Tawar (alternatif takeover: tawar harga ke pemilik). "Gitu aja kok repot" diulang Hermes.
-- **Usulan masuk (29 Okt 13.21, belum diputuskan):** kota yang sudah jadi landmark naik harganya tiap kali token mampir. Perlu dipastikan: naik sekali (2x, mentok) atau berlipat tiap kunjungan, dan yang naik sewa atau harga takeover.
+- Usulan pengali landmark: diputuskan, lihat bagian 25.
+
+## 25. Batch 29 Okt 2026 (13.39): pengali landmark, segel, nuklir, performa
+- **Tangga pengali Proyek Strategis/Landmark.** Naik hanya saat **pemilik** mendarat di landmark miliknya: x1 → x2 → x4 → x8 → x16 (mentok). Kunjungan lawan tidak menaikkan. Region warna penuh = tangga mulai di x2 (tidak dikali lagi). Kampanye Akbar dan bonus lain (baliho, pinguin) dikali di atas tangga, total landmark maksimal **x32**. Kota non-landmark tetap maksimal x6. Bangun landmark baru = tangga mulai x1. Label "x2/x4/.../x32" di atas kota: kuning x2, oranye x4–8, merah x16+.
+  - Alasan desain (keputusan Dede): x32 memang membunuh, tapi hanya terjadi di late game, saatnya ada yang kalah.
+- **Segel (Demo Mahasiswa).** Pemilik yang mendarat di kotanya yang disegel boleh bayar denda (10% nilai investasi, min Rp20rb, masuk Kas Pungli). Segel dicabut, sewa jalan lagi, lalu lanjut bangun atau naik pengali. Tidak bayar = tidak bisa bangun dan tangga tidak naik.
+- **Kartu Manuver "Telepon dari Kim Jong Ah".** Pilih satu landmark lawan, turun ke Izin Lahan (level 0), pemilik tetap, pengali reset x1. Adegan: telepon merah, rudal, jamur nuklir, "RATA!". Tanpa target atau dipilih simpan: nuklir disimpan, **pajak gudang Rp50rb (ikut modal awal) tiap lewat Gajian**, dipakai lewat tombol "Pakai nuklir" di awal giliran.
+- **Gajian:** adegan slip gaji hanya saat berhenti tepat di Gedung Wakil Rakyat (Start). Lewat doang = floater "GAJIAN +Rp200rb".
+- **Gempa/Mangkrak:** tetap hanya kota (level 1–3), turun 1 level, tidak pernah konsesi/transportasi. Animasi diganti: bangunan goyang dan menyusut satu tingkat, retakan hanya di tile itu, floater "TURUN 1 LEVEL" (sebelumnya terlihat seperti runtuh total).
+- **Slogan:** "19 juta lapangan kerja, tinggal cari lapangannya!"
+- **Performa:** sprite karakter disimpan dalam ukuran jadi (tidak di-resize tiap frame); mafia di layar tengah digambar ulang ~8 fps saat diam; frame idle 15 fps setelah 2,5 detik, 10 fps setelah 15 detik; kualitas adaptif (kalau frame sibuk lambat: batasi 30 fps, lalu resolusi 2x → 1,5x → 1,25x → 1x); audio di-decode bertahap. Mesin uji (render software): frame 139 → ~350 per 25 detik, median jeda 167 → 67 ms.
