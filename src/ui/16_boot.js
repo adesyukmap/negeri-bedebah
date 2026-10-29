@@ -81,6 +81,7 @@ function boot(){
   $('pCam').onclick=function(){setCamStatic(!CAMSTATIC);label();};
   $('menuBtn').onclick=function(){$('pause').hidden=false;label();$('pQuit').textContent='Keluar ke menu';};
   $('pResume').onclick=function(){$('pause').hidden=true;};
+  var fpsLbl=function(){$('pFps').textContent='Penghitung FPS: '+(PERF.show?'Nyala':'Mati');};fpsLbl();var lgLbl=function(){$('pLight').textContent='Grafik: '+(BL.on?'Ringan (papan di-cache)':'Normal');};lgLbl();$('pLight').onclick=function(){BL.on=!BL.on;BL.c=[null,null,null];try{localStorage.setItem('nb-light',BL.on?'1':'0');}catch(e){}lgLbl();IDLE_SINCE=performance.now();};$('pFps').onclick=function(){PERF.show=!PERF.show;try{localStorage.setItem('nb-fps',PERF.show?'1':'0');}catch(e){}fpsLbl();IDLE_SINCE=performance.now();};
   $('pSound').onclick=function(){muted=!muted;try{localStorage.setItem('kc-muted',muted?'1':'0');}catch(e){}label();};
   $('pMusic').onclick=function(){musicOff=!musicOff;try{localStorage.setItem('kc-music-off',musicOff?'1':'0');}catch(e){}audioUnlock();applyMusic();label();};
   $('pRules').onclick=function(){$('rulesBox').hidden=!$('rulesBox').hidden;};

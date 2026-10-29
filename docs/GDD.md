@@ -657,3 +657,4 @@ Status: dibangun kecuali yang ditandai.
 - Impor: `python3 tools/import_vo.py <hermes-office>/audio/kepulauan-cuan` pilih take terbaik lewat transkrip whisper, potong ekor, simpan `assets/sfx/vo_<key>.m4a`, tandai VO-STATUS. File yang sudah ada tidak ditimpa.
 
 - Layar penafian sebelum tiap game Politik (setelah pilih karakter dan saat Main Lagi): "Semua karakter, tokoh, kasus, dan negeri dalam game ini fiktif." Tombol "Paham, mulai main" aktif setelah 2 detik.
+- **Lag (29 Okt 16.49):** Bos Mafia sekarang hanya muncul selama tombol kocok ditahan dan langsung turun saat dadu dilempar (tanpa pill petunjuk), digambar resolusi 1x. Posisi topbar untuk mafia di-cache (sebelumnya baca layout tiap frame). Menu: "Penghitung FPS" (fps, waktu JS per frame, resolusi) dan "Grafik: Ringan" (papan di-cache dalam 3 lapisan kedalaman; default Normal karena di mesin uji tanpa GPU justru lebih lambat, perlu diukur di iPad).

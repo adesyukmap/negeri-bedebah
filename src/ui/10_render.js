@@ -71,7 +71,12 @@ function nightTarget(){return 0;if(!S)return 0;var ph=((S.round-1)+S.turnIdx/Mat
 var lastBg=-1;
 var LASTF=0,IDLE_SINCE=0,CAMPREV={z:0,px:0,py:0};
 /* adaptive quality: when busy frames keep missing ~30fps, drop canvas resolution one step (2 -> 1.5 -> 1.25 -> 1) and cap busy fps at 30 */
-var PERF={cap:2,busyGap:0,win:[],lastAdj:0};
+var PERF={cap:2,busyGap:0,win:[],lastAdj:0,show:false,js:0,fr:0,fdt:0};var LASTF0=0;
+try{PERF.show=localStorage.getItem('nb-fps')==='1';}catch(e){}
+/* FPS meter (toggle in Menu): frame interval and JS time per frame, exponential averages */
+function perfMeter(now,js){PERF.js+=(js-PERF.js)*0.1;if(PERF.fdt>0&&PERF.fdt<500)PERF.fr+=(PERF.fdt-PERF.fr)*0.1;if(!PERF.show)return;
+  var fps=PERF.fr?Math.round(1000/PERF.fr):0,txt=fps+' fps · JS '+PERF.js.toFixed(1)+' ms · '+dpr+'x';g.save();g.setTransform(dpr,0,0,dpr,0,0);g.font='800 12px Nunito, sans-serif';var w=g.measureText(txt).width+14;
+  g.fillStyle='rgba(0,0,0,.65)';rrect(8,CH_-30,w,22,8);g.fill();g.fillStyle=fps>=40?'#7CFC9A':fps>=24?'#FFD95A':'#FF7A7A';g.textAlign='left';g.textBaseline='middle';g.fillText(txt,15,CH_-19);g.restore();}
 function perfSample(now,dt){if(dt>250)return;PERF.win.push(dt);if(PERF.win.length<45)return;var a=PERF.win.slice().sort(function(x,y){return x-y;}),med=a[a.length>>1];PERF.win.length=0;
   if(now-PERF.lastAdj<3000)return;
   if(med>40){PERF.lastAdj=now;if(!PERF.busyGap)PERF.busyGap=33;else if(PERF.cap>1){PERF.cap=PERF.cap>1.5?1.5:PERF.cap>1.25?1.25:1;layout();}}
@@ -92,6 +97,7 @@ function render(now){
   if(!S||$('game').hidden)return;
   if(FX.collapse&&FX.collapse.length)FX.collapse=FX.collapse.filter(function(c){return now-c.t0<1500;});
   var busy=sceneBusy(now);if(busy)IDLE_SINCE=now;var idle=now-IDLE_SINCE,gap=busy?PERF.busyGap:(idle>15000?100:idle>2500?66:33);if(now-LASTF<gap-2)return;if(busy&&LASTF&&now-LASTF<400)perfSample(now,now-LASTF);LASTF=now;CAMPREV={z:cam.z,px:cam.px,py:cam.py};
+  var _t0=performance.now();PERF.fdt=LASTF0?now-LASTF0:0;LASTF0=now;
   drainEvents(now);salaryTick(now);processPend(now);checkHold(now);updateConvoy(now);
   NIGHT+=(nightTarget()-NIGHT)*0.02;
   if(Math.abs(NIGHT-lastBg)>0.02){lastBg=NIGHT;var hi=mix('#4FB8E0','#1B2A55',NIGHT/0.82),lo=mix('#1C6A9A','#0B1430',NIGHT/0.82);document.body.style.background='radial-gradient(120% 90% at 50% 40%, '+hi+', '+lo+')';}
@@ -108,7 +114,13 @@ function render(now){
   g.font='900 '+(TW*0.12)+'px Nunito, sans-serif';g.fillStyle='rgba(15,60,95,.85)';g.fillText(S.turnLimit?('Ronde '+S.round+' dari '+S.turnLimit):('Ronde '+S.round),OX,OY+TH*3.42);
   if(S.kas>0||isPol()){var kp=Math.min(1,(S.kas||0)/kasLimit()),kx=OX,ky=OY+TH*3.62,kw=TW*1.0;rrect(kx-kw/2,ky,kw,TH*0.12,TH*0.06);g.fillStyle='rgba(15,40,60,.35)';g.fill();rrect(kx-kw/2,ky,kw*kp,TH*0.12,TH*0.06);g.fillStyle=isPol()?'#E2483D':'#2E9E5B';g.fill();
     g.font='900 '+(TW*0.075)+'px Nunito, sans-serif';g.fillStyle='rgba(15,40,60,.85)';g.fillText(TH_().kasName+' '+short(S.kas||0)+' / '+short(kasLimit())+(isPol()?storyBarLabel():''),OX,ky+TH*0.3);}
-  var items=[];for(var i=0;i<NT;i++)items.push({d:RECT[i].cu+RECT[i].cv,i:i});
+  var items=[];var blMoving=Math.abs(TW-BL.prev.TW)>0.01||Math.abs(OX-BL.prev.OX)>0.3||Math.abs(OY-BL.prev.OY)>0.3;BL.prev={TW:TW,OX:OX,OY:OY};
+  if(BL.on){var bE=blEdges(),liveT=blBand(0,now,blMoving);liveT.forEach(function(i){items.push({d:RECT[i].cu+RECT[i].cv,i:i});});
+    items.push({d:bE[0]-0.001,f:function(){blBand(1,now,blMoving).forEach(function(i){drawTile(i,now);});}});
+    items.push({d:bE[1]-0.001,f:function(){blBand(2,now,blMoving).forEach(function(i){drawTile(i,now);});}});
+    /* per-tile overlays (pick highlight, current-tile ring) still drawn every frame */
+    for(var i=0;i<NT;i++)items.push({d:RECT[i].cu+RECT[i].cv+0.0005,i:i,ov:true});}
+  else for(var i=0;i<NT;i++)items.push({d:RECT[i].cu+RECT[i].cv,i:i});
   lagoonLife(now).forEach(function(it){items.push(it);});
   actorItems(now,items);convoyItems(now,items);
   if(anim&&anim.mode==='sewer'){var ai0=animInfo(now);if(ai0&&ai0.stage!=='done'){var st0=ai0.stage,f0=ai0.f,e0=f0*f0*(3-2*f0),sA=anim.pts[0],sE=anim.pts[anim.pts.length-1];
@@ -121,7 +133,7 @@ function render(now){
   var curP=S.players[S.current],pick=S.phase==='turn'&&curP.pelni;
   items.forEach(function(it){
     if(it.f)return it.f();
-    if(it.i!==undefined){drawTile(it.i,now);var r=RECT[it.i],h=tileTop(it.i,now);
+    if(it.i!==undefined){if(!it.ov)drawTile(it.i,now);if(BL.on&&!it.ov)return;var r=RECT[it.i],h=tileTop(it.i,now);
       if(pick&&it.i!==curP.pos){var pk=0.5+0.5*Math.sin(now/170),hv=it.i===HOVER;g.save();g.globalAlpha=(hv?0.7:0.38)+0.22*pk;flatRect(r.u0+0.04,r.v0+0.04,r.u1-0.04,r.v1-0.04,h+1,hv?'#FFE600':'#FFD23F');g.globalAlpha=0.75+0.25*pk;g.strokeStyle=hv?'#FFFFFF':'#FFF3A0';g.lineWidth=lw(hv?0.05:0.032);path([iso(r.u0+0.05,r.v0+0.05,h+1),iso(r.u1-0.05,r.v0+0.05,h+1),iso(r.u1-0.05,r.v1-0.05,h+1),iso(r.u0+0.05,r.v1-0.05,h+1)]);g.stroke();g.restore();}
       if(!anim&&it.i===curP.pos&&(S.phase==='turn'||S.phase==='end'||S.phase==='prompt')){g.save();g.globalAlpha=0.55+0.3*Math.sin(now/220);g.strokeStyle='#FFE27A';g.lineWidth=lw(0.045);path([iso(r.u0+0.05,r.v0+0.05,h+1),iso(r.u1-0.05,r.v0+0.05,h+1),iso(r.u1-0.05,r.v1-0.05,h+1),iso(r.u0+0.05,r.v1-0.05,h+1)]);g.stroke();g.restore();}
     } else drawToken(it.p,it.tp,now);
@@ -149,6 +161,7 @@ function render(now){
     if(ai.stage==='walk'||ai.stage==='trav'){var sg=ai.seg;if(anim.hopSeg!==sg){anim.hopSeg=sg;if(sg>0){var tl=anim.pts[sg];if(anim.mode!=='sewer'){FX.press[tl]=now;play('hop');}else if(ai.stage==='trav')play('scuttle');}}
       if(anim.dbl>=1&&ai.stage==='walk'){var tp2=tokenPos(anim.pid,now);parts.push({u:tp2.u,v:tp2.v,z:tp2.z+TH*0.1,t0:now,life:500,kind:'flame'});}}
     if(ai.stage==='done'){var last=anim.pts[anim.pts.length-1],md=anim.mode;anim=null;FX.press[last]=now;if(md==='sewer'||md==='jump'||md==='karam'||md==='ott')play('pop');land();refresh();}}}
+  perfMeter(now,performance.now()-_t0);
 }
 function drainEvents(now){
   while(EVENTS.length){var e=EVENTS.shift();try{hudEvent(e,now);}catch(err){console.error(err);}if(typeof fxEvent==='function')try{fxEvent(e,now);}catch(err){console.error(err);}}

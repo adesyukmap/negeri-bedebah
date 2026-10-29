@@ -1,8 +1,7 @@
 /* ---------- Politik: Bos Mafia Sawit (fictional) shakes & throws the dice ---------- */
 var MAF={vis:0,fist:null,cv:null};
-function mafiaWant(now){if(!S||!isPol())return 0;if(typeof cineBusy==='function'&&cineBusy())return 0;if(cup.phase==='shake')return 1;if(diceRoll&&now-diceRoll.t0<850)return 1;
-  if(S.phase==='turn'&&!cur().pelni&&cup.phase==='idle'&&!diceRoll&&!anim)return 1;return 0;}
-function mafiaGeom(vis){var s=Math.min(CH_*0.46,CW*0.34),cx=CW/2,top=($('topbar')?$('topbar').getBoundingClientRect().bottom-cv.getBoundingClientRect().top:80),by=Math.max(0,top)+6+s*0.86-(1-vis)*s*1.05;return {s:s,cx:cx,by:by};}
+function mafiaWant(now){if(!S||!isPol())return 0;if(typeof cineBusy==='function'&&cineBusy())return 0;return cup.phase==='shake'?1:0;} /* only while the shake button is held; gone the moment the dice are thrown */
+function mafiaGeom(vis){var s=Math.min(CH_*0.46,CW*0.34),cx=CW/2,nw=performance.now();if(!MAF.topAt||nw-MAF.topAt>1000){MAF.topAt=nw;MAF.top=($('topbar')?$('topbar').getBoundingClientRect().bottom-cv.getBoundingClientRect().top:80);}var top=MAF.top,by=Math.max(0,top)+6+s*0.86-(1-vis)*s*1.05;return {s:s,cx:cx,by:by};}
 function screenToWorld(sx,sy,sum){var d=(sx-OX)/(TW/2),z=OY+sum*TH/2-sy;if(z<ZS*0.5){z=ZS*0.5;}return {u:(sum+d)/2,v:(sum-d)/2,cz:z/ZS};}
 function miniDie2D(x,y,w,rot,val){g.save();g.translate(x,y);g.rotate(rot);rrect(-w/2,-w/2,w,w,w*0.28);var gr=g.createLinearGradient(-w/2,-w/2,w/2,w/2);gr.addColorStop(0,'#FFFFFF');gr.addColorStop(1,'#D6D9E2');g.fillStyle=gr;g.fill();g.strokeStyle='rgba(60,60,80,.5)';g.lineWidth=Math.max(1,w*0.04);g.stroke();
   (PIPS[val]||PIPS[5]).forEach(function(p){ell(p[0]*w*0.25,p[1]*w*0.25,w*(val===1?0.16:0.09),w*(val===1?0.16:0.09),val===1?'#D8262A':'#111');});g.restore();}
@@ -73,10 +72,10 @@ function drawMafiaBody(s,cx,by,now,pw,thr){
   g.restore();
 }
 function drawMafia(now){
-  var want=mafiaWant(now);MAF.vis+=(want-MAF.vis)*(want>MAF.vis?0.12:0.06);if(MAF.vis<0.01){MAF.fist=null;return;}
+  var want=mafiaWant(now);MAF.vis+=(want-MAF.vis)*(want>MAF.vis?0.38:0.32);if(want===0&&MAF.vis<0.08)MAF.vis=0;if(MAF.vis<0.01){MAF.fist=null;return;}
   var G=mafiaGeom(MAF.vis),s=G.s,pw=cupPower(now),thr=null;
   if(diceRoll&&diceRoll.pol){var el=now-diceRoll.t0;if(el<700)thr=el/700;}
-  var w=Math.ceil(s*1.3),h=Math.ceil(s*1.05),d2=dpr;if(!MAF.cv)MAF.cv=document.createElement('canvas');var mc=MAF.cv;
+  var w=Math.ceil(s*1.3),h=Math.ceil(s*1.05),d2=Math.min(dpr,1);if(!MAF.cv)MAF.cv=document.createElement('canvas');var mc=MAF.cv;
   if(mc.width!==Math.ceil(w*d2)||mc.height!==Math.ceil(h*d2)){mc.width=Math.ceil(w*d2);mc.height=Math.ceil(h*d2);}
   var lcx=w/2,lby=h*0.86,old=g,calm=cup.phase==='idle'&&!diceRoll&&thr==null,rk=w+'x'+h+':'+d2+':'+cup.phase+':'+(MAF.vis>0.98?1:Math.round(MAF.vis*20));
   /* calm (no shake, no dice): redraw the offscreen mafia at ~8fps instead of every frame */
@@ -87,7 +86,6 @@ function drawMafia(now){
   var ox=G.cx-lcx,oy=G.by-lby;
   if(MAF.fist)MAF.fist={x:MAF.fist.x+ox,y:MAF.fist.y+oy};
   g.save();g.globalAlpha=Math.min(1,MAF.vis*1.6);g.drawImage(mc,ox,oy,w,h);g.restore();
-  if(cup.phase==='idle'&&!diceRoll&&MAF.vis>0.5&&S.phase==='turn'){g.save();g.globalAlpha=Math.min(1,(MAF.vis-0.5)*6);pill(G.cx,G.by-s*0.05,'Tahan tombol, Bos kocok dadunya',Math.max(12,s*0.045),'rgba(20,20,28,.85)','#FFD95A');g.restore();}
 }
 
 function renderMafiaAt(cx,by,s,alpha,now,laugh){var w=Math.ceil(s*1.3),h=Math.ceil(s*1.05),d2=dpr;if(!MAF.cv2)MAF.cv2=document.createElement('canvas');var mc=MAF.cv2;
