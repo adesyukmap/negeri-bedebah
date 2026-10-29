@@ -26,7 +26,7 @@ function onStoryEvent(e,now){if(typeof vo==='function')setTimeout(function(){vo(
   if(st===8){play('camera');}}
 /* periodic moments synced to dice throws: guaranteed on camera */
 function onStoryRoll(now){if(!isPol())return;STV.rolls++;if(STV.rolls<STV.nextAt)return;STV.rolls=0;STV.nextAt=2+Math.floor(Math.random()*2);
-  var st=stStage(),d0=(typeof DICE_DUR!=='undefined'?DICE_DUR:1100)+300;STV.moment={stage:st,t0:now+d0,v:Math.floor(Math.random()*2)};STV.hold=Math.max(STV.hold,now+d0+lockMs());cam.focus={u:MID,v:MID+0.3,zoom:1.6};cam.focusUntil=STV.hold+200;
+  var st=stStage(),d0=(typeof DICE_DUR!=='undefined'?DICE_DUR:1100)+300;STV.moment={stage:st,t0:now+d0,v:Math.floor(Math.random()*2)}; /* ambient island moment: plays while the token walks, never locks the game or grabs the camera */
   setTimeout(function(){var m=STV.moment;if(!m)return;var t=performance.now();
     if(st===0)play(m.v?'birds':'uuk');
     else if(st===1){play('cough');setTimeout(function(){play('birds');},500);STV.cough=t+3200;STV.uhuk={pid:S?S.current:0,t0:t};}

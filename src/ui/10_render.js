@@ -154,7 +154,7 @@ function render(now){
   drawBirds(now);
   floaters=floaters.filter(function(f){var t=(now-f.t0)/(f.dur||1500);if(t<0)return true;if(t>1)return false;var p=iso(f.u,f.v,f.z);g.save();g.globalAlpha=1-t*t;g.font='900 '+(TW*0.2*(f.big||1))+'px Nunito, sans-serif';g.textAlign='center';g.lineWidth=TW*0.05*(f.big||1);g.strokeStyle='#fff';g.strokeText(f.text,p.x,p.y-t*TH*1.4);g.fillStyle=f.color;g.fillText(f.text,p.x,p.y-t*TH*1.4);g.restore();return true;});
   drawActorBubbles(now);drawMarks(now,pick?curP:null);drawQuips(now);
-  if(S.phase==='moving'&&S.anim&&!anim&&!cineBusy()){var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,pts=[S.anim.from].concat(S.anim.path),wait=Math.max(diceRoll?diceRoll.t0+DICE_DUR+300-now:0,holdMove-now,0),mode=S.anim.mode||'walk';
+  if(S.phase==='moving'&&S.anim&&!anim&&!cineBusy()){var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,pts=[S.anim.from].concat(S.anim.path),wait=Math.max(diceRoll?diceRoll.t0+DICE_DUR+120-now:0,holdMove-now,0),mode=S.anim.mode||'walk';
     anim={pid:S.anim.pid,pts:pts,jump:!!S.anim.jump,mode:mode,dur:S.anim.jump?620:mode==='ship'?170:(reduce?90:(pts.length>9?360:520)),start:now+wait,spd:SPEED,hopSeg:-1,dbl:S.anim.dbl||0};}
   if(anim){var ai=animInfo(now);if(ai){
     if(anim.mode==='sewer'&&ai.stage!==anim.lastStage){anim.lastStage=ai.stage;if(ai.stage==='open'||ai.stage==='open2')play('pop');if(ai.stage==='sink')play('splash');}

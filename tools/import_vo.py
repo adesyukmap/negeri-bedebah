@@ -41,6 +41,7 @@ def main():
         print(__doc__); sys.exit(1)
     src = sys.argv[1]; force = '--force' in sys.argv
     only = None
+    minscore = float(sys.argv[sys.argv.index('--min') + 1]) if '--min' in sys.argv else 0.6
     if '--only' in sys.argv:
         only = set(sys.argv[sys.argv.index('--only') + 1].split(','))
     lines = brief_lines(os.path.join(src, 'BRIEF-stable-audio.md'))
@@ -66,14 +67,16 @@ def main():
             end = None
             if words:
                 # end of the last word that belongs to the expected line
+                TAIL = {'indah', 'ini', 'inder', 'in', 'that', 'enda', 'enak', 'nb', 'nkf', 'inamu', 'ingat', 'indas', 'lunen', 'nen'}
                 for w in reversed(words):
-                    if norm(w.word) and norm(w.word)[-1] in want:
+                    nw = norm(w.word)
+                    if nw and (nw[-1] in want or (nw[-1] not in TAIL and len(nw[-1]) > 2 and difflib.get_close_matches(nw[-1], want, 1, 0.6))):
                         end = w.end; break
                 end = end or words[-1].end
             if best is None or score > best[0]:
                 best = (score, t, end)
         score, take, end = best
-        if score < 0.6:
+        if score < minscore:
             print('SKIP %s: transcript match %.2f too low' % (key, score)); continue
         flt = 'afade=t=out:st=%.3f:d=0.05,' % max(0, (end or 0) + 0.05) if end else ''
         cut = ['-t', '%.3f' % ((end or 0) + 0.12)] if end else []

@@ -36,7 +36,7 @@ function renderModal(){
   var m=$('modal'),body=$('modalBody');
   if(S.phase!=='prompt'){if(!detailOpen)m.hidden=true;return;}
   if(fxHold(performance.now())){m.hidden=true;return;}
-  var mk=S.round+':'+S.current+':'+JSON.stringify(S.pending),nw=performance.now();if(mk!==renderModal.key){renderModal.key=mk;var dl=(S.pending.type==='card'?600:1000)/(typeof SPEED!=='undefined'?SPEED:1);renderModal.at=nw+dl;setTimeout(refresh,dl+20);}
+  var mk=S.round+':'+S.current+':'+JSON.stringify(S.pending),nw=performance.now();if(mk!==renderModal.key){renderModal.key=mk;var dl=(S.pending.type==='card'?450:450)/(typeof SPEED!=='undefined'?SPEED:1);renderModal.at=nw+dl;setTimeout(refresh,dl+20);}
   if(nw<renderModal.at){m.hidden=true;return;}
   var compact=S.pending.type!=='card'&&S.pending.type!=='festival'&&S.pending.type!=='nuke';m.classList.toggle('compact',compact);
   if(m.hidden||renderModal.shownKey!==mk){renderModal.shownKey=mk;renderModal.visAt=nw;if(compact)placeCard(m);if(S.pending.type==='card'&&typeof vo==='function'){var vc=TH_()[S.pending.deck||'chance'][S.pending.card];if(vc)vo('card_'+S.theme+'_'+slug(vc.name));}}
