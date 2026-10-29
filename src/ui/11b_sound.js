@@ -31,14 +31,21 @@ function deleteUserClip(k,cb){delete USER_RAW[k];delete USER_META[k];delete USER
 function decodeInto(map,k,ab){if(!AC||map[k]===false||map[k])return;map[k]=false;try{AC.decodeAudioData(ab.slice(0),function(b){map[k]=b;},function(){map[k]=null;});}catch(e){map[k]=null;}}
 /* decode in small batches so the first tap doesn't freeze the page decoding ~100 clips at once */
 var WARM={q:null,on:false};
-function warmSounds(){if(!AC||WARM.q)return;WARM.q=[];for(var k in USER_RAW)WARM.q.push(['u',k]);if(typeof SAMPLES!=='undefined')for(var s in SAMPLES)WARM.q.push(['s',s]);
+/* dialogue clips (vo_*, v_quip_*) are decoded only when first played and kept in a small LRU; short SFX are pre-warmed */
+var VO_LRU=[],VO_MAX=40;
+function isVoClip(k){return /^(vo_|v_quip_)/.test(k);}
+function voTouch(k){if(!isVoClip(k))return;var i=VO_LRU.indexOf(k);if(i>=0)VO_LRU.splice(i,1);VO_LRU.push(k);while(VO_LRU.length>VO_MAX){var old=VO_LRU.shift();delete SAMPLE_BUF[old];}}
+/* sounds the player threw away (local), so Hermes clips they dislike stay silent */
+var MUTED={};try{MUTED=JSON.parse(localStorage.getItem('nb-muted')||'{}')||{};}catch(e){MUTED={};}
+function saveMuted(){try{localStorage.setItem('nb-muted',JSON.stringify(MUTED));}catch(e){}}
+function warmSounds(){if(!AC||WARM.q)return;WARM.q=[];for(var k in USER_RAW)WARM.q.push(['u',k]);if(typeof SAMPLES!=='undefined')for(var s in SAMPLES)if(!isVoClip(s))WARM.q.push(['s',s]);
   (function step(){var n=0;while(WARM.q.length&&n<4){var it=WARM.q.shift();if(it[0]==='u'){if(!USER_BUF[it[1]])decodeInto(USER_BUF,it[1],USER_RAW[it[1]]);}else if(!SAMPLE_BUF[it[1]]){decodeInto(SAMPLE_BUF,it[1],b64buf(SAMPLES[it[1]]));n++;}}if(WARM.q.length)setTimeout(step,120);})();}
 function warmOne(b){if(b&&typeof SAMPLES!=='undefined'&&SAMPLES[b]&&!SAMPLE_BUF[b]&&!(SAMPLE_BUF._p&&SAMPLE_BUF._p[b])){(SAMPLE_BUF._p=SAMPLE_BUF._p||{})[b]=1;decodeInto(SAMPLE_BUF,b,b64buf(SAMPLES[b]));}}
 function builtinOf(n){return BUILTIN[n]||(n.indexOf('vo:')===0?'vo_'+n.slice(3):n.indexOf('voice:')===0?'vo_chr_'+n.slice(6)+'_giliran':n.indexOf('quip:')===0?'v_quip_'+n.slice(5):null);}
-function bufFor(n){if(USER_RAW[n]){if(USER_BUF[n])return USER_BUF[n];decodeInto(USER_BUF,n,USER_RAW[n]);return null;}var b=builtinOf(n);if(b&&SAMPLE_BUF[b])return SAMPLE_BUF[b];warmOne(b);return null;}
+function bufFor(n){if(USER_RAW[n]){if(USER_BUF[n])return USER_BUF[n];decodeInto(USER_BUF,n,USER_RAW[n]);return null;}var b=builtinOf(n);if(b&&MUTED[n])return null;if(b&&SAMPLE_BUF[b]){voTouch(b);return SAMPLE_BUF[b];}warmOne(b);if(b)voTouch(b);return null;}
 function playBuf(b,n,vol){var s=AC.createBufferSource(),gn=AC.createGain();s.buffer=b;gn.gain.value=vol==null?(SVOL[n]!=null?SVOL[n]:0.9):vol;s.connect(gn);gn.connect(AC.destination);s.start();PLAYING[n]=AC.currentTime+b.duration;SRC[n]=s;s.onended=function(){if(SRC[n]===s)delete SRC[n];};return s;}
 function hasSound(n){var b=builtinOf(n);return !!(USER_RAW[n]||(b&&typeof SAMPLES!=='undefined'&&SAMPLES[b]));}
-function play(n,arg){if(!AC||muted)return;warmSounds();var b=bufFor(n);
+function play(n,arg){if(!AC||muted)return;warmSounds();if(MUTED[n]&&!USER_RAW[n])return;var b=bufFor(n);
   if(b){if((n==='rattle'||n==='fajar'||n==='bedOtt'||n==='bedKampanye'||n==='rain'||n==='fire'||n==='typing'||n==='newsType'||n.indexOf('voice:')===0||n.indexOf('quip:')===0||n.indexOf('vo:')===0)&&PLAYING[n]>AC.currentTime)return;playBuf(b,n);return;}
   if(USER_RAW[n])return; // still decoding: stay quiet this once
   if(n.indexOf('voice:')===0||n.indexOf('quip:')===0||n.indexOf('vo:')===0||SILENT[n]===1||n==='newsType')return;
@@ -48,12 +55,13 @@ var studioTab='char',studioMsg='';
 function openStudio(){audioUnlock();warmSounds();$('studio').hidden=false;renderStudio();}
 function renderStudio(){var box=$('studioBody');box.innerHTML='';var G=SLOT_GROUPS.filter(function(x){return x.id===studioTab;})[0];
   var tabs=$('studioTabs');tabs.innerHTML='';SLOT_GROUPS.forEach(function(x){var b=document.createElement('button');b.type='button';b.textContent=x.name;if(x.id===studioTab)b.className='on';b.onclick=function(){studioTab=x.id;studioMsg='';renderStudio();};tabs.appendChild(b);});
-  $('studioHint').textContent=studioMsg||G.hint;$('studioHint').className='wallet'+(studioMsg?(/^(Tersimpan|Dihapus)/.test(studioMsg)?' okmsg':' warn'):'');
+  var nm=Object.keys(MUTED).length,cp=$('studioCopy');if(cp){cp.hidden=nm===0;cp.textContent='Salin daftar dibuang ('+nm+')';cp.onclick=function(){var txt='Suara dibuang: '+Object.keys(MUTED).join(', ');var done=function(){studioMsg='Daftar '+nm+' suara tersalin. Tempel ke chat Claude.';renderStudio();};try{navigator.clipboard.writeText(txt).then(done,function(){prompt('Salin daftar ini:',txt);});}catch(e){prompt('Salin daftar ini:',txt);}};}
+  $('studioHint').textContent=studioMsg||G.hint;$('studioHint').className='wallet'+(studioMsg?(/^(Tersimpan|Dihapus|Dibuang|Dipulihkan|Daftar)/.test(studioMsg)?' okmsg':' warn'):'');
   G.slots().forEach(function(sl){var row=document.createElement('div');row.className='srow';
     if(sl.char){var cvp=document.createElement('canvas');cvp.className='sface';row.appendChild(cvp);requestAnimationFrame(function(){portrait(cvp,sl.char,'#F2C230');});}
     var tx=document.createElement('div');tx.className='stext';var l=document.createElement('b');l.textContent=sl.label;tx.appendChild(l);
     var st=document.createElement('span');var mine=USER_META[sl.k];st.className='spill'+(mine?' mine':'');
-    st.textContent=mine?('File kamu: '+mine.name):(hasSound(sl.k)?'Bawaan (Hermes)':(sl.k.indexOf('voice:')===0||sl.k.indexOf('quip:')===0||sl.k.indexOf('vo:')===0||SILENT[sl.k]===1)?'Kosong':'Bawaan (synth)');
+    st.textContent=mine?('File kamu: '+mine.name):MUTED[sl.k]?'Dibuang':(hasSound(sl.k)?'Bawaan (Hermes)':(sl.k.indexOf('voice:')===0||sl.k.indexOf('quip:')===0||sl.k.indexOf('vo:')===0||SILENT[sl.k]===1)?'Kosong':'Bawaan (synth)');
     if(sl.sub){var sb=document.createElement('span');sb.className='ssub';sb.textContent=sl.sub;tx.appendChild(sb);}tx.appendChild(st);row.appendChild(tx);
     var acts=document.createElement('div');acts.className='sacts';
     var pb=document.createElement('button');pb.type='button';pb.className='btn ghost small';pb.textContent='Putar';pb.onclick=function(){audioUnlock();var was=muted;muted=false;var b=bufFor(sl.k);if(b)playBuf(b,'_preview');else if(USER_RAW[sl.k])setTimeout(function(){var b2=bufFor(sl.k);if(b2)playBuf(b2,'_preview');},250);else if(!(sl.k.indexOf('voice:')===0||sl.k.indexOf('quip:')===0||sl.k.indexOf('vo:')===0||SILENT[sl.k]===1))synthPlay(sl.k,0.6);muted=was;};
@@ -62,5 +70,7 @@ function renderStudio(){var box=$('studioBody');box.innerHTML='';var G=SLOT_GROU
       saveUserClip(sl.k,f,function(err){studioMsg=err||('Tersimpan: '+sl.label+'.');audioUnlock();warmSounds();renderStudio();});};
     var ub=document.createElement('button');ub.type='button';ub.className='btn small';ub.textContent=mine?'Ganti':'Upload';ub.onclick=function(){inp.click();};
     acts.appendChild(pb);acts.appendChild(ub);acts.appendChild(inp);
+    if(!mine&&(hasSound(sl.k)||MUTED[sl.k])){var mb=document.createElement('button');mb.type='button';mb.className='btn ghost small';mb.textContent=MUTED[sl.k]?'Pulihkan':'Buang';
+      mb.onclick=function(){if(MUTED[sl.k]){delete MUTED[sl.k];studioMsg='Dipulihkan: '+sl.label+'.';}else{MUTED[sl.k]=1;studioMsg='Dibuang: '+sl.label+'. Tekan "Salin daftar dibuang" lalu kirim ke Claude supaya dihapus permanen.';}saveMuted();renderStudio();};acts.appendChild(mb);}
     if(mine){var db2=document.createElement('button');db2.type='button';db2.className='btn ghost small';db2.textContent='Hapus';db2.onclick=function(){if(db2.textContent!=='Yakin?'){db2.textContent='Yakin?';return;}deleteUserClip(sl.k,function(){studioMsg='Dihapus: '+sl.label+', kembali ke bawaan.';renderStudio();});};acts.appendChild(db2);}
     row.appendChild(acts);box.appendChild(row);});}

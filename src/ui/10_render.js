@@ -3,7 +3,7 @@ var cv,ctx,dpr=1,CW=0,CH_=0,anim=null,floaters=[],landFx=[],coins=[],parts=[],BA
 var cam={z:1,px:0,py:0,mode:'follow',focus:null,focusUntil:0};
 var EXPR={},holdMove=0,MARKS=[],HOVER=-1;
 function layout(){
-  var r=cv.getBoundingClientRect();dpr=Math.min(Math.min(screen.width,screen.height)<600?1.5:2,window.devicePixelRatio||1,PERF.cap);CW=r.width;CH_=r.height;cv.width=Math.round(CW*dpr);cv.height=Math.round(CH_*dpr);
+  var r=cv.getBoundingClientRect();CW=r.width;CH_=r.height;dpr=Math.min(Math.min(screen.width,screen.height)<600?1.5:2,window.devicePixelRatio||1,PERF.cap,Math.sqrt(3200000/Math.max(1,CW*CH_)));dpr=Math.max(0.75,Math.round(dpr*20)/20);cv.width=Math.round(CW*dpr);cv.height=Math.round(CH_*dpr);
   var tw=Math.min(CW/(BN+0.45),CH_/(BN*0.5+1.45));BASEV={TW:tw,OX:CW/2,OY:(CH_-tw*(BN*0.5+1.45))/2+tw/2*2.35};
 }
 function applyCam(shx,shy){TW=BASEV.TW*cam.z;TH=TW/2;DZ=TH*0.32;ZS=TW*0.61;OX=CW/2+(BASEV.OX-CW/2)*cam.z+cam.px+(shx||0);OY=CH_/2+(BASEV.OY-CH_/2)*cam.z+cam.py+(shy||0);}

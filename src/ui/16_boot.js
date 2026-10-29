@@ -55,7 +55,10 @@ function npcTick(now){
   if(!npcValid(a))a=npcFallback();if(!npcValid(a))return;
   NPC.readyAt=0;npcExec(a,now);}
 function allNpcTick(now){if(!CINE.open||!CINE.done||!S)return;if(S.players.some(function(q){return !q.npc&&!q.bankrupt;}))return;if(now-CINE.doneAt>2500)endCine();}
-function turnTick(now){if(!S||$('game').hidden)return;var sb=typeof storyBusy==='function'&&storyBusy();if(sb!==turnTick.sb){var was=turnTick.sb;turnTick.sb=sb;$('stage').classList.toggle('storyhold',sb);if(was&&!sb)refresh();}try{handoffTick(now);npcTick(now);allNpcTick(now);}catch(e){console.error(e);}}
+function turnTick(now){if(!S||$('game').hidden)return;var sb=typeof storyBusy==='function'&&storyBusy();if(sb!==turnTick.sb){var was=turnTick.sb;turnTick.sb=sb;$('stage').classList.toggle('storyhold',sb);if(was&&!sb)refresh();}try{handoffTick(now);npcTick(now);allNpcTick(now);}catch(e){console.error(e);}actionWatch(now);}
+/* watchdog: human's turn, nothing playing, but the action bar is empty -> redraw it (some path forgot to refresh) */
+function actionWatch(now){var p=S&&cur();var empty=p&&!p.npc&&(S.phase==='turn'||S.phase==='end')&&!cineBusy()&&!anim&&cup.phase==='idle'&&!diceRoll&&$('actionbar').children.length===0;
+  if(!empty){actionWatch.since=0;return;}if(!actionWatch.since){actionWatch.since=now;return;}if(now-actionWatch.since>1500){console.warn('actionbar watchdog: kosong',S.phase,'cine',CINE.open,'q',CINE.q.length,'hold',STV.hold-now);actionWatch.since=0;refresh();}}
 setInterval(function(){turnTick(performance.now());},100);
 /* ---------- boot ---------- */
 function boot(){

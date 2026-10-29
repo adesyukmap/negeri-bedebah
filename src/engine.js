@@ -346,7 +346,9 @@ function pay(fid,amt,tid){
   if(p.money<amt)liquidate(fid,amt);
   var got=Math.min(p.money,amt); p.money-=got; if(got)emit({t:'money',pid:fid,d:-got});
   if(tid!=null&&got>0){P(tid).money+=got; emit({t:'money',pid:tid,d:got}); emit({t:'transfer',from:fid,to:tid,amt:got});}
-  if(got<amt)goBankrupt(fid);
+  if(got<amt&&tid!=null&&polKas()&&!P(tid).bankrupt){var short=amt-got,kg=Math.min(short,Math.max(0,S.kas||0));
+    if(kg>0){S.kas-=kg;P(tid).money+=kg;emit({t:'money',pid:tid,d:kg});emit({t:'bailout',from:fid,to:tid,amt:kg});toast(TH_().kasName+' menalangi '+fmt(kg)+' utang '+p.name+' ke '+P(tid).name,'bad');}}
+  if(got<amt){goBankrupt(fid);if(polKas()&&S.phase!=='over'){if((S.kas||0)<=0)kasEmpty();else kasStory();}}
   return got;
 }
 function payBank(fid,amt){var got=pay(fid,amt,null); if(got>0){S.kas=(S.kas||0)+got; emit({t:'toKas',from:fid,amt:got}); checkKas();} return got;}
