@@ -144,7 +144,7 @@ function addQuip(pid,text,dur,key){if(key)play('quip:'+key);QUIPS=QUIPS.filter(f
 function drawQuips(now){QUIPS=QUIPS.filter(function(q){var t=(now-q.t0)/q.dur;if(t>1)return false;if(t<0)return true;if(CONVOY&&CONVOY.pid===q.pid)return true;var tp=tokenPos(q.pid,now),b=iso(tp.u,tp.v,tp.z+TW*0.62),sc=easeBack(Math.min(1,t*q.dur/250));
   g.save();g.globalAlpha=t>0.85?(1-t)/0.15:1;speech(b.x,b.y,q.text,Math.max(13,TW*0.13)*Math.max(0.3,sc),TW*2.4,{W:CW,weight:900,stroke:'#4A3426'});g.restore();return true;});}
 /* world actors: preman (pungli), tukang parkir */
-function addActor(kind,tile,text,amt){play(kind);ACTORS.push({kind:kind,tile:tile,text:text,amt:amt,t0:performance.now(),dur:4200});focusTile(tile,3000);}
+function addActor(kind,tile,text,amt){if(kind==='tukang'&&typeof parkirFee==='function'&&parkirFee()>2000&&!USER_RAW.tukang)play('pay');else play(kind);ACTORS.push({kind:kind,tile:tile,text:text,amt:amt,t0:performance.now(),dur:4200});focusTile(tile,3000);}
 function actorItems(now,items){ACTORS=ACTORS.filter(function(a){var t=(now-a.t0)/a.dur;if(t>1)return false;var zn=ZN[a.tile],h=tileTop(a.tile,now),off=(1-easeOut(t/0.12))*0.9,side=zn.axis==='u'?[0,1]:[1,0];
     var u=zn.bu+0.18*side[0]+off*side[0],v=zn.bv+0.18*side[1]+off*side[1];
     items.push({d:RECT[a.tile].cu+RECT[a.tile].cv+0.5,f:function(){var b=iso(u,v,h);g.save();g.globalAlpha=t>0.9?(1-t)/0.1:1;var bob=t>0.12?Math.abs(Math.sin(now/160))*TH*0.05:Math.abs(Math.sin(now/70))*TH*0.1;

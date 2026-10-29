@@ -224,7 +224,9 @@ function drawBulldozer(u,v,z,now,side,push){side=side||[0,1];var vib=Math.sin(no
 function storyToast(text){if(!isPol()||typeof STORY==='undefined')return false;for(var k=0;k<STORY.length;k++){if(STORY[k]&&STORY[k].n&&String(text).indexOf(STORY[k].n.toUpperCase()+'!')===0)return true;}return false;}
 function showToast(text,kind){if(storyToast(text)){var bm=/Separuh kas jadi bansos untuk (.+?), separuh lagi raib\./.exec(text);if(!bm)return;text='Bansos untuk '+bm[1]+', separuh kas raib.';kind='';}
   showToastRaw(text,kind);}
-function showToastRaw(text,kind){placeToasts();var bx=$('toasts'),el=document.createElement('div');el.className='toast '+(kind||'');el.textContent=text;bx.appendChild(el);var _ts=bx.querySelectorAll('.toast'),_mx=window.innerHeight<500?2:3;for(var _i=0;_i<_ts.length-_mx;_i++)bx.removeChild(_ts[_i]);setTimeout(function(){el.style.transition='opacity .4s';el.style.opacity='0';setTimeout(function(){el.remove();},420);},(kind||'').indexOf('big')>=0?3600:2600);}
+var TQ=[];function centerBusy(){return typeof cineBusy==='function'&&cineBusy();}
+setInterval(function(){if(centerBusy())return;if(TQ.length){var q=TQ.shift();showToastRaw(q[0],q[1]);}else if(PSVQ.length&&!psvTimer)nextPassive();},450);
+function showToastRaw(text,kind){if(centerBusy()){if(TQ.length<6)TQ.push([text,kind]);return;}placeToasts();var bx=$('toasts'),el=document.createElement('div');el.className='toast '+(kind||'');el.textContent=text;bx.appendChild(el);var _ts=bx.querySelectorAll('.toast'),_mx=window.innerHeight<500?2:3;for(var _i=0;_i<_ts.length-_mx;_i++)bx.removeChild(_ts[_i]);setTimeout(function(){el.style.transition='opacity .4s';el.style.opacity='0';setTimeout(function(){el.remove();},420);},(kind||'').indexOf('big')>=0?3600:2600);}
 function showOTT(pid){var p=S.players[pid],o=$('ott');o.hidden=false;o.classList.remove('run');void o.offsetWidth;o.classList.add('run');$('ottName').textContent='OTT! '+p.name+' terjaring operasi tangkap tangan';
   requestAnimationFrame(function(){portrait($('ottFace'),p.char,p.color,{vest:true,expr:'shock'});});play('siren');setTimeout(function(){play('camera');},700);setTimeout(function(){play('camera');},1000);setTimeout(function(){o.hidden=true;o.classList.remove('run');},3200);}
 var newsTimer=null;
@@ -243,8 +245,8 @@ function drawMarks(now,picker){
 /* ---------- passive banner (queued, 3.5 s each) ---------- */
 var PSVQ=[],psvTimer=null;
 function placeToasts(){var bx=$('toasts'),L=$('sideL'),st=$('stage');if(!bx||!L||!st)return;var pv=$('psvBanner');if(pv&&pv.parentNode!==bx)bx.insertBefore(pv,bx.firstChild);var r=L.getBoundingClientRect(),r0=st.getBoundingClientRect();bx.style.top=Math.max(8,Math.round(r.bottom-r0.top+8))+'px';}
-function showPassive(e){placeToasts();PSVQ.push(e);if(!psvTimer)nextPassive();var el=$('psvBanner');if(el&&!el._tap){el._tap=1;el.addEventListener('pointerdown',function(ev){ev.stopPropagation();if(psvTimer){clearTimeout(psvTimer);nextPassive();}});}}
-function nextPassive(){var el=$('psvBanner');if(!el)return;var e=PSVQ.shift();if(!e){el.hidden=true;psvTimer=null;$('stage').classList.remove('psv');return;}
+function showPassive(e){placeToasts();PSVQ.push(e);if(!psvTimer&&!centerBusy())nextPassive();var el=$('psvBanner');if(el&&!el._tap){el._tap=1;el.addEventListener('pointerdown',function(ev){ev.stopPropagation();if(psvTimer){clearTimeout(psvTimer);nextPassive();}});}}
+function nextPassive(){var el=$('psvBanner');if(!el)return;if(centerBusy()){el.hidden=true;psvTimer=null;return;}var e=PSVQ.shift();if(!e){el.hidden=true;psvTimer=null;$('stage').classList.remove('psv');return;}
   var p=S&&S.players[e.pid];el.hidden=false;el.classList.remove('run');void el.offsetWidth;el.classList.add('run');$('stage').classList.add('psv');
   var nm=e.name||(typeof PASSIVES!=='undefined'&&PASSIVES[e.key]?PASSIVES[e.key].n:'Pasif');
   $('psvName').textContent=nm;$('psvText').textContent=e.text||(p?p.name:'');if(p)requestAnimationFrame(function(){portrait($('psvFace'),p.char,p.color,{expr:'happy'});});
