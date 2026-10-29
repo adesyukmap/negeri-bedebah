@@ -44,7 +44,9 @@ function tokenPos(pid,now){
         return {u:E.u,v:E.v,z:tileTop(s1,now),depth:dE};}
       var hop=Math.sin(f*Math.PI)*TH*(anim.jump?2.8:anim.mode==='ship'?0.15:0.85),za=tileTop(pts[seg],now),zb=tileTop(pts[Math.min(seg+1,pts.length-1)],now);
       return {u:a.u+(b.u-a.u)*f,v:a.v+(b.v-a.v)*f,z:za+(zb-za)*f+hop,depth:Math.max(RECT[pts[seg]].cu+RECT[pts[seg]].cv,RECT[pts[Math.min(seg+1,pts.length-1)]].cu+RECT[pts[Math.min(seg+1,pts.length-1)]].cv)+0.45,ship:anim.mode==='ship'};}}
-  var pos=(anim&&anim.pid===pid)?anim.pts[0]:p.pos,here=S.players.filter(function(q){return !q.bankrupt&&((anim&&anim.pid===q.id)?anim.pts[0]:q.pos)===pos;}),k=here.indexOf(p),sp=tokenSpot(pos,k,here.length);
+  /* engine already moved p.pos; until the walk animation starts (dice, center lock, cine) keep the token on its start tile */
+  var shownPos=function(q){if(anim&&anim.pid===q.id)return anim.pts[0];if(S.anim&&S.anim.pid===q.id&&S.phase==='moving')return S.anim.from;return q.pos;};
+  var pos=shownPos(p),here=S.players.filter(function(q){return !q.bankrupt&&shownPos(q)===pos;}),k=here.indexOf(p),sp=tokenSpot(pos,k,here.length);
   if(anim&&anim.pid===pid&&now<anim.start&&anim.mode==='ott')return {u:sp.u,v:sp.v,z:tileTop(pos,now),depth:RECT[pos].cu+RECT[pos].cv+0.45};
   return {u:sp.u,v:sp.v,z:tileTop(pos,now),depth:RECT[pos].cu+RECT[pos].cv+0.45};
 }
@@ -74,16 +76,23 @@ function perfSample(now,dt){if(dt>250)return;PERF.win.push(dt);if(PERF.win.lengt
   if(now-PERF.lastAdj<3000)return;
   if(med>40){PERF.lastAdj=now;if(!PERF.busyGap)PERF.busyGap=33;else if(PERF.cap>1){PERF.cap=PERF.cap>1.5?1.5:PERF.cap>1.25?1.25:1;layout();}}
   else if(med<20&&PERF.busyGap&&PERF.cap>=2){PERF.busyGap=0;PERF.lastAdj=now;}}
-function sceneBusy(now){if(anim||diceRoll||cup.phase!=='idle'||CINE.open||CONVOY||gest||coins.length||parts.length||floaters.length||landFx.length||EVENTS.length||FX.shake||FX.quake)return true;
+function sceneBusy(now){if(anim||diceRoll||cup.phase!=='idle'||CINE.open||CONVOY||gest||coins.length||parts.length||floaters.length||SALQ.length||landFx.length||EVENTS.length||FX.shake||FX.quake)return true;
   for(var k in FX.take)return true;for(var b in FX.build)if(now-FX.build[b].t0<1200)return true;if(FX.collapse&&FX.collapse.length)return true;
   if(STV.trans&&now-STV.trans.t0<8000)return true;if(STV.moment&&now-STV.moment.t0<3500)return true;if(QUIPS.length||ACTORS.length)return true;
   if(Math.abs(cam.z-CAMPREV.z)>0.0005||Math.abs(cam.px-CAMPREV.px)>0.3||Math.abs(cam.py-CAMPREV.py)>0.3)return true;return false;}
+/* salary feedback waits until the token actually reaches the Start tile */
+var SALQ=[];
+function salaryTick(now){SALQ=SALQ.filter(function(e){if(!S||!S.players[e.pid])return false;var moving=S.phase==='moving'&&S.anim&&S.anim.pid===e.pid;
+  if(anim&&anim.pid===e.pid){var ai=animInfo(now),k0=anim.pts.indexOf(0);if(!ai||ai.stage==='done'||k0<0)return !fireSal(e,now);if(ai.seg+1<k0)return true;return !fireSal(e,now);}
+  if(moving)return true;return !fireSal(e,now);});}
+function fireSal(e,now){var tp=tokenPos(e.pid,now);floaters.push({u:tp.u,v:tp.v,z:tp.z+TW*1.1,text:'GAJIAN +'+short(e.amt||200000),color:'#1F6E52',t0:now,dur:2600,big:1.7});coinRain(tp,10,now);
+  if(S.theme==='politik'&&e.landed)queueCine('gajian',{pid:e.pid,amt:e.amt,dur:9000});return true;}
 function render(now){
   requestAnimationFrame(render);
   if(!S||$('game').hidden)return;
   if(FX.collapse&&FX.collapse.length)FX.collapse=FX.collapse.filter(function(c){return now-c.t0<1500;});
   var busy=sceneBusy(now);if(busy)IDLE_SINCE=now;var idle=now-IDLE_SINCE,gap=busy?PERF.busyGap:(idle>15000?100:idle>2500?66:33);if(now-LASTF<gap-2)return;if(busy&&LASTF&&now-LASTF<400)perfSample(now,now-LASTF);LASTF=now;CAMPREV={z:cam.z,px:cam.px,py:cam.py};
-  drainEvents(now);processPend(now);checkHold(now);updateConvoy(now);
+  drainEvents(now);salaryTick(now);processPend(now);checkHold(now);updateConvoy(now);
   NIGHT+=(nightTarget()-NIGHT)*0.02;
   if(Math.abs(NIGHT-lastBg)>0.02){lastBg=NIGHT;var hi=mix('#4FB8E0','#1B2A55',NIGHT/0.82),lo=mix('#1C6A9A','#0B1430',NIGHT/0.82);document.body.style.background='radial-gradient(120% 90% at 50% 40%, '+hi+', '+lo+')';}
   updateCam(now);var sh=shakeOffset(now);applyCam(sh[0],sh[1]);
@@ -163,8 +172,10 @@ function hudEvent(e,now){
     else if(e.t==='lmUp'){landFx.push({tile:e.tile,t0:now});focusTile(e.tile,1600);FX.lmPop=FX.lmPop||{};FX.lmPop[e.tile]=now;vo('lm_up');(function(e){var q=ZN[e.tile];if(q)floaters.push({u:q.bu,v:q.bv,z:TW*1.6,text:'SEWA x'+e.mult,color:e.mult>=16?'#C62828':e.mult>=4?'#E07A1F':'#B8860B',t0:now+200,dur:2600,big:1.6});})(e);}
     else if(e.t==='nuke'){queueCine('nuke',{pid:e.pid,tile:e.tile,owner:e.owner,dur:8500,onEnd:function(){FX.collapse.push({i:e.tile,level:e.level,color:e.color,t0:performance.now()});play('collapse');focusTile(e.tile,1600);}});}
     else if(e.t==='unseal'){landFx.push({tile:e.tile,t0:now});vo('segel_cabut');}
+    else if(e.t==='imf'){queueCine('imf',{dur:20000,amt:e.amt});}
+    else if(e.t==='bubar'){queueCine('bubar',{dur:14000,pid:e.pid});}
     else if(e.t==='blusukan'){queueCine('blusukan',{pid:e.pid,tile:e.tile,dur:9600});}
-    else if(e.t==='salary'){if(S.theme==='politik'&&e.landed)queueCine('gajian',{pid:e.pid,amt:e.amt,dur:9000});(function(pid,amt){setTimeout(function(){if(S&&S.players[pid]){var tp=tokenPos(pid,performance.now());floaters.push({u:tp.u,v:tp.v,z:tp.z+TW*1.1,text:'GAJIAN +'+short(amt||200000),color:'#1F6E52',t0:performance.now(),dur:2600,big:1.7});}},500);})(e.pid,e.amt);holdMove=Math.max(holdMove,0);(function(pid){setTimeout(function(){if(S&&S.players[pid])coinRain(tokenPos(pid,performance.now()),10,performance.now());},400);})(e.pid);}
+    else if(e.t==='salary'){SALQ.push(e);}
     else if(e.t==='collapse'){play('collapse');e.tiles.forEach(function(c){FX.collapse.push({i:c.i,level:c.level,color:c.color,t0:now});});}
     else if(e.t==='quake'){FX.quake={t0:now,tile:e.tile,seed:Math.random()*99};FX.shake={t0:now,amt:TW*0.07,dur:1400};if(e.tile!=null){focusTile(e.tile,1900);FX.collapse.push({i:e.tile,level:e.level,color:e.color,t0:now+300,drop:true});(function(q){floaters.push({u:q.bu,v:q.bv,z:TW*1.3,text:'TURUN 1 LEVEL',color:'#D03A2F',t0:now+700,dur:2000,big:1.3});})(ZN[e.tile]);}}
     else if(e.t==='mangkrak'){play('collapse');if(e.tile!=null){FX.mangkrak[e.tile]=now;focusTile(e.tile,2000);FX.collapse.push({i:e.tile,level:e.level,color:e.color,t0:now+200,drop:true});}}

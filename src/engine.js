@@ -14,7 +14,9 @@ var REGIONS=[
 function C(name,r,lm,icon){return {type:'city',name:name,region:r,landmark:lm,icon:icon||'gen'};}
 var IDX={start:0,jail:10,fest:20,pelni:30};
 var TRANS_PRICE=200000, TRANS_RENT=[0,25000,50000,75000,100000], PARKIR_PER=2000, APPEAL_FEE=150000;
-/* Kas Pungli economy (Politik only) */
+/* Kas Negara (Politik only): one treasury that starts full and pays every state payout (gaji, bansos, hibah, serangan fajar).
+   Pungli and taxes only partly flow back. Stories advance as it empties; first empty = IMF loan + gaji -50%, second = Negara Bubar */
+var KAS_MULT=1.6, IMF_REFILL=0.5, KAS_STEPS=[0.9,0.8,0.7,0.6,0.5,0.4,0.27,0.14];
 var KAS_PART=0.4, TX_TAX=0.02, YEAR_TAX=0.0025, YEAR_TAX_MIN=2000;
 var T=[
   {type:'start',name:'Start'},
@@ -45,7 +47,24 @@ function hasP(p,k){return !!(S&&S.passives&&p&&!p.bankrupt&&p.char===k);}
 function useP(p,k){if(!hasP(p,k))return false;p.pu=p.pu||{};if(p.pu[k])return false;p.pu[k]=1;return true;}
 function canUseP(p,k){return hasP(p,k)&&!(p.pu&&p.pu[k]);}
 function pEmit(p,k,text){emit({t:'passive',pid:p.id,key:k,name:PASSIVES[k].n,text:text||(p.name+': '+PASSIVES[k].d)});}
-function kasLimit(){return S&&S.theme==='politik'?(storyStage()===0?125000:250000):KAS_LIMIT;}
+function kasLimit(){return S&&S.theme==='politik'?(S.kasMax||KAS_MULT*(S.startMoney||1500000)):KAS_LIMIT;}
+/* sized for 4 players, scaled by player count so the drain lands at the same point in the game */
+function kasStart(cfg){return Math.round(KAS_MULT*cfg.money*cfg.players.length/4/100000)*100000;}
+function polKas(){return !!(S&&S.theme==='politik'&&S.kasMax);}
+/* pay a player out of the Kas Negara; returns what was actually paid */
+function kasOut(p,amt){amt=Math.round(amt);if(amt<=0||!p||p.bankrupt||S.phase==='over')return 0;var got=Math.min(amt,Math.max(0,S.kas||0));
+  if(got>0){S.kas-=got;p.money+=got;emit({t:'money',pid:p.id,d:got});emit({t:'kasOut',pid:p.id,amt:got});}
+  if((S.kas||0)<=0)kasEmpty();else kasStory();
+  if(got<amt&&S.phase!=='over'&&S.kas>0){var more=Math.min(amt-got,S.kas);S.kas-=more;p.money+=more;emit({t:'money',pid:p.id,d:more});emit({t:'kasOut',pid:p.id,amt:more});got+=more;}
+  return got;}
+function kasStory(){if(!polKas()||S.imf||S.phase==='over')return;var f=(S.kas||0)/S.kasMax,want=0;KAS_STEPS.forEach(function(th){if(f<=th)want++;});
+  if(want>storyStage()){var from=storyStage(),to=from+1;S.story=to;S.kasStage=Math.min(3,to);toast(STORY[to].n.toUpperCase()+'! '+STORY[to].t+' Kas Negara tinggal '+short(S.kas)+'.','bad big');emit({t:'story',stage:to,from:from});}}
+function kasEmpty(){if(!polKas()||S.phase==='over')return;
+  if(!S.imf){S.imf=1;S.imfRound=S.round;S.kas=Math.round(S.kasMax*IMF_REFILL);emit({t:'imf',amt:S.kas});toast('KAS NEGARA KOSONG! Negara ngutang ke IMF '+short(S.kas)+'. Syaratnya: gaji pejabat dipotong 50%.','bad big');return;}
+  negaraBubar();}
+function negaraBubar(){var best=alivePlayers().sort(function(a,b){return assets(b.id)-assets(a.id);})[0];
+  emit({t:'bubar',pid:best.id});toast('NEGARA BUBAR! Utang IMF pun habis. Semua pejabat kabur ke luar negeri. '+best.name+' bawa harta paling banyak.','bad big');
+  S.winner={pid:best.id,how:'Negara Bubar · Koruptor Terakhir'};S.phase='over';S.pending=null;S.anim=null;sfx('win');save();}
 var STORY=[{n:'Hutan Lebat'},{n:'Karhutla',t:'Titik api muncul di tengah hutan. Api mulai menjalar.'},{n:'Pemadaman',t:'Pesawat pemadam dan hujan datang. Api padam, hutan tinggal arang.'},
   {n:'Tanam Sawit',t:'Hutan mati. Mafia Sawit datang, lahan jadi konsesi.'},{n:'Panen Raya',t:'Sawit berbuah lebat. Truk bolak-balik ke pabrik.'},
   {n:'Proyek IKN',t:'Peletakan batu pertama ibu kota baru. Crane mulai berputar.'},{n:'Mangkrak',t:'Proyek berhenti. Crane diam, rumput tumbuh di tiang beton.'},
@@ -105,7 +124,7 @@ var THEMES={
     typeNames:{start:'Gajian Pejabat',jail:'Lapas',festival:'Kampanye Akbar',pelni:'Gorong-gorong',tax:'Pungli',chance:'Manuver',dana:'Dana Hibah',parkir:'Parkir Liar'},
     names:{'Raja Ampat':'Konsesi Laut','Borobudur':'Konsesi Nikel','Danau Toba':'Reklamasi','Gunung Bromo':'Kebun Sawit','Bandara':'Jet Pribadi Pejabat','Pelabuhan':'Pelabuhan Ekspor Nikel','Stasiun Kereta Cepat':'Kereta Cepat Utang','Terminal Bus':'Bus Studi Banding'},
     ottCases:['Maling dana bansos, Mbak.','Saya cuma maling duit rakyat dikit, Mbak.','Proyek KTP elektronik.','Saya dituduh korupsi impor gula, padahal nggak!','Izin tambang timah.','Kuota haji tambahan.','Bakar hutan buat buka lahan sawit.','Izin ekspor minyak goreng waktu lagi langka.','Proyek menara BTS di pelosok.','Dana pensiun dan asuransi negara.','Proyek wisma atlet yang mangkrak.','Suap hakim biar vonis ringan.','Dana desa buat beli mobil.','Jual beli jabatan di daerah.','Pengadaan alat kesehatan waktu pandemi.','Impor daging sapi.','Ekspor benih lobster.','BBM dioplos, Mbak.','Proyek simulator SIM.','Dana hibah dipotong buat kampanye.','Pengadaan seragam dan sepatu dinas.'],
-    wisataLabel:'Konsesi', chanceName:'Manuver', danaName:'Dana Hibah', kasName:'Kas Pungli', newsName:'Breaking News', jailVerb:'ditahan',
+    wisataLabel:'Konsesi', chanceName:'Manuver', danaName:'Dana Hibah', kasName:'Kas Negara', newsName:'Breaking News', jailVerb:'ditahan',
     chance:[
       K('Kena OTT!','Ketahuan maling duit rakyat. Pakai rompi oranye, langsung ke Lapas.','bad','jail',0,{anim:'ott'}),
       K('Pelantikan','Dilantik jadi pejabat baru. Maju ke Gajian Pejabat.','good','toStart'),
@@ -129,8 +148,8 @@ var THEMES={
       K('Dana Aspirasi','Dana aspirasi turun. Terima Rp150.000.','good','gain',150000),
       K('Tunjangan Rumah Dinas','Terima Rp80.000.','good','gain',80000),
       K('Pungli Parkir','Kena tukang parkir liar. Bayar Rp50.000.','bad','pay',50000),
-      K('Rapat di Hotel Bintang 5','Rapat lima menit, honor sejam, dibayar dari Kas Pungli. Terima Rp60.000.','good','kasGain',60000),
-      K('Studi Banding ke Luar Negeri','Jalan-jalan berkedok studi banding, ongkosnya dari Kas Pungli. Terima Rp100.000.','good','kasGain',100000),
+      K('Rapat di Hotel Bintang 5','Rapat lima menit, honor sejam, dibayar dari Kas Negara. Terima Rp60.000.','good','kasGain',60000),
+      K('Studi Banding ke Luar Negeri','Jalan-jalan berkedok studi banding, ongkosnya dari Kas Negara. Terima Rp100.000.','good','kasGain',100000),
       K('Audit Mendadak','Auditor datang. Bayar 10% uang tunai ke kas.','bad','payPct',0.1)],
     news:[
       {id:'diskon',name:'Pemutihan Massal',text:'Semua biaya bangun diskon 30% selama ronde ini.'},
@@ -198,7 +217,7 @@ function upgradeOptions(p,i){var c=S.tiles[i].level,lv=[];
   if(c<3){for(var l=c+1;l<=(stepMode()?c+1:3);l++)lv.push(l);} else if(c===3&&p.laps>=1){lv.push(4);}
   return lv.filter(function(l){return p.money>=upCost(i,l);});}
 function alivePlayers(){return S.players.filter(function(p){return !p.bankrupt;});}
-function salaryAmt(){return START_SALARY*(newsOn('mudik')?2:1);}
+function salaryAmt(){return Math.round(START_SALARY*(newsOn('mudik')?2:1)*(S&&S.imf?0.5:1));}
 
 function newGame(cfg){
   var order=shuffle(cfg.players.map(function(_,i){return i;})),th=THEMES[cfg.theme||'santai'];
@@ -206,14 +225,14 @@ function newGame(cfg){
     tiles:T.map(function(){return {owner:null,level:-1};}), order:order, turnIdx:0, current:order[0], round:1, turnLimit:cfg.turnLimit, startMoney:cfg.money, buildMode:cfg.buildMode||'bertahap',
     festival:null, festLevel:0, phase:'handoff', pending:null, dice:[3,4], winner:null, anim:null, threats:{},
     chanceDeck:shuffle(th.chance.map(function(_,i){return i;})), danaDeck:shuffle(th.dana.map(function(_,i){return i;})),
-    passives:!!cfg.passives&&th.id==='politik', kas:0, kasStage:0, story:0, newsEnabled:cfg.news!==false, news:null, baliho:null, lastSum:7, fajar:false};
+    passives:!!cfg.passives&&th.id==='politik', kas:th.id==='politik'?kasStart(cfg):0, kasMax:th.id==='politik'?kasStart(cfg):0, imf:0, kasStage:0, story:0, newsEnabled:cfg.news!==false, news:null, baliho:null, lastSum:7, fajar:false};
   toast('Urutan main: '+order.map(function(i){return S.players[i].name;}).join(', '));
   save(); return S;
 }
 function startTurn(){if(S.phase!=='handoff')return; S.phase='turn'; save();}
 
-function salary(p,landed){var a=salaryAmt()+(hasP(p,'banteng')?30000:0);p.money+=a; p.laps++; emit({t:'money',pid:p.id,d:a}); emit({t:'salary',pid:p.id,amt:a,landed:!!landed}); sfx('coin'); if(p.nuke>0){var nt=kasTax(p,nukeTax()*p.nuke,'nuklir');if(nt)toast(p.name+' bayar pajak gudang nuklir '+fmt(nt),'bad');} if(hasP(p,'banteng'))pEmit(p,'banteng',p.name+' dapat iuran partai +Rp30rb');}
-function walk(p,n,mode){var from=p.pos,path=[];for(var k=0;k<n;k++){p.pos=(p.pos+1)%NT;path.push(p.pos);if(p.pos===0)salary(p,k===n-1);} S.anim={pid:p.id,from:from,path:path,mode:mode||'walk',dbl:p.doubles}; S.phase='moving'; save();}
+function salary(p,landed){if(S.phase==='over')return;var a=salaryAmt()+(hasP(p,'banteng')?30000:0); p.laps++; if(polKas()){var want=a;a=kasOut(p,a);if(S.phase==='over')return;if(a<want)toast('Kas Negara seret. Gaji '+p.name+' cuma cair '+fmt(a),'bad');}else{p.money+=a; emit({t:'money',pid:p.id,d:a});} emit({t:'salary',pid:p.id,amt:a,landed:!!landed}); sfx('coin'); if(p.nuke>0){var nt=kasTax(p,nukeTax()*p.nuke,'nuklir');if(nt)toast(p.name+' bayar pajak gudang nuklir '+fmt(nt),'bad');} if(hasP(p,'banteng'))pEmit(p,'banteng',p.name+' dapat iuran partai +Rp30rb');}
+function walk(p,n,mode){var from=p.pos,path=[];for(var k=0;k<n;k++){p.pos=(p.pos+1)%NT;path.push(p.pos);if(p.pos===0)salary(p,k===n-1);} if(S.phase==='over')return save(); S.anim={pid:p.id,from:from,path:path,mode:mode||'walk',dbl:p.doubles}; S.phase='moving'; save();}
 function walkTo(p,target,mode){var n=(target-p.pos+NT)%NT; if(n===0)n=NT; walk(p,n,mode);}
 function walkBack(p,n){var from=p.pos,path=[];for(var k=0;k<n;k++){p.pos=(p.pos+NT-1)%NT;path.push(p.pos);} S.anim={pid:p.id,from:from,path:path,mode:'walk'}; S.phase='moving'; save();}
 function jumpTo(p,i,mode){var from=p.pos; p.pos=i; S.anim={pid:p.id,from:from,path:[i],jump:true,mode:mode||'jump'}; S.phase='moving'; save();}
@@ -321,7 +340,7 @@ function landAsset(p,i){
 }
 var landWis=landAsset;
 function spend(p,amt){p.money-=amt; emit({t:'money',pid:p.id,d:-amt}); emit({t:'spend',pid:p.id,amt:amt});}
-function gain(p,amt){p.money+=amt; emit({t:'money',pid:p.id,d:amt}); emit({t:'gain',pid:p.id,amt:amt}); sfx('coin');}
+function gain(p,amt){if(polKas()){var got=kasOut(p,amt);if(got>0){emit({t:'gain',pid:p.id,amt:got});sfx('coin');}else if(S.phase!=='over')toast('Kas Negara kosong melompong.');return;} p.money+=amt; emit({t:'money',pid:p.id,d:amt}); emit({t:'gain',pid:p.id,amt:amt}); sfx('coin');}
 function pay(fid,amt,tid){
   var p=P(fid); amt=Math.round(amt); if(amt<=0||p.bankrupt)return 0;
   if(p.money<amt)liquidate(fid,amt);
@@ -343,6 +362,7 @@ function txTax(p,cost){var a=txTaxAmt(cost);return a?kasTax(p,a,'transaksi'):0;}
 function yearTaxAmt(pid){return Math.max(YEAR_TAX_MIN,Math.round(assets(pid)*YEAR_TAX/1000)*1000);}
 function yearTax(){if(!S||S.theme!=='politik')return;alivePlayers().forEach(function(q){if(S.phase!=='over')kasTax(q,yearTaxAmt(q.id),'tahunan');});}
 function checkKas(){
+  if(polKas()){if(S.kas>S.kasMax){emit({t:'raib',pid:null,amt:S.kas-S.kasMax});S.kas=S.kasMax;}return;}
   if(S.phase==='over'||(S.kas||0)<kasLimit())return;
   var pot=S.kas,alive=alivePlayers(); S.kas=0;
   if(S.theme==='politik'){
@@ -470,7 +490,7 @@ function applyCard(deck,ci){
   var c=TH_()[deck][ci],p=cur(),others=alivePlayers().filter(function(o){return o.id!==p.id;}),k,ca=cardAmt(c);
   switch(c.fx){
     case 'gain': gain(p,ca); break;
-    case 'kasGain': var kg=Math.min(ca,S.kas||0); if(kg<=0){toast('Kas Pungli kosong, acara batal. Tidak dapat apa-apa.');break;} S.kas-=kg; p.money+=kg; emit({t:'money',pid:p.id,d:kg}); emit({t:'kasDrain',pid:p.id,amt:kg}); toast('Kas Pungli berkurang '+fmt(kg)+' untuk '+c.name,'bad'); break;
+    case 'kasGain': if(!polKas()){gain(p,ca);break;} var kg=kasOut(p,ca); if(kg<=0){if(S.phase!=='over')toast('Kas Negara kosong, acara batal. Tidak dapat apa-apa.');break;} emit({t:'kasDrain',pid:p.id,amt:kg}); toast('Kas Negara berkurang '+fmt(kg)+' untuk '+c.name,'bad'); break;
     case 'pay': sfx('pay'); payBank(p.id,stoikAmt(p,ca)); break;
     case 'payPct': var amt=Math.round(p.money*c.amt/1000)*1000; if(amt>0){amt=stoikAmt(p,amt);sfx('pay');payBank(p.id,amt);} break;
     case 'collect': others.forEach(function(o){if(S.phase!=='over')pay(o.id,ca,p.id);}); sfx('coin'); break;
@@ -514,7 +534,7 @@ function endTurn(){
   S.phase='handoff';
   if(newRound)yearTax();
   if(newRound&&S.round%3===1&&S.phase!=='over')startNews();
-  if(newRound&&S.turnLimit&&S.round===S.turnLimit&&!S.fajar){S.fajar=true;var th=TH_(),got=[];alivePlayers().forEach(function(q){if(!q.inJail){q.money+=100000;emit({t:'money',pid:q.id,d:100000});got.push(q.id);}});emit({t:'fajar',name:th.fajarName,text:th.fajarText,got:got});}
+  if(newRound&&S.turnLimit&&S.round===S.turnLimit&&!S.fajar){S.fajar=true;var th=TH_(),got=[];alivePlayers().forEach(function(q){if(!q.inJail&&S.phase!=='over'){if(polKas()){if(kasOut(q,100000)>0)got.push(q.id);}else{q.money+=100000;emit({t:'money',pid:q.id,d:100000});got.push(q.id);}}});if(S.phase==='over')return save();emit({t:'fajar',name:th.fajarName,text:th.fajarText,got:got});}
   if(S.phase==='over')return save();
   if(S.phase!=='handoff')S.phase='handoff';
   save();

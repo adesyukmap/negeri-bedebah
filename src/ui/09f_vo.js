@@ -17,7 +17,10 @@ var VO_LINES={
   gaji_tunj:['narator','Belum termasuk tunjangan.'],gaji_cair:['narator','Cair!'],token_gaji:['token','Alhamdulillah, rezeki pejabat.'],
   mafia_lahan:['mafia','Lahan ini sekarang milik saya.'],
   nuke_call:['penelpon','Halo kawan! Saya titip satu nuklir. Pilih kotanya.'],nuke_pick:['token','Kota itu!'],nuke_boom:['narator','Rata. Tinggal izin lahan.'],
-  lm_up:['token','Mampir dulu, biar makin mahal.'],segel_cabut:['token','Segel? Bisa diatur.']};
+  lm_up:['token','Mampir dulu, biar makin mahal.'],segel_cabut:['token','Segel? Bisa diatur.'],
+  imf_kosong:['narator','Kas negara kosong melompong.'],imf_tolong:['token','Tolong, Pak, sekali ini aja!'],imf_gaji:['token','Gaji kami belum cair, Pak!'],imf_sumpah:['token','Nanti kami bayar, sumpah!'],
+  imf_syarat:['bankir','Boleh. Tapi syaratnya, gaji kalian dipotong setengah.'],imf_setuju:['narator','Disetujui.'],imf_bunga:['bankir','Jangan lupa bunganya.'],
+  mafia_nangis:['mafia','Hiks... nggak ada lagi yang bisa dimaling.'],kabur:['token','Sampai jumpa di luar negeri!'],koruptor_terakhir:['narator','Koruptor terakhir. Selamat menikmati.']};
 (function(){SLOGANS.forEach(function(s,i){VO_LINES['kamp_'+(i+1)]=['orator',s.replace(/\{city\}/g,'kota ini')];});
   SEL_PAIRS.forEach(function(p,i){VO_LINES['sel_k'+(i+1)]=['token',p[0]];VO_LINES['sel_s'+(i+1)]=['sipir',p[1]];});
   if(typeof THEMES!=='undefined'&&THEMES.politik&&THEMES.politik.ottCases)THEMES.politik.ottCases.forEach(function(c,i){VO_LINES['case_'+(i+1)]=['token',c];});})();

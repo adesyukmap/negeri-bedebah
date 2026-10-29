@@ -1,4 +1,4 @@
-/* ---------- Politik: cerita berkelanjutan di tengah board (Kas Pungli memajukan babak) ---------- */
+/* ---------- Politik: cerita berkelanjutan di tengah board (Kas Negara yang menipis memajukan babak) ---------- */
 var STV={stage:-1,since:0,trans:null,moment:null,rolls:0,nextAt:2,grow:0.35,hold:0,cough:0,uhuk:null,banner:null,stamp:0};
 /* stage 2 (Pemadaman) sequence, ms after the story event */
 var SEQ2={rainEnd:8000,gemoy:8000,gemoyEnd:11200,crowd:11200,end:13700};
@@ -96,7 +96,7 @@ function storyItems(now,items){storySync(now);var st=stStage(),t=now/1000,f=burn
   if(st===3){[IP(-0.5,0.9),IP(0.15,1.05)].forEach(function(w,k){items.push({d:w[0]+w[1],f:function(){var p=iso(w[0],w[1],0),s=TW*0.3,dig=Math.abs(Math.sin(now/300+k));drawMiniPerson(p.x,p.y,s,'#2E7D32',0,false);g.strokeStyle='#6A4A2A';g.lineWidth=lw(0.01);g.beginPath();g.moveTo(p.x+s*0.2,p.y-s*0.5);g.lineTo(p.x+s*0.35,p.y-s*0.05*dig);g.stroke();}});});
     items.push({d:2*MID+2.4,f:function(){var a=IP(0.45,1.2),b=IP(1.2,0.45),sb=IP(1.1,1.05);drawFence(a[0],a[1],b[0],b[1]);signBoard(sb[0],sb[1],'KONSESI PT SAWIT JAYA ABADI','#7A1A1A');}});}
   if(st===4||st===5){items.push({d:FACT_AT[0]+FACT_AT[1]+0.3,f:function(){var mu=FACT_AT[0],mv=FACT_AT[1];aoShadow(mu,mv,0.6,0.5,0);box(mu,mv,0.56,0.44,TH*0.48,0,'#B0B4BA','#8A8E96');box(mu+0.14,mv-0.12,0.12,0.12,TH*1.05,TH*0.48,'#8A8E96','#6A6E76');var ch=iso(mu+0.14,mv-0.12,TH*1.53);smoke(ch.x,ch.y,TW*0.1,9);
-      var bag=iso(mu-0.05,mv+0.4,0),bs=TW*(0.1+Math.min(0.12,(S.kas||0)/250000*0.12));g.beginPath();g.ellipse(bag.x,bag.y-bs,bs*0.9,bs,0,0,7);g.fillStyle=radialFill(bag.x,bag.y-bs*1.2,bs,'#E9C98A','#9A6A3A');g.fill();g.fillStyle='#6B4226';g.font='900 '+(bs*0.8)+'px Nunito, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('Rp',bag.x,bag.y-bs);}});}
+      var bag=iso(mu-0.05,mv+0.4,0),bs=TW*(0.1+Math.min(0.12,(S.kas||0)/(S.kasMax||250000)*0.12));g.beginPath();g.ellipse(bag.x,bag.y-bs,bs*0.9,bs,0,0,7);g.fillStyle=radialFill(bag.x,bag.y-bs*1.2,bs,'#E9C98A','#9A6A3A');g.fill();g.fillStyle='#6B4226';g.font='900 '+(bs*0.8)+'px Nunito, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('Rp',bag.x,bag.y-bs);}});}
   if(st>=5){items.push({d:IKN_AT[0]+IKN_AT[1]+0.4,f:function(){var cu=IKN_AT[0],cv=IKN_AT[1];if(st===5)drawIKN(cu,cv,now);else drawFrame(cu,cv,TH*1.1,true);var tip=drawCrane(CRANE_AT[0],CRANE_AT[1],now,st===5,st>=6);STV.craneTip=tip;
       if(st===6)drawSegel(cu,cv,now,(tr0&&tr0.stage===6)?te:1e9);
       var sg=IP(-0.1,1.0);if(st>=6)signBoard(sg[0],sg[1],'Proyek Strategis (dalam peninjauan)');else signBoard(sg[0],sg[1],'IBU KOTA BARU','#1F6E52');}});}
@@ -213,4 +213,4 @@ function storyBanner(now){var bn=STV.banner;if(!bn)return;var t=now-bn.t0,D=4200
   g.font='800 '+fsS+'px Nunito, sans-serif';g.fillStyle='rgba(255,255,255,.92)';lines.forEach(function(l,k){g.fillText(l,0,fsE*1.6+fsT*1.2+fsS*0.7+k*fsS*1.3);});
   g.restore();}
 function wrapLn(text,maxW){var words=text.split(' '),lines=[],cur='';words.forEach(function(wd){var t=cur?cur+' '+wd:wd;if(g.measureText(t).width>maxW&&cur){lines.push(cur);cur=wd;}else cur=t;});if(cur)lines.push(cur);return lines;}
-function storyBarLabel(){return ' → '+storyNext();}
+function storyBarLabel(){if(!S||!S.kasMax)return ' → '+storyNext();if(S.imf)return ' · utang IMF, gaji -50%';var st=stStage();if(st>=8)return ' · hampir bangkrut';var th=KAS_STEPS[st];return ' · '+STORY[st+1].n+' di '+short(Math.round(S.kasMax*th))+'';}

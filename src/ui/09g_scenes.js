@@ -100,3 +100,58 @@ CINE_SCENES.nuke=function(w,h,t,e,now){
   courtTitle(w,h,t,'TELEPON MERAH');
   if(t<0.6){var cl=t<0.25?easeOut(t/0.25):1-easeOut((t-0.25)/0.35);g.fillStyle='#000';g.fillRect(0,0,w,h*0.5*cl);g.fillRect(0,h-h*0.5*cl,w,h*0.5*cl);}
 };
+/* Kas Negara kosong: ngutang ke IMF (20 dtk). Generic banker, no real person or logo. */
+function vault(x,y,s,open,now){g.save();g.translate(x,y);rrect(-s*0.5,-s*0.5,s,s,s*0.06);g.fillStyle='#5A6270';g.fill();rrect(-s*0.42,-s*0.42,s*0.84,s*0.84,s*0.04);g.fillStyle='#1E2228';g.fill();
+  g.save();g.translate(-s*0.42,0);g.scale(Math.max(0.05,1-open),1);rrect(0,-s*0.42,s*0.84,s*0.84,s*0.04);g.fillStyle='#7A8494';g.fill();ell(s*0.42,0,s*0.16,s*0.16,'#B8C0CC');g.strokeStyle='#4A5260';g.lineWidth=s*0.03;for(var k=0;k<3;k++){var a=k/3*Math.PI*2+now/900;g.beginPath();g.moveTo(s*0.42,0);g.lineTo(s*0.42+Math.cos(a)*s*0.14,Math.sin(a)*s*0.14);g.stroke();}g.restore();
+  if(open>0.6){for(var m=0;m<2;m++){var mx=Math.sin(now/300+m*2)*s*0.2,my=-s*0.1-((now/20+m*40)%(s*0.5));g.fillStyle='rgba(200,190,170,.85)';g.beginPath();g.ellipse(mx-s*0.03,my,s*0.035,s*0.02,Math.sin(now/80)*0.6,0,7);g.ellipse(mx+s*0.03,my,s*0.035,s*0.02,-Math.sin(now/80)*0.6,0,7);g.fill();}}
+  g.restore();}
+function contract(x,y,s,sign,stamped){g.save();g.translate(x,y);g.rotate(-0.04);g.fillStyle='#FFFDF6';g.shadowColor='rgba(0,0,0,.25)';g.shadowBlur=10;g.fillRect(-s*0.4,-s*0.5,s*0.8,s);g.shadowBlur=0;
+  g.fillStyle='#16161E';g.font='900 '+(s*0.07)+'px Nunito, sans-serif';g.textAlign='center';g.fillText('PERJANJIAN UTANG',0,-s*0.38);g.fillStyle='rgba(22,22,30,.25)';for(var k=0;k<7;k++)g.fillRect(-s*0.32,-s*0.28+k*s*0.075,s*0.64*(k%3?1:0.7),s*0.02);
+  if(sign>0){g.strokeStyle='#1A3A8A';g.lineWidth=s*0.012;g.beginPath();for(var j=0;j<=Math.floor(sign*20);j++){var px=-s*0.25+j*s*0.018,py=s*0.33+Math.sin(j*1.7)*s*0.03;if(j)g.lineTo(px,py);else g.moveTo(px,py);}g.stroke();}
+  if(stamped>0){var sc=easeBack(stamped);g.save();g.translate(s*0.14,s*0.18);g.rotate(-0.25);g.scale(sc,sc);g.strokeStyle='#C62828';g.lineWidth=s*0.025;rrect(-s*0.26,-s*0.08,s*0.52,s*0.16,s*0.03);g.stroke();g.fillStyle='#C62828';g.font='900 '+(s*0.09)+'px "Baloo 2", sans-serif';g.textBaseline='middle';g.fillText('DISETUJUI',0,s*0.005);g.restore();}
+  g.restore();}
+CINE_SCENES.imf=function(w,h,t,e,now){
+  var fs=Math.max(14,Math.min(w*0.02,h*0.033)),s=Math.min(h*0.3,w*0.17),al=alivePlayers(),amt=e.amt||0;
+  var bg=g.createLinearGradient(0,0,0,h);bg.addColorStop(0,t<4?'#3A1F1F':'#22304A');bg.addColorStop(1,t<4?'#1A0E0E':'#121A2A');g.fillStyle=bg;g.fillRect(0,0,w,h);
+  if(t<4.2){var op=easeOut(Math.min(1,(t-0.6)/1.2));vault(w*0.5,h*0.55,Math.min(h*0.5,w*0.3),op,now);
+    if(t>0.8)once('k',function(){vo('imf_kosong');play('windCreak');});
+    if(t>1.6){bandText(w*0.5,h*0.21,'KAS NEGARA KOSONG',Math.min(w*0.06,h*0.09),'#C62828','#fff',-0.1);pill(w*0.5,h*0.21+Math.min(w*0.06,h*0.09)*0.95,'Saldo: Rp0',Math.max(14,fs),'#16161E','#FFD95A');}}
+  else{
+    /* banker's office */
+    g.fillStyle='#2E3E5C';g.fillRect(0,h*0.7,w,h*0.3);g.fillStyle='#3E5070';g.fillRect(0,h*0.7,w,h*0.02);
+    var dx=w*0.78,dy=h*0.72;drawChar('pengacara',dx,dy,s*1.1,null,{expr:t>10&&t<12.6?'happy':null});
+    rrect(dx-s*0.7,dy-s*0.42,s*1.4,s*0.5,s*0.05);g.fillStyle='#6B4A2E';g.fill();g.fillStyle='#F4F1EA';g.font='900 '+(s*0.16)+'px "Baloo 2", sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('IMF',dx,dy-s*0.17);
+    var n=Math.max(1,al.length),gap=Math.min(s*0.9,w*0.55/n);
+    al.forEach(function(p,k){var px=w*0.12+k*gap,bob=t<16?Math.abs(Math.sin(now/260+k))*s*0.05:Math.abs(Math.sin(now/120+k))*s*0.12;drawChar(p.char,px,h*0.95-bob,s*0.78,p.color,{expr:t<16?'sad':'happy'});});
+    var lines=[['Tolong, Pak, sekali ini aja!','imf_tolong'],['Gaji kami belum cair, Pak!','imf_gaji'],['Nanti kami bayar, sumpah!','imf_sumpah']];
+    lines.forEach(function(L,k){var t0=4.6+k*2,p=al[k%n];if(t>t0&&t<t0+2.2){speech(w*0.12+(k%n)*gap,h*0.95-s*0.85,typed(L[0],t,t0,30),fs,w*0.3,{anchor:'l',W:w,bg:'#FFE2E2'});once('l'+k,function(){vo(L[1]);});}});
+    if(t>10.6&&t<13.2){speech(dx,dy-s*1.15,typed('Boleh. Tapi syaratnya, gaji kalian dipotong setengah.',t,10.6,30),fs,w*0.34,{anchor:'r',W:w,bg:'#E8F0FF'});once('syarat',function(){vo('imf_syarat');});}
+    if(t>13.2&&t<17){var ct=Math.min(1,(t-13.2)/0.5);contract(w*0.5,h*0.42+(1-easeOut(ct))*h*0.6,Math.min(h*0.5,w*0.32),Math.min(1,Math.max(0,(t-14)/1.2)),t>15.4?Math.min(1,(t-15.4)/0.3):0);
+      if(t>14)once('sign',function(){play('typing');});if(t>15.4)once('stamp',function(){play('stamp');vo('imf_setuju');});}
+    if(t>17){var it=easeBack((t-17)/0.35),bf=Math.min(w*0.065,h*0.1);g.save();g.globalAlpha=Math.min(1,(t-17)/0.2);bandText(w*0.5,h*0.2,'UTANG CAIR +'+short(amt),bf*it,'#1F6E52','#fff',-0.1);
+      pill(w*0.5,h*0.2+bf*0.95,'Gaji pejabat dipotong 50% sampai game selesai',Math.max(13,fs*0.95),'#16161E','#FFD95A');g.restore();once('cair',function(){play('coins');});
+      if(t>17.8){speech(dx,dy-s*1.15,typed('Jangan lupa bunganya.',t,17.8,26),fs,w*0.26,{anchor:'r',W:w,bg:'#E8F0FF'});once('bunga',function(){vo('imf_bunga');});}}
+  }
+  courtTitle(w,h,t,'NGUTANG KE IMF');
+  if(t<0.6){var cl=t<0.25?easeOut(t/0.25):1-easeOut((t-0.25)/0.35);g.fillStyle='#000';g.fillRect(0,0,w,h*0.5*cl);g.fillRect(0,h-h*0.5*cl,w,h*0.5*cl);}
+};
+/* Negara Bubar: mafia nangis, pejabat kabur, Koruptor Terakhir */
+CINE_SCENES.bubar=function(w,h,t,e,now){
+  var fs=Math.max(14,Math.min(w*0.021,h*0.034)),s=Math.min(h*0.32,w*0.18),al=S.players.filter(function(p){return !p.bankrupt;}),win=S.players[e.pid];
+  var bg=g.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#3A2A3A');bg.addColorStop(1,'#14101A');g.fillStyle=bg;g.fillRect(0,0,w,h);
+  if(t<5){var ms=Math.min(h*0.75,w*0.45);if(typeof renderMafiaAt==='function')renderMafiaAt(w*0.5,h*1.02,ms,1,now,false);
+    for(var k=0;k<6;k++){var ph=((now/700)+k/6)%1,side=k%2?1:-1,tx=w*0.5+side*ms*(0.085+0.03*(k>>1)),ty=h*1.02-ms*0.6+ph*ms*0.3;g.globalAlpha=1-ph;ell(tx+side*ph*ms*0.04,ty,ms*0.014,ms*0.024,'#7FC8FF');g.globalAlpha=1;}
+    once('nangis',function(){vo('mafia_nangis');play('broke');});
+    if(t>0.8)speech(w*0.5+ms*0.25,h*0.35,typed('Hiks... nggak ada lagi yang bisa dimaling.',t,0.8,26),fs,w*0.32,{anchor:'l',W:w,bg:'#E8F0FF'});
+    if(t>0.4)bandText(w*0.5,h*0.12,'NEGARA BUBAR',Math.min(w*0.07,h*0.11),'#C62828','#fff',-0.1);}
+  else if(t<10){var rt=(t-5)/5;g.fillStyle='#2A2430';g.fillRect(0,h*0.78,w,h*0.22);
+    var px=w*1.05-rt*w*0.35;g.save();g.translate(px,h*0.62);g.fillStyle='#E8ECF2';rrect(-s*0.2,-s*0.12,s*1.6,s*0.26,s*0.12);g.fill();g.beginPath();g.moveTo(s*0.4,0);g.lineTo(s*0.9,-s*0.5);g.lineTo(s*1.0,-s*0.5);g.lineTo(s*0.8,0);g.fill();g.restore();
+    al.forEach(function(p,k){var x=-s+rt*w*(0.85+k*0.05)+k*s*0.7,bob=Math.abs(Math.sin(now/90+k))*s*0.08;drawChar(p.char,x,h*0.95-bob,s*0.75,p.color,{expr:'happy'});rrect(x+s*0.15,h*0.95-s*0.3-bob,s*0.28,s*0.2,s*0.03);g.fillStyle='#5A3A20';g.fill();});
+    if(t>5.6&&al[0])speech(Math.min(w*0.8,-s+rt*w*0.85),h*0.95-s*0.9,typed('Sampai jumpa di luar negeri!',t,5.6,28),fs,w*0.3,{anchor:'l',W:w,bg:'#FFE27A'});
+    once('kabur',function(){vo('kabur');play('jet');});}
+  else if(win){var it=easeBack((t-10)/0.4);drawChar(win.char,w*0.5,h*0.92,s*1.3*Math.min(1,it),win.color,{expr:'happy'});
+    for(var b=0;b<4;b++){var bx=w*0.5+(b-1.5)*s*0.5,by=h*0.92-s*0.1;ell(bx,by,s*0.16,s*0.14,'#E9C98A');g.fillStyle='#8A6A30';g.font='900 '+(s*0.12)+'px Nunito, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('Rp',bx,by);}
+    bandText(w*0.5,h*0.14,'KORUPTOR TERAKHIR',Math.min(w*0.06,h*0.09),'#16161E','#FFD95A',-0.1);pill(w*0.5,h*0.14+Math.min(w*0.06,h*0.09)*0.95,win.name+' · '+short(assets(win.id)),Math.max(14,fs),'#C62828','#fff');
+    once('menang',function(){vo('koruptor_terakhir');play('pwin');});}
+  if(t<0.6){var cl=t<0.25?easeOut(t/0.25):1-easeOut((t-0.25)/0.35);g.fillStyle='#000';g.fillRect(0,0,w,h*0.5*cl);g.fillRect(0,h-h*0.5*cl,w,h*0.5*cl);}
+};

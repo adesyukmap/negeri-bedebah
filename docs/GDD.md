@@ -630,3 +630,13 @@ Status: dibangun kecuali yang ditandai.
 - **Gempa/Mangkrak:** tetap hanya kota (level 1–3), turun 1 level, tidak pernah konsesi/transportasi. Animasi diganti: bangunan goyang dan menyusut satu tingkat, retakan hanya di tile itu, floater "TURUN 1 LEVEL" (sebelumnya terlihat seperti runtuh total).
 - **Slogan:** "19 juta lapangan kerja, tinggal cari lapangannya!"
 - **Performa:** sprite karakter disimpan dalam ukuran jadi (tidak di-resize tiap frame); mafia di layar tengah digambar ulang ~8 fps saat diam; frame idle 15 fps setelah 2,5 detik, 10 fps setelah 15 detik; kualitas adaptif (kalau frame sibuk lambat: batasi 30 fps, lalu resolusi 2x → 1,5x → 1,25x → 1x); audio di-decode bertahap. Mesin uji (render software): frame 139 → ~350 per 25 detik, median jeda 167 → 67 ms.
+
+## 26. Kas Negara (29 Okt 2026, 14.01): menggantikan Kas Pungli
+- **Satu kas, Kas Negara.** Mulai penuh: 1,6 x modal awal x (jumlah pemain / 4), dibulatkan Rp100rb. Contoh modal Rp1,5jt, 4 pemain = Rp2,4jt. Angka 5x usulan awal diuji simulasi: kas sisa 51% di ronde 25 dan IMF tidak pernah muncul, jadi diturunkan.
+- **Keluar dari kas:** gaji, semua kartu yang memberi uang, rapat hotel/studi banding, pasif yang memberi uang, serangan fajar. Kas seret = gaji cair sebagian.
+- **Masuk ke kas:** pungli 40% (sisanya raib), pajak transaksi/tahunan, denda, sogok, kartu bayar. Kas tidak bisa melebihi isi awal (lebihnya raib).
+- **Cerita tengah board maju saat kas menipis:** 90% Karhutla, 80% Pemadaman, 70% Tanam Sawit, 60% Panen Raya, 50% Proyek IKN, 40% Mangkrak, 27% Banjir Rob, 14% Reboisasi Pencitraan. Bar tengah: "Kas Negara X / Y · babak berikutnya di Z".
+- **Kosong pertama: Ngutang ke IMF** (adegan 20 dtk: brankas kosong, pejabat memohon, bankir kasih syarat, perjanjian distempel DISETUJUI). Kas diisi 50% dari isi awal, gaji dipotong 50% sampai game selesai.
+- **Kosong kedua: Negara Bubar** (adegan 14 dtk: mafia nangis, pejabat kabur ke luar negeri bawa koper). Game selesai, harta terbesar menang: "Negara Bubar · Koruptor Terakhir".
+- Simulasi 200 game bot (25 ronde): IMF di hampir semua game, median ronde 17; Negara Bubar sekitar 12% game.
+- Bug diperbaiki: token sempat tampil di tujuan sebelum jalan (saat layar tengah dikunci). Sekarang token menunggu di petak asal; floater/adegan gajian muncul saat token benar-benar sampai Start.
