@@ -181,11 +181,15 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
 
 /* lobby player slots */
 .slots{display:flex; flex-direction:column; gap:8px}
-.slot{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
-.slot-n{font:900 15px var(--f-body); width:24px}
-.slot .seg{flex:1 1 180px}
-.slot .seg button{min-height:44px; font-size:16px}
-.slot .slot-lvl{flex:1.4 1 220px}
+.slot{display:grid; grid-template-columns:44px minmax(0,1fr); align-items:center; column-gap:10px; row-gap:6px}
+.slot-id{display:flex; align-items:center; gap:6px}
+.slot-n{font:900 15px var(--f-body)}
+.slot .seg{flex-wrap:nowrap}
+.slot .seg button{min-height:44px; font-size:16px; min-width:0}
+.slot .slot-lvl{grid-column:2; }
+.slot .slot-lvl button{min-height:36px; font-size:14px; border-width:2px}
+.custom{display:flex; flex-direction:column; gap:6px; margin-top:2px}
+.custom label{font-size:13px; font-weight:900; color:var(--ink-soft)}
 #actionbar .hint.npc{background:rgba(74,52,38,.92); color:#FFE27A; box-shadow:0 4px 0 rgba(0,0,0,.25)}
 #cine.done{cursor:pointer}
 #stage.storyhold #actionbar,#stage.storyhold #camBtn{visibility:hidden}
@@ -248,6 +252,14 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
 .disc-card h2{font:800 30px 'Baloo 2',Nunito,sans-serif;margin:6px 0 10px}
 .disc-card p{font:700 18px/1.45 Nunito,sans-serif;margin:0 0 20px}
 .disc-card .btn[disabled]{opacity:.5}
+#lobby .sheet{width:min(1060px,100%)}
+.lobby-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 28px;align-items:start}
+.lobby-cols .col{display:flex;flex-direction:column;gap:16px;min-width:0}
+@media (max-width:760px){.lobby-cols{grid-template-columns:minmax(0,1fr)}}
+#lobby .seg button{white-space:nowrap;padding:0 6px}
+#segLimit,#segMoney,#segNpcLvl{flex-wrap:nowrap}
+#segLimit button,#segMoney button,#segNpcLvl button{font-size:16px;flex:1 1 auto;padding:0 10px;min-width:0}
+@media (max-height:520px){#lobby .sheet{padding:14px 16px;gap:12px}.lobby-cols .col{gap:10px}#lobby .seg button{min-height:40px;font-size:14px}#segLimit button,#segMoney button,#segNpcLvl button{font-size:13px}#lobby h2{font-size:20px;margin:0}}
 @media (prefers-reduced-motion: reduce){.rot-phone{animation:none; transform:rotate(-90deg)}}
 .wallet.rentpaid{background:#FDECEA; color:#A52A1E; font-weight:800; padding:8px 12px; border-radius:12px}
 @media (max-width:620px){.srow{flex-wrap:wrap}.sacts{width:100%; justify-content:flex-end}}
@@ -345,14 +357,16 @@ body:has(#modal.compact.right:not([hidden])) #camBtn{visibility:hidden}
   <section id="lobby" class="screen" hidden>
     <div class="sheet">
       <h2>Siapkan permainan</h2>
-      <div class="field"><span class="label">Tema</span><div class="seg" id="segTheme"></div><span class="wallet" id="themeHint"></span></div>
+      <div class="lobby-cols"><div class="col"><div class="field"><span class="label">Tema</span><div class="seg" id="segTheme"></div><span class="wallet" id="themeHint"></span></div>
       <div class="field"><span class="label">Jumlah pemain</span><div class="seg" id="segCount"></div></div>
       <div class="field"><span class="label">Siapa yang main</span><div class="slots" id="slotList"></div><span class="wallet" id="slotHint"></span></div>
-      <div class="field"><span class="label">Batas ronde</span><div class="seg" id="segLimit"></div></div>
-      <div class="field"><span class="label">Modal awal</span><div class="seg" id="segMoney"></div><label class="wallet" for="moneyInput">Atau atur sendiri (Rp)</label><input type="text" inputmode="numeric" id="moneyInput" autocomplete="off"></div>
+      <div class="field" id="npcLvlField"><span class="label">Level NPC</span><div class="seg" id="segNpcLvl"></div><span class="wallet" id="npcLvlHint"></span></div>
+      </div><div class="col"><div class="field"><span class="label">Batas ronde</span><div class="seg" id="segLimit"></div><div class="custom" id="limitBox" hidden><label for="limitInput">Jumlah ronde</label><input type="text" inputmode="numeric" id="limitInput" autocomplete="off" placeholder="mis. 40"></div></div>
+      <div class="field"><span class="label">Modal awal</span><div class="seg" id="segMoney"></div><div class="custom" id="moneyBox" hidden><label for="moneyInput">Modal per pemain (Rp)</label><input type="text" inputmode="numeric" id="moneyInput" autocomplete="off" placeholder="mis. 5000000"></div></div>
       <div class="field"><span class="label">Cara bangun</span><div class="seg" id="segBuild"></div><span class="wallet" id="buildHint"></span></div>
       <div class="field"><span class="label" id="newsLabel">Kabar Nusantara</span><div class="seg" id="segNews"></div><span class="wallet">Tiap 3 ronde ada peristiwa yang mengubah aturan selama satu ronde.</span></div>
       <div class="field" id="passiveField"><span class="label">Pasif karakter</span><div class="seg" id="segPassive"></div><span class="wallet">Tiap karakter punya satu kemampuan kecil. Mati = semua karakter sama, murni kosmetik.</span></div>
+      </div></div>
       <div class="row"><button class="btn ghost" id="lobbyBack">Kembali</button><button class="btn" id="lobbyNext">Pilih Karakter</button></div>
     </div>
   </section>
