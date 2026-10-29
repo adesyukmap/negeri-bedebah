@@ -607,3 +607,16 @@ Tiap kas penuh, board pindah tahap: Karhutla, Tanam Sawit, Bangun IKN, Proyek Ma
 - Board: dadu putih polos, pulau 1,5x (88 pohon), warna region kontras penuh di tile, animasi bangun 2,5 dtk (crane, perancah, pekerja, gunting pita), PLN kesetrum, wajah ngeledek saat gusur, tile transportasi dan Dana Hibah (koper HIBAH) baru, asap karhutla baru, balon "uhuk uhuk!", banner tiap babak + kamera 7 dtk, Pemadaman 14 dtk dengan Si Gemoy "Kami sudah berusaha semaksimal mungkin" dan token "Alah, omon-omon doang lu!", stempel "Lahan ini telah ditanam sawit".
 - Tampilan: kartu prompt kecil di kiri atas, layar giliran full dihapus (token membesar + panah + nama), bar pemain mini dengan panel detail saat di-tap, setting kamera Dinamis/Statis, musik Politik santai kecuali akhir game, adegan layar penuh berhenti di frame akhir dan harus di-tap Tutup, banner pasif 3,5 dtk, sapaan Ibu/Bapak di OTT, highlight kuning tujuan Gorong-gorong.
 - Catatan terbuka: NPC Mudah terlalu lemah; Si Gemoy pasif sedikit di atas rata-rata (1,16x sampai 1,24x).
+
+## 24. Batch 29 Okt 2026 (13.14): adegan penuh + VO
+Status: dibangun kecuali yang ditandai.
+- **Blusukan (gorong-gorong, politik).** Adegan syuting konten: sutradara (pengacara) + kru (tukang) + kamera + softbox + clapperboard. Take 1 token turun got, "Cut! Sekali lagi, Pak, kurang natural.", Take 2, "Oke, bagus! Langsung upload!", warga "Wah, Bapak masuk got!", band BLUSUKAN + "Muncul di {kota}". Durasi 9,6 dtk. Event engine `blusukan`.
+- **Gajian Pejabat (lewat Start, politik).** Slip gaji: gaji pokok kecil (10%), lalu tunjangan rumah dinas, transport, komunikasi, dana reses, kunjungan kerja, uang sidang menumpuk sampai total = gaji (Rp200rb, 2x saat Mudik). Stempel CAIR!. Durasi 9 dtk. Semua tema: floater besar "GAJIAN +Rp200rb" di atas token (jawaban: gaji memang masuk, sebelumnya cuma floater kecil yang tenggelam).
+- **Kampanye Akbar:** 11 slogan acak (`SLOGANS` di 09f_vo.js), tampil di baliho dan pidato.
+- **Sel:** 10 pasangan keluhan/jawaban sipir acak (`SEL_PAIRS`), termasuk "AC-nya kurang dingin" / "Mau dingin ya bayar, Boss."
+- **Dana Hibah:** kartu "Rapat di Hotel Bintang 5" (Rp60rb) dan "Studi Banding ke Luar Negeri" (Rp100rb) dibayar dari Kas Pungli. Kas berkurang; kas kosong = acara batal.
+- **Tak bisa diambil alih** (landmark, konsesi, kota tanpa opsi takeover): pemilik "Bayar dulu, Bos!", token "Sialan lu!" (VO `bayarDulu`, `sialan`).
+- **VO tiap adegan:** registri `VO_LINES` (09f_vo.js) key -> [peran, kalimat]; diputar via `vo(key)` = `play('vo:'+key)`, diam kalau belum ada audio. File nanti `assets/sfx/vo_<key>.m4a`. Klip manual pemain di Sound Studio selalu menang.
+- **Casting suara (Pocket TTS, 4 suara stok + dede/vina/kinta):** hakim, sipir, pengacara, token = suara stok; sutradara/orator = dede; warga/wartawan = vina; narator = kinta. Brief di hermes-office BRIEF-stable-audio.md bagian 12.
+- **Ditunda:** Opsi Tawar (alternatif takeover: tawar harga ke pemilik). "Gitu aja kok repot" diulang Hermes.
+- **Usulan masuk (29 Okt 13.21, belum diputuskan):** kota yang sudah jadi landmark naik harganya tiap kali token mampir. Perlu dipastikan: naik sekali (2x, mentok) atau berlipat tiap kunjungan, dan yang naik sewa atau harga takeover.

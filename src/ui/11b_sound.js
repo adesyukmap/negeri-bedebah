@@ -7,6 +7,7 @@ var SLOT_GROUPS=[
     {k:'host',label:'Mbak Host bertanya',sub:'"Bapak/Ibu ketangkap kasus apa?"'},{k:'preman',label:'Preman pungli',sub:'"Uang keamanan, Bos!"'},
     {k:'tukang',label:'Tukang parkir',sub:'"2rebu ga bikin lo miskin, boss!" (tarif ikut naik)'},{k:'mafia',label:'Bos Mafia lempar dadu',sub:'Tawa atau teriakan saat melempar'},
     {k:'mic',label:'Orasi kampanye',sub:'Awal adegan Kampanye Akbar'},{k:'semaksimal',label:'"Kami sudah berusaha semaksimal mungkin"',sub:'Gemoy raksasa saat pemadaman'}];}},
+  {id:'vo',name:'Voice over adegan',hint:'Suara dialog di adegan dan papan. Kosong = tanpa suara sampai file Hermes masuk.',slots:function(){var L=[{k:'quip:bayarDulu',label:'"Bayar dulu, Bos!"',sub:'Pemilik tanah, saat tidak bisa digusur'},{k:'quip:sialan',label:'"Sialan lu!"',sub:'Balasan token'}];Object.keys(typeof VO_LINES!=='undefined'?VO_LINES:{}).forEach(function(k){L.push({k:'vo:'+k,label:'"'+VO_LINES[k][1]+'"',sub:VO_LINES[k][0]});});return L;}},
   {id:'event',name:'Event',hint:'Ganti efek suara bawaan. Hapus untuk kembali ke bawaan.',slots:function(){return [
     {k:'tap',label:'Tombol'},{k:'rattle',label:'Kocok dadu'},{k:'slam',label:'Dadu mendarat'},{k:'hop',label:'Token melangkah'},
     {k:'buy',label:'Beli / ambil aset'},{k:'build',label:'Bangun'},{k:'takeover',label:'Gusur / takeover'},{k:'collapse',label:'Bangunan runtuh / mangkrak'},
@@ -28,13 +29,14 @@ function saveUserClip(k,file,cb){var fr=new FileReader();fr.onload=function(){va
 function deleteUserClip(k,cb){delete USER_RAW[k];delete USER_META[k];delete USER_BUF[k];sdb(function(db){if(!db)return cb&&cb();try{var tx=db.transaction('clips','readwrite');tx.objectStore('clips').delete(k);tx.oncomplete=function(){cb&&cb();};}catch(e){cb&&cb();}});}
 function decodeInto(map,k,ab){if(!AC||map[k]===false||map[k])return;map[k]=false;try{AC.decodeAudioData(ab.slice(0),function(b){map[k]=b;},function(){map[k]=null;});}catch(e){map[k]=null;}}
 function warmSounds(){if(!AC)return;for(var k in USER_RAW)decodeInto(USER_BUF,k,USER_RAW[k]);if(typeof SAMPLES!=='undefined')for(var s in SAMPLES)if(!SAMPLE_BUF[s])decodeInto(SAMPLE_BUF,s,b64buf(SAMPLES[s]));}
-function bufFor(n){if(USER_RAW[n]){if(USER_BUF[n])return USER_BUF[n];decodeInto(USER_BUF,n,USER_RAW[n]);return null;}var b=BUILTIN[n];if(b&&SAMPLE_BUF[b])return SAMPLE_BUF[b];return null;}
+function builtinOf(n){return BUILTIN[n]||(n.indexOf('vo:')===0?'vo_'+n.slice(3):null);}
+function bufFor(n){if(USER_RAW[n]){if(USER_BUF[n])return USER_BUF[n];decodeInto(USER_BUF,n,USER_RAW[n]);return null;}var b=builtinOf(n);if(b&&SAMPLE_BUF[b])return SAMPLE_BUF[b];return null;}
 function playBuf(b,n,vol){var s=AC.createBufferSource(),gn=AC.createGain();s.buffer=b;gn.gain.value=vol==null?(SVOL[n]!=null?SVOL[n]:0.9):vol;s.connect(gn);gn.connect(AC.destination);s.start();PLAYING[n]=AC.currentTime+b.duration;SRC[n]=s;s.onended=function(){if(SRC[n]===s)delete SRC[n];};return s;}
-function hasSound(n){return !!(USER_RAW[n]||(BUILTIN[n]&&typeof SAMPLES!=='undefined'&&SAMPLES[BUILTIN[n]]));}
+function hasSound(n){var b=builtinOf(n);return !!(USER_RAW[n]||(b&&typeof SAMPLES!=='undefined'&&SAMPLES[b]));}
 function play(n,arg){if(!AC||muted)return;warmSounds();var b=bufFor(n);
-  if(b){if((n==='rattle'||n==='fajar'||n==='bedOtt'||n==='bedKampanye'||n==='rain'||n==='fire'||n==='typing'||n==='newsType'||n.indexOf('voice:')===0||n.indexOf('quip:')===0)&&PLAYING[n]>AC.currentTime)return;playBuf(b,n);return;}
+  if(b){if((n==='rattle'||n==='fajar'||n==='bedOtt'||n==='bedKampanye'||n==='rain'||n==='fire'||n==='typing'||n==='newsType'||n.indexOf('voice:')===0||n.indexOf('quip:')===0||n.indexOf('vo:')===0)&&PLAYING[n]>AC.currentTime)return;playBuf(b,n);return;}
   if(USER_RAW[n])return; // still decoding: stay quiet this once
-  if(n.indexOf('voice:')===0||n.indexOf('quip:')===0||SILENT[n]===1||n==='newsType')return;
+  if(n.indexOf('voice:')===0||n.indexOf('quip:')===0||n.indexOf('vo:')===0||SILENT[n]===1||n==='newsType')return;
   synthPlay(n,arg);}
 /* ---------- Sound Studio screen ---------- */
 var studioTab='char',studioMsg='';
@@ -46,10 +48,10 @@ function renderStudio(){var box=$('studioBody');box.innerHTML='';var G=SLOT_GROU
     if(sl.char){var cvp=document.createElement('canvas');cvp.className='sface';row.appendChild(cvp);requestAnimationFrame(function(){portrait(cvp,sl.char,'#F2C230');});}
     var tx=document.createElement('div');tx.className='stext';var l=document.createElement('b');l.textContent=sl.label;tx.appendChild(l);
     var st=document.createElement('span');var mine=USER_META[sl.k];st.className='spill'+(mine?' mine':'');
-    st.textContent=mine?('File kamu: '+mine.name):(BUILTIN[sl.k]&&typeof SAMPLES!=='undefined'&&SAMPLES[BUILTIN[sl.k]]?'Bawaan (Hermes)':(sl.k.indexOf('voice:')===0||sl.k.indexOf('quip:')===0||SILENT[sl.k]===1)?'Kosong':'Bawaan (synth)');
+    st.textContent=mine?('File kamu: '+mine.name):(hasSound(sl.k)?'Bawaan (Hermes)':(sl.k.indexOf('voice:')===0||sl.k.indexOf('quip:')===0||sl.k.indexOf('vo:')===0||SILENT[sl.k]===1)?'Kosong':'Bawaan (synth)');
     if(sl.sub){var sb=document.createElement('span');sb.className='ssub';sb.textContent=sl.sub;tx.appendChild(sb);}tx.appendChild(st);row.appendChild(tx);
     var acts=document.createElement('div');acts.className='sacts';
-    var pb=document.createElement('button');pb.type='button';pb.className='btn ghost small';pb.textContent='Putar';pb.onclick=function(){audioUnlock();var was=muted;muted=false;var b=bufFor(sl.k);if(b)playBuf(b,'_preview');else if(USER_RAW[sl.k])setTimeout(function(){var b2=bufFor(sl.k);if(b2)playBuf(b2,'_preview');},250);else if(!(sl.k.indexOf('voice:')===0||sl.k.indexOf('quip:')===0||SILENT[sl.k]===1))synthPlay(sl.k,0.6);muted=was;};
+    var pb=document.createElement('button');pb.type='button';pb.className='btn ghost small';pb.textContent='Putar';pb.onclick=function(){audioUnlock();var was=muted;muted=false;var b=bufFor(sl.k);if(b)playBuf(b,'_preview');else if(USER_RAW[sl.k])setTimeout(function(){var b2=bufFor(sl.k);if(b2)playBuf(b2,'_preview');},250);else if(!(sl.k.indexOf('voice:')===0||sl.k.indexOf('quip:')===0||sl.k.indexOf('vo:')===0||SILENT[sl.k]===1))synthPlay(sl.k,0.6);muted=was;};
     var inp=document.createElement('input');inp.type='file';inp.accept='audio/*,.m4a,.mp3,.wav,.aac,.ogg';inp.hidden=true;
     inp.onchange=function(){var f=inp.files&&inp.files[0];if(!f)return;if(f.size>3*1024*1024){studioMsg='File '+f.name+' terlalu besar. Maksimal 3 MB, potong dulu jadi pendek.';renderStudio();return;}
       saveUserClip(sl.k,f,function(err){studioMsg=err||('Tersimpan: '+sl.label+'.');audioUnlock();warmSounds();renderStudio();});};

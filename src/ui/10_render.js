@@ -124,7 +124,7 @@ function render(now){
   drawCoins(now);
   if(typeof fxDraw==='function')try{fxDraw(now);}catch(err){console.error(err);}
   drawBirds(now);
-  floaters=floaters.filter(function(f){var t=(now-f.t0)/1500;if(t<0)return true;if(t>1)return false;var p=iso(f.u,f.v,f.z);g.save();g.globalAlpha=1-t*t;g.font='900 '+(TW*0.2)+'px Nunito, sans-serif';g.textAlign='center';g.lineWidth=TW*0.05;g.strokeStyle='#fff';g.strokeText(f.text,p.x,p.y-t*TH*1.4);g.fillStyle=f.color;g.fillText(f.text,p.x,p.y-t*TH*1.4);g.restore();return true;});
+  floaters=floaters.filter(function(f){var t=(now-f.t0)/(f.dur||1500);if(t<0)return true;if(t>1)return false;var p=iso(f.u,f.v,f.z);g.save();g.globalAlpha=1-t*t;g.font='900 '+(TW*0.2*(f.big||1))+'px Nunito, sans-serif';g.textAlign='center';g.lineWidth=TW*0.05*(f.big||1);g.strokeStyle='#fff';g.strokeText(f.text,p.x,p.y-t*TH*1.4);g.fillStyle=f.color;g.fillText(f.text,p.x,p.y-t*TH*1.4);g.restore();return true;});
   drawActorBubbles(now);drawMarks(now,pick?curP:null);drawQuips(now);
   if(S.phase==='moving'&&S.anim&&!anim&&!cineBusy()){var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,pts=[S.anim.from].concat(S.anim.path),wait=Math.max(diceRoll?diceRoll.t0+DICE_DUR+300-now:0,holdMove-now,0),mode=S.anim.mode||'walk';
     anim={pid:S.anim.pid,pts:pts,jump:!!S.anim.jump,mode:mode,dur:S.anim.jump?620:mode==='ship'?170:(reduce?90:(pts.length>9?360:520)),start:now+wait,spd:SPEED,hopSeg:-1,dbl:S.anim.dbl||0};}
@@ -147,13 +147,14 @@ function hudEvent(e,now){
     else if(e.t==='landmark'){landFx.push({tile:e.tile,t0:now+600});focusTile(e.tile,2000);}
     else if(e.t==='build'){FX.build[e.tile]={t0:now,level:e.level};focusTile(e.tile,1300);var bz=ZN[e.tile];coinBurst(tokenPos(S.current,now),{u:bz.bu,v:bz.bv,z:DZ+TH*0.5},5,now);}
     else if(e.t==='takeover'){(function(e){var tk={t0:Infinity,fromColor:S.players[e.from].color,toColor:S.players[e.to].color};FX.take[e.tile]=tk;afterOverlay(function(n2){tk.t0=n2;EXPR[e.to]={e:'tease',until:n2+2600};focusTile(e.tile,TK_DUR+400);if(isPol()){play('bulldoze');setTimeout(function(){play('bulldoze');},1000);setTimeout(function(){play('stamp');FX.shake={t0:performance.now(),amt:TW*0.025,dur:300};},1750);setTimeout(function(){play('stamp');FX.shake={t0:performance.now(),amt:TW*0.03,dur:300};},2350);}else setTimeout(function(){play('stamp');},1400);setTimeout(function(){FX.shake={t0:performance.now(),amt:TW*0.05,dur:500};play('takeover');play('collapse');},2620);});})(e);}
-    else if(e.t==='festival'){if(isPol()&&e.pid!=null)queueCine('kampanye',{pid:e.pid,tile:e.tile,onEnd:startConvoy});else{landFx.push({tile:e.tile,t0:now});focusTile(e.tile,1800);}}
+    else if(e.t==='festival'){if(isPol()&&e.pid!=null)queueCine('kampanye',{pid:e.pid,tile:e.tile,slogan:Math.floor(Math.random()*SLOGANS.length),onEnd:startConvoy});else{landFx.push({tile:e.tile,t0:now});focusTile(e.tile,1800);}}
     else if(e.t==='money'&&S){var tp=tokenPos(e.pid,now);floaters.push({u:tp.u,v:tp.v,z:tp.z+TW*0.6,text:(e.d>0?'+':'-')+short(Math.abs(e.d)),color:e.d>0?'#1E8A4C':'#D03A2F',t0:now+floaters.length*90});
       if(Math.abs(e.d)>=100000)EXPR[e.pid]={e:e.d>0?'happy':'shock',until:now+1800};}
     else if(e.t==='transfer'){coinBurst(tokenPos(e.from,now),tokenPos(e.to,now),Math.min(12,3+Math.round(e.amt/80000)),now);}
     else if(e.t==='toKas'){coinBurst(tokenPos(e.from,now),{u:MID,v:MID,z:ZS*0.6},Math.min(10,3+Math.round(e.amt/80000)),now);}
     else if(e.t==='gain'){var tg=tokenPos(e.pid,now);coinRain(tg,6,now);}
-    else if(e.t==='salary'){holdMove=Math.max(holdMove,0);(function(pid){setTimeout(function(){if(S&&S.players[pid])coinRain(tokenPos(pid,performance.now()),10,performance.now());},400);})(e.pid);}
+    else if(e.t==='blusukan'){queueCine('blusukan',{pid:e.pid,tile:e.tile,dur:9600});}
+    else if(e.t==='salary'){if(S.theme==='politik')queueCine('gajian',{pid:e.pid,amt:e.amt,dur:9000});(function(pid,amt){setTimeout(function(){if(S&&S.players[pid]){var tp=tokenPos(pid,performance.now());floaters.push({u:tp.u,v:tp.v,z:tp.z+TW*1.1,text:'GAJIAN +'+short(amt||200000),color:'#1F6E52',t0:performance.now(),dur:2600,big:1.7});}},500);})(e.pid,e.amt);holdMove=Math.max(holdMove,0);(function(pid){setTimeout(function(){if(S&&S.players[pid])coinRain(tokenPos(pid,performance.now()),10,performance.now());},400);})(e.pid);}
     else if(e.t==='collapse'){play('collapse');e.tiles.forEach(function(c){FX.collapse.push({i:c.i,level:c.level,color:c.color,t0:now});});}
     else if(e.t==='quake'){FX.quake={t0:now,tile:e.tile,seed:Math.random()*99};FX.shake={t0:now,amt:TW*0.07,dur:1400};if(e.tile!=null){focusTile(e.tile,1900);FX.collapse.push({i:e.tile,level:e.level,color:e.color,t0:now+300});}}
     else if(e.t==='mangkrak'){play('collapse');if(e.tile!=null){FX.mangkrak[e.tile]=now;focusTile(e.tile,2000);FX.collapse.push({i:e.tile,level:e.level,color:e.color,t0:now+200});}}
@@ -166,7 +167,8 @@ function hudEvent(e,now){
     else if(e.t==='pungli'){addActor('preman',S.players[e.pid].pos,isPol()?'Uang keamanan, Bos!':'Bayar dulu, Bos!',e.amt);play('pay');}
     else if(e.t==='parkir'){var pf=typeof parkirFee==='function'?parkirFee():2000;addActor('tukang',S.players[e.pid].pos,String(Math.round(pf/100)/10).replace('.',',')+'rebu ga bikin lo miskin, boss!',e.amt);}
     else if((e.t==='kasTax'||e.t==='raib')&&S&&S.players[e.pid]&&e.amt>0){var tk2=tokenPos(e.pid,now);floaters.push({u:tk2.u,v:tk2.v,z:tk2.z+TW*0.9,text:(e.t==='raib'?'raib ':'kas ')+short(e.amt),color:e.t==='raib'?'#7A6150':'#B8322A',t0:now+300+floaters.length*90});}
-    else if(e.t==='court'){queueCine('court',Object.assign({dur:e.kind==='sel'?6500:e.kind==='bebas'?6000:10000},e));}
+    else if(e.t==='noTake'){(function(e){afterOverlay(function(){addQuip(e.owner,'Bayar dulu, Bos!',2400,'bayarDulu');setTimeout(function(){addQuip(e.pid,'Sialan lu!',2400,'sialan');},900);},600);})(e);}
+    else if(e.t==='court'){queueCine('court',Object.assign({dur:e.kind==='sel'?7000:e.kind==='bebas'?6000:10000,pair:Math.floor(Math.random()*SEL_PAIRS.length)},e));}
     else if(e.t==='appeal'&&isPol()){}
     else if(e.t==='appeal'){play('appeal');if(!e.ok&&isPol())addQuip(e.pid,QUIP_TEXT.lawan,2600,'lawan');else addQuip(e.pid,e.ok?(isPol()?'Hakimnya bijak sekali!':'Akhirnya bebas!'):'Yah, gagal...',2600);}
     else if(e.t==='quip'){if(!isPol()||e.key==='lawan'){}else if(e.key==='sorry'){(function(e){afterOverlay(function(){addQuip(e.pid,QUIP_TEXT.sorry,2600,'sorry');},1300);})(e);}else if(QUIP_TEXT[e.key])addQuip(e.pid,QUIP_TEXT[e.key],null,e.key);}

@@ -165,6 +165,7 @@ function storyOverlay(now){if(!isPol()||!S)return;var st=stStage(),c=iso(MID,MID
   // babak 3: hutan mati, Mafia Sawit tertawa pongah sambil meremas kedua tangan
   if(tr&&tr.stage===3&&te>1300&&te<7000){var fa=Math.min(1,(te-1300)/500)*Math.min(1,(7000-te)/600),s=Math.min(CH_*0.62,CW*0.44);renderMafiaAt(CW/2,CH_*0.82,s,fa,now,true);
     g.save();g.globalAlpha=fa;for(var h=0;h<3;h++){var hp=((now/600)+h/3)%1;g.font='900 '+(s*0.09*(0.8+hp*0.4))+'px "Baloo 2", sans-serif';g.textAlign='center';g.fillStyle='rgba(255,217,90,'+(1-hp)+')';g.strokeStyle='rgba(40,20,10,'+(0.8*(1-hp))+')';g.lineWidth=4;var hx=CW/2+(h-1)*s*0.62,hy=CH_*0.82-s*0.78-hp*s*0.15+(h===1?-s*0.12:0);g.strokeText('HA!',hx,hy);g.fillText('HA!',hx,hy);}
+    if(tr&&!(tr.f&&tr.f.mafiaVo)){tr.f=tr.f||{};tr.f.mafiaVo=1;vo('mafia_lahan');}
     pill(CW/2,CH_*0.9,'Lahan ini sekarang milik saya.',Math.max(14,s*0.05),'rgba(20,20,28,.9)','#FFD95A');if(te>2500)pill(CW/2,CH_*0.9+Math.max(14,s*0.05)*2,'tap untuk lanjut',Math.max(11,s*0.032),'rgba(255,255,255,.85)',INK);g.restore();}
 }
 /* drawn from fxDraw (on top of the Mafia, below HUD overlays) */

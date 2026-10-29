@@ -128,7 +128,8 @@ var THEMES={
       K('Dana Aspirasi','Dana aspirasi turun. Terima Rp150.000.','good','gain',150000),
       K('Tunjangan Rumah Dinas','Terima Rp80.000.','good','gain',80000),
       K('Pungli Parkir','Kena tukang parkir liar. Bayar Rp50.000.','bad','pay',50000),
-      K('Uang Rapat','Rapat lima menit, honor sejam. Terima Rp60.000.','good','gain',60000),
+      K('Rapat di Hotel Bintang 5','Rapat lima menit, honor sejam, dibayar dari Kas Pungli. Terima Rp60.000.','good','kasGain',60000),
+      K('Studi Banding ke Luar Negeri','Jalan-jalan berkedok studi banding, ongkosnya dari Kas Pungli. Terima Rp100.000.','good','kasGain',100000),
       K('Audit Mendadak','Auditor datang. Bayar 10% uang tunai ke kas.','bad','payPct',0.1)],
     news:[
       {id:'diskon',name:'Pemutihan Massal',text:'Semua biaya bangun diskon 30% selama ronde ini.'},
@@ -202,7 +203,7 @@ function newGame(cfg){
 }
 function startTurn(){if(S.phase!=='handoff')return; S.phase='turn'; save();}
 
-function salary(p){var a=salaryAmt()+(hasP(p,'banteng')?30000:0);p.money+=a; p.laps++; emit({t:'money',pid:p.id,d:a}); emit({t:'salary',pid:p.id}); sfx('coin'); if(hasP(p,'banteng'))pEmit(p,'banteng',p.name+' dapat iuran partai +Rp30rb');}
+function salary(p){var a=salaryAmt()+(hasP(p,'banteng')?30000:0);p.money+=a; p.laps++; emit({t:'money',pid:p.id,d:a}); emit({t:'salary',pid:p.id,amt:a}); sfx('coin'); if(hasP(p,'banteng'))pEmit(p,'banteng',p.name+' dapat iuran partai +Rp30rb');}
 function walk(p,n,mode){var from=p.pos,path=[];for(var k=0;k<n;k++){p.pos=(p.pos+1)%NT;path.push(p.pos);if(p.pos===0)salary(p);} S.anim={pid:p.id,from:from,path:path,mode:mode||'walk',dbl:p.doubles}; S.phase='moving'; save();}
 function walkTo(p,target,mode){var n=(target-p.pos+NT)%NT; if(n===0)n=NT; walk(p,n,mode);}
 function walkBack(p,n){var from=p.pos,path=[];for(var k=0;k<n;k++){p.pos=(p.pos+NT-1)%NT;path.push(p.pos);} S.anim={pid:p.id,from:from,path:path,mode:'walk'}; S.phase='moving'; save();}
@@ -242,7 +243,7 @@ function payAppeal(){var p=cur(),fee=appealFee(); if(S.phase!=='turn'||!p.inJail
   save();}
 function jailFee(){return S&&S.theme==='politik'?250000:JAIL_FEE;}
 function payJail(){var p=cur(),fee=jailFee(); if(S.phase!=='turn'||!p.inJail||p.money<fee)return; payKas(p.id,fee,kasPart()); if(S.phase==='over')return save(); p.inJail=false; p.jailTurns=0; if(S.theme==='politik')emit({t:'court',kind:'sogok',pid:p.id,fee:fee}); toast(p.name+(S.theme==='politik'?' sogok hakim ':' bayar ')+fmt(fee)+' dan bebas. Silakan kocok dadu'); save();}
-function pelniTo(i){var p=cur(); i=+i; if(S.phase!=='turn'||!p.pelni||i===p.pos||!(i>=0&&i<NT))return; p.pelni=false; p.rolledDouble=false; toast(p.name+(S.theme==='politik'?' blusukan lewat gorong-gorong ke ':' berlayar ke ')+tileName(i)); walkTo(p,i,S.theme==='politik'?'sewer':'ship');}
+function pelniTo(i){var p=cur(); i=+i; if(S.phase!=='turn'||!p.pelni||i===p.pos||!(i>=0&&i<NT))return; p.pelni=false; p.rolledDouble=false; toast(p.name+(S.theme==='politik'?' blusukan lewat gorong-gorong ke ':' berlayar ke ')+tileName(i)); if(S.theme==='politik')emit({t:'blusukan',pid:p.id,tile:i}); walkTo(p,i,S.theme==='politik'?'sewer':'ship');}
 /* escalation: +1 step every 2 rounds (Politik only) */
 function escStep(){return S&&S.theme==='politik'?Math.floor(Math.max(0,(S.round||1)-1)/2):0;}
 function punglRate(){return Math.min(0.20,0.10+0.01*escStep());}
@@ -288,6 +289,7 @@ function landCity(p,i){
   if(S.phase==='over')return save();
   var sw=(!p.bankrupt&&st.owner!==null&&st.owner!==p.id)?swapCandidate(p,i):null;
   if(!p.bankrupt && st.owner!==null && st.owner!==p.id && st.level<4 && (p.money>=takeoverPrice(i)||sw!=null)) return ask({type:'takeover',tile:i,swap:sw,rent:rent,owner:st.owner});
+  if(S.theme==='politik'&&!p.bankrupt&&st.owner!==null&&rent<300000)emit({t:'noTake',pid:p.id,owner:st.owner,tile:i});
   finish();
 }
 function landAsset(p,i){
@@ -296,7 +298,7 @@ function landAsset(p,i){
   if(st.owner===p.id)return finish();
   var rent=rentOf(i); if(hasP(p,'opung')&&rent>0){rent=Math.round(rent*0.85);pEmit(p,'opung',p.name+' Lord, sewanya didiskon 15%');}
   toast(p.name+' bayar '+fmt(rent)+' ke '+P(st.owner).name+' di '+tileName(i),'bad'); sfx('pay');
-  pay(p.id,rent,st.owner); if(S.phase==='over')return save(); finish();
+  pay(p.id,rent,st.owner); if(S.phase==='over')return save(); if(S.theme==='politik'&&!p.bankrupt&&rent>0)emit({t:'noTake',pid:p.id,owner:st.owner,tile:i}); finish();
 }
 var landWis=landAsset;
 function spend(p,amt){p.money-=amt; emit({t:'money',pid:p.id,d:-amt}); emit({t:'spend',pid:p.id,amt:amt});}
@@ -430,7 +432,7 @@ function choose(opt){
 }
 function bestCity(pid,filt){return ownedCities(pid).filter(filt).sort(function(a,b){return invested(b)-invested(a);})[0];}
 /* card money scales with start money (card amounts are written for Rp1,5jt) */
-var CARD_MONEY={gain:1,pay:1,collect:1,payAll:1,robin:1};
+var CARD_MONEY={gain:1,pay:1,collect:1,payAll:1,robin:1,kasGain:1};
 function cardAmt(c){if(!c)return 0;if(!CARD_MONEY[c.fx])return c.amt;var sm=(S&&S.startMoney)||1500000;return Math.max(1000,Math.round(c.amt*sm/1500000/1000)*1000);}
 function cardText(deck,ci){var c=TH_()[deck][ci];if(!c)return '';if(!CARD_MONEY[c.fx])return c.text;var a=fmt(cardAmt(c));return c.text.replace(/Rp\s?\d{1,3}(?:\.\d{3})+|Rp\s?\d+(?:rb)?|\b\d+rb\b/g,a);}
 function stoikAmt(p,a){if(!hasP(p,'stoik'))return a;pEmit(p,'stoik',p.name+' dikotomi kendali, dendanya separuh');return Math.round(a/2/1000)*1000;}
@@ -438,6 +440,7 @@ function applyCard(deck,ci){
   var c=TH_()[deck][ci],p=cur(),others=alivePlayers().filter(function(o){return o.id!==p.id;}),k,ca=cardAmt(c);
   switch(c.fx){
     case 'gain': gain(p,ca); break;
+    case 'kasGain': var kg=Math.min(ca,S.kas||0); if(kg<=0){toast('Kas Pungli kosong, acara batal. Tidak dapat apa-apa.');break;} S.kas-=kg; p.money+=kg; emit({t:'money',pid:p.id,d:kg}); emit({t:'kasDrain',pid:p.id,amt:kg}); toast('Kas Pungli berkurang '+fmt(kg)+' untuk '+c.name,'bad'); break;
     case 'pay': sfx('pay'); payBank(p.id,stoikAmt(p,ca)); break;
     case 'payPct': var amt=Math.round(p.money*c.amt/1000)*1000; if(amt>0){amt=stoikAmt(p,amt);sfx('pay');payBank(p.id,amt);} break;
     case 'collect': others.forEach(function(o){if(S.phase!=='over')pay(o.id,ca,p.id);}); sfx('coin'); break;

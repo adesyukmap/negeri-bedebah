@@ -79,6 +79,7 @@ var CINE_SCENES={
     var fs=Math.max(16,Math.min(w*0.022,h*0.036));
     if(t>0.8)once('host',function(){play('host');});
     if(t>0.8&&t<3.0)speech(hostX+s*0.1,fy-s*1.05,typed((isFemale(p.char)?'Ibu':'Bapak')+' ketangkap kasus apa?',t,0.8,26),fs,w*0.28,{anchor:'l',W:w});
+    if(t>3.0)once('vcase',function(){var ck=caseKey(e.caseText);if(ck)vo(ck);});
     if(t>3.0&&t<6.6)speech(tokX,fy-s*1.02,'"'+typed(e.caseText||'Saya cuma lewat, Mbak.',t,2.8,30)+'"',fs,w*0.34,{anchor:'r',W:w});
     if(t>=6.6){var pp=Math.max(0.3,easeBack((t-6.6)/0.35));speech(tokX,fy-s*1.05,'Saya akan lawan!',fs*1.35*pp,w*0.4,{bg:'#FFE27A',stroke:'#C62828',weight:900,W:w});once('lw',function(){play('slam',0.4);play('quip:lawan');});}
     flashes(w,h,t,11,6);
@@ -110,7 +111,7 @@ var CINE_SCENES={
     var fit=function(txt,size,font,y,col){var fz=size;g.font=font.replace('#',fz);while(g.measureText(txt).width>tmax&&fz>8){fz-=1;g.font=font.replace('#',fz);}g.fillStyle=col;g.fillText(txt,tx0,y);};
     fit('COBLOS NO. '+idx,bh*0.2,'900 #px "Baloo 2", sans-serif',by+bh*0.2,'#fff');
     fit(p.name.toUpperCase(),bh*0.11,'900 #px Nunito, sans-serif',by+bh*0.37,'#FFE27A');
-    fit('Bangun '+city+', pasti cuan!',bh*0.085,'800 #px Nunito, sans-serif',by+bh*0.5,'#fff');
+    fit(sloganText(e.slogan||0,city),bh*0.085,'800 #px Nunito, sans-serif',by+bh*0.5,'#fff');
     var sy=h*0.72,stw=w*0.5;g.fillStyle='#7A3A1E';g.fillRect(w/2-stw/2,sy-h*0.12,stw,h*0.12);g.fillStyle='#A0522D';g.fillRect(w/2-stw/2,sy-h*0.13,stw,h*0.02);
     for(var k=0;k<12;k++){g.fillStyle=k%2?'#fff':'#D7261E';g.beginPath();var x0=w/2-stw/2+k*stw/12;g.moveTo(x0,sy-h*0.11);g.lineTo(x0+stw/12,sy-h*0.11);g.lineTo(x0+stw/24,sy-h*0.07);g.fill();}
     var ts=Math.min(h*0.28,w*0.16),jump=Math.abs(Math.sin(now/260))*h*0.012;drawChar(p.char,w/2,sy-h*0.13-jump,ts,p.color,{expr:t>4&&t<5.5?'happy':null});
@@ -118,7 +119,7 @@ var CINE_SCENES={
     rrect(w/2-ts*0.3,sy-h*0.13-ts*0.3,ts*0.6,ts*0.3,ts*0.04);g.fillStyle='#E8E2D2';g.fill();
     var fs=Math.max(16,Math.min(w*0.022,h*0.036));
     if(t>0.8&&t<4.8)speech(w/2+ts*0.2,h*0.62,typed('Saudara-saudara! '+city+' akan kita bangun jadi kota cuan!',t,0.8,30),fs,w*0.34,{W:w,anchor:'l'});
-    if(t>=5)speech(w/2+ts*0.2,h*0.62,typed('Pilih saya, dijamin... cuan! Hidup rakyat!',t,5,30),fs,w*0.34,{W:w,bg:'#FFE27A',anchor:'l'});
+    var slg=sloganText(e.slogan||0,city);if(t>=5)once('slg',function(){vo('kamp_'+((e.slogan||0)%SLOGANS.length+1));});if(t>=5)speech(w/2+ts*0.2,h*0.62,typed(slg,t,5,30),fs,w*0.34,{W:w,bg:'#FFE27A',anchor:'l'});
     for(var r=0;r<3;r++)for(var c=0;c<14;c++){var x=w*(c+0.5+(r%2)*0.5)/14,y=h*(0.84+r*0.07),bob=Math.abs(Math.sin(now/200+c*1.3+r))*h*0.015,sh=['#E2483D','#F2C230','#2F80ED','#2E9E5B','#fff'][(c+r)%5];
       g.strokeStyle='#5A4A3A';g.lineWidth=2;g.beginPath();g.moveTo(x+h*0.02,y-h*0.07-bob);g.lineTo(x+h*0.02,y-h*0.14-bob);g.stroke();g.fillStyle=(c+r)%3?p.color:'#fff';g.beginPath();g.moveTo(x+h*0.02,y-h*0.14-bob);g.lineTo(x+h*0.07+Math.sin(now/120+c)*h*0.006,y-h*0.125-bob);g.lineTo(x+h*0.02,y-h*0.11-bob);g.fill();
       drawMiniPerson(x,y-bob,h*0.1,sh,Math.sin(now/150+c),false);}
