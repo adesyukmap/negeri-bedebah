@@ -655,3 +655,5 @@ Status: dibangun kecuali yang ditandai.
 - **Narator (kinta):** nama kartu saat diambil, Breaking News, tiap babak cerita, Proyek Strategis berdiri, penggusuran, bangkrut, serangan fajar.
 - Sound Studio dibagi: Suara karakter, Voice over adegan, Narator. Klip manual pemain tetap menang dari bawaan.
 - Impor: `python3 tools/import_vo.py <hermes-office>/audio/kepulauan-cuan` pilih take terbaik lewat transkrip whisper, potong ekor, simpan `assets/sfx/vo_<key>.m4a`, tandai VO-STATUS. File yang sudah ada tidak ditimpa.
+
+- Layar penafian sebelum tiap game Politik (setelah pilih karakter dan saat Main Lagi): "Semua karakter, tokoh, kasus, dan negeri dalam game ini fiktif." Tombol "Paham, mulai main" aktif setelah 2 detik.

@@ -86,7 +86,7 @@ function boot(){
   $('pRules').onclick=function(){$('rulesBox').hidden=!$('rulesBox').hidden;};
   $('pQuit').onclick=function(){if(this.textContent!=='Yakin? Tap lagi'){this.textContent='Yakin? Tap lagi';return;}$('pause').hidden=true;$('players').hidden=true;$('modal').hidden=true;$('result').hidden=true;save();S=null;$('btnResume').hidden=!loadSave();show('splash');};
   $('resMenu').onclick=function(){$('result').hidden=true;clearSave();S=null;$('btnResume').hidden=true;show('splash');};
-  $('resAgain').onclick=function(){var ps=S.players.map(function(p){return {name:p.name,char:p.char,npc:!!p.npc,level:p.level};}),lim=S.turnLimit,mon=S.startMoney||1500000,bm=S.buildMode||'bertahap',th=S.theme||'santai',nw=S.newsEnabled!==false;$('result').hidden=true;newGame({players:ps,turnLimit:lim,money:mon,buildMode:bm,theme:th,news:nw,passives:!!S.passives});enterGame();};
+  $('resAgain').onclick=function(){var ps=S.players.map(function(p){return {name:p.name,char:p.char,npc:!!p.npc,level:p.level};}),lim=S.turnLimit,mon=S.startMoney||1500000,bm=S.buildMode||'bertahap',th=S.theme||'santai',nw=S.newsEnabled!==false;$('result').hidden=true;withDisclaimer(th,function(){newGame({players:ps,turnLimit:lim,money:mon,buildMode:bm,theme:th,news:nw,passives:!!S.passives});enterGame();});};
   musicWant='menu';
   requestAnimationFrame(render);requestAnimationFrame(tickMoney);
 }

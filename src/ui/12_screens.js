@@ -44,7 +44,7 @@ function shuffleArr(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floo
 function takenBy(id,k){for(var i=0;i<setup.count;i++){if(setup.slots[i].npc||i>=k)continue;var p=setup.players[i];if(p&&p.char===id)return {i:i};}return null;}
 function nextHuman(k){var hs=humanSlots();for(var j=0;j<hs.length;j++)if(hs[j]>k)return hs[j];return -1;}
 function prevHuman(k){var hs=humanSlots();for(var j=hs.length-1;j>=0;j--)if(hs[j]<k)return hs[j];return -1;}
-function pickChar(k,id){var ni=$('nameInput'),nm=(ni.value||'').trim()||('Pemain '+(k+1));setup.players[k]={name:nm.slice(0,12),char:id};var nx=nextHuman(k);if(nx>=0){setup.picking=nx;renderPick();}else startNewGame();}
+function pickChar(k,id){var ni=$('nameInput'),nm=(ni.value||'').trim()||('Pemain '+(k+1));setup.players[k]={name:nm.slice(0,12),char:id};var nx=nextHuman(k);if(nx>=0){setup.picking=nx;renderPick();}else withDisclaimer(setup.theme,startNewGame);}
 function fillNpcs(){var list=charsFor(setup.theme),used=[];for(var i=0;i<setup.count;i++)if(!setup.slots[i].npc&&setup.players[i])used.push(setup.players[i].char);
   var free=shuffleArr(list.filter(function(ch){return used.indexOf(ch.id)<0;}));
   for(var j=0;j<setup.count;j++){var sl=setup.slots[j];if(!sl.npc){if(setup.players[j])setup.players[j]={name:setup.players[j].name,char:setup.players[j].char};continue;}var ch=free.shift()||list[j%list.length];setup.players[j]={name:ch.name,char:ch.id,npc:true,level:sl.level||'sedang'};}
@@ -52,3 +52,6 @@ function fillNpcs(){var list=charsFor(setup.theme),used=[];for(var i=0;i<setup.c
 function startNewGame(){fillNpcs();var m=Math.max(300000,Math.min(20000000,Math.round((setup.money||1500000)/10000)*10000));newGame({players:setup.players.slice(0,setup.count),turnLimit:setup.limit,money:m,buildMode:setup.build,theme:setup.theme,news:setup.news,passives:setup.passives&&setup.theme==='politik'});enterGame();}
 function enterGame(){anim=null;diceRoll=null;cup.phase='idle';FX.take={};FX.build={};FX.collapse=[];FX.forest=null;HAND.key=null;npcReset();$('players').hidden=true;camHome();buildPanels();show('game');refresh();}
 
+
+/* Politik: fictional disclaimer before every game, button unlocks after 2 s */
+function withDisclaimer(theme,fn){if(theme!=='politik')return fn();var d=$('disc'),b=$('discOk');d.hidden=false;b.disabled=true;var t=setTimeout(function(){b.disabled=false;try{b.focus();}catch(e){}},2000);b.onclick=function(){if(b.disabled)return;clearTimeout(t);d.hidden=true;play('tap');fn();};}
