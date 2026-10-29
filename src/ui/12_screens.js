@@ -1,18 +1,20 @@
 /* ---------- screens ---------- */
-var setup={npcLevel:'sedang',passives:false,theme:'politik',count:3,limit:25,money:1500000,build:'bertahap',news:true,players:[],picking:0,slots:[0,1,2,3,4].map(function(){return {npc:false,level:'sedang'};})};
+var setup={npcLevel:'atur',lastLvl:'sedang',passives:false,theme:'politik',count:3,limit:25,money:1500000,build:'bertahap',news:true,players:[],picking:0,slots:[0,1,2,3,4].map(function(){return {npc:false,level:'sedang'};})};
 var SETUP_KEY='kc-setup';
-function loadSetup(){try{var o=JSON.parse(localStorage.getItem(SETUP_KEY)||'null');if(!o)return;['npcLevel','passives','theme','count','limit','money','build','news'].forEach(function(k){if(o[k]!==undefined)setup[k]=o[k];});
+function loadSetup(){try{var o=JSON.parse(localStorage.getItem(SETUP_KEY)||'null');if(!o)return;['lastLvl','passives','theme','count','limit','money','build','news'].forEach(function(k){if(o[k]!==undefined)setup[k]=o[k];});
   if(o.slots&&o.slots.length)o.slots.forEach(function(sl,i){if(setup.slots[i]&&sl)setup.slots[i]={npc:!!sl.npc,level:['mudah','sedang','sulit'].indexOf(sl.level)>=0?sl.level:'sedang'};});if(o.names)setup.names=o.names;}catch(e){}}
-function saveSetup(){try{var o={};['npcLevel','passives','theme','count','limit','money','build','news','slots','names'].forEach(function(k){o[k]=setup[k];});localStorage.setItem(SETUP_KEY,JSON.stringify(o));}catch(e){}}
+function saveSetup(){try{var o={};['lastLvl','passives','theme','count','limit','money','build','news','slots','names'].forEach(function(k){o[k]=setup[k];});localStorage.setItem(SETUP_KEY,JSON.stringify(o));}catch(e){}}
 function humanSlots(){var a=[];for(var i=0;i<setup.count;i++)if(!setup.slots[i].npc)a.push(i);return a;}
 var LVL_OPTS=[['mudah','Mudah'],['sedang','Sedang'],['sulit','Sulit']];
-function renderSlots(){var box=$('slotList');if(!box)return;box.innerHTML='';var own=setup.npcLevel==='atur';
-  for(var i=0;i<setup.count;i++)(function(i){var sl=setup.slots[i],row=document.createElement('div');row.className='slot';
-    row.innerHTML='<span class="slot-id"><span class="dot" style="background:'+PCOLORS[i]+'"></span><span class="slot-n">P'+(i+1)+'</span></span><div class="seg slot-kind"></div>'+(sl.npc&&own?'<div class="seg slot-lvl" aria-label="Level NPC P'+(i+1)+'"></div>':'');box.appendChild(row);
-    seg(row.querySelector('.slot-kind'),[[false,'Manusia'],[true,'NPC']],sl.npc,function(v){sl.npc=v;renderSlots();});
-    var lv=row.querySelector('.slot-lvl');if(lv)seg(lv,LVL_OPTS,sl.level,function(v){sl.level=v;});})(i);
-  var nh=humanSlots().length,nn=setup.count-nh;$('slotHint').textContent=nh===0?'Semua NPC: game jalan sendiri, kamu tinggal nonton.':nh===setup.count?'Semua pemain manusia, gantian di satu perangkat.':nh+' manusia lawan '+nn+' NPC.';
-  $('npcLvlField').hidden=nn===0;$('npcLvlHint').textContent=own?'Atur level tiap NPC di daftar pemain di atas.':'';}
+/* lobby as a ballot: each player is a numbered candidate box; NPC level sits inside that box; new NPCs inherit the last level picked */
+function renderSlots(){var box=$('slotList');if(!box)return;box.innerHTML='';
+  for(var i=0;i<setup.count;i++)(function(i){var sl=setup.slots[i],row=document.createElement('div');row.className='slot';row.style.setProperty('--pc',PCOLORS[i]);
+    row.innerHTML='<span class="slot-no" aria-hidden="true">'+(i+1)+'</span><div class="slot-who"><div class="seg slot-kind" role="group" aria-label="Peserta '+(i+1)+'"></div>'+(setup.count>2&&i>0?'<button type="button" class="slot-rm" aria-label="Hapus peserta '+(i+1)+'">✕</button>':'')+'</div>'+(sl.npc?'<div class="seg slot-lvl" role="group" aria-label="Level NPC peserta '+(i+1)+'"></div>':'');box.appendChild(row);
+    seg(row.querySelector('.slot-kind'),[[false,'Manusia'],[true,'NPC']],sl.npc,function(v){sl.npc=v;if(v)sl.level=setup.lastLvl||sl.level||'sedang';renderSlots();});
+    var lv=row.querySelector('.slot-lvl');if(lv)seg(lv,LVL_OPTS,sl.level,function(v){sl.level=v;sl.own=true;setup.lastLvl=v;var ch=false;setup.slots.forEach(function(o,k){if(k<setup.count&&o!==sl&&o.npc&&!o.own&&o.level!==v){o.level=v;ch=true;}});if(ch)renderSlots();});
+    var rm=row.querySelector('.slot-rm');if(rm)rm.onclick=function(){play('tap');var gone=setup.slots.splice(i,1)[0];setup.slots.push({npc:true,level:setup.lastLvl||'sedang'});if(setup.names)setup.names.splice(i,1);setup.count--;renderSlots();};})(i);
+  var add=$('addSlot');add.hidden=setup.count>=5;
+  var nh=humanSlots().length,nn=setup.count-nh;$('slotHint').textContent=nh===0?'Semua NPC: game jalan sendiri, kamu tinggal nonton.':nh===setup.count?setup.count+' manusia, gantian di satu perangkat.':nh+' manusia lawan '+nn+' NPC.';}
 function show(id){['splash','lobby','pick','game'].forEach(function(s){$(s).hidden=s!==id;});if(id==='game')setTimeout(layout,0);syncMusic();}
 function seg(el,opts,val,onPick){el.innerHTML='';opts.forEach(function(o){var b=document.createElement('button');b.type='button';b.textContent=o[1];b.setAttribute('aria-pressed',String(o[0]===val));b.onclick=function(){play('tap');onPick(o[0]);seg(el,opts,o[0],onPick);};el.appendChild(b);});}
 function buildHint(){var L=THEMES[setup.theme].levels;$('buildHint').textContent=setup.build==='bertahap'?'Tiap kunjungan naik satu level: '+L.slice(0,4).join(', ')+', lalu '+L[4]+'.':'Boleh langsung ambil sampai '+L[2]+' dan lompat level.';}
@@ -21,8 +23,7 @@ var MONEY_P=[1000000,1500000,2000000,3000000],LIMIT_P=[20,25,30,0];
 function syncMoneyInput(){var mi=$('moneyInput');if(mi&&document.activeElement!==mi)mi.value=setup.money;}
 function custSeg(id,presets,labels,cur,isCust,onPick){var opts=presets.map(function(v,k){return [v,labels[k]];}).concat([['atur','Atur sendiri']]);seg($(id),opts,isCust?'atur':cur,onPick);}
 function initLobby(){
-  seg($('segCount'),[[2,'2'],[3,'3'],[4,'4'],[5,'5']],setup.count,function(v){setup.count=v;renderSlots();});renderSlots();
-  seg($('segNpcLvl'),[['mudah','Mudah'],['sedang','Sedang'],['sulit','Sulit'],['atur','Atur sendiri']],setup.npcLevel,function(v){setup.npcLevel=v;if(v!=='atur')setup.slots.forEach(function(sl){sl.level=v;});renderSlots();});renderSlots();
+  $('addSlot').onclick=function(){if(setup.count>=5)return;play('tap');var sl=setup.slots[setup.count];sl.npc=true;sl.level=setup.lastLvl||'sedang';setup.count++;renderSlots();};renderSlots();
   var limCust=LIMIT_P.indexOf(setup.limit)<0||setup.limitCustom;
   var pickLim=function(v){if(v==='atur'){setup.limitCustom=true;$('limitBox').hidden=false;var li=$('limitInput');li.value=LIMIT_P.indexOf(setup.limit)<0?setup.limit:'';setTimeout(function(){li.focus();},0);}else{setup.limitCustom=false;setup.limit=v;$('limitBox').hidden=true;}};
   custSeg('segLimit',LIMIT_P,['20','25','30','Tanpa batas'],setup.limit,limCust,pickLim);$('limitBox').hidden=!limCust;if(limCust)$('limitInput').value=setup.limit;
@@ -61,7 +62,7 @@ function fillNpcs(){var list=charsFor(setup.theme),used=[];for(var i=0;i<setup.c
   var free=shuffleArr(list.filter(function(ch){return used.indexOf(ch.id)<0;}));
   for(var j=0;j<setup.count;j++){var sl=setup.slots[j];if(!sl.npc){if(setup.players[j])setup.players[j]={name:setup.players[j].name,char:setup.players[j].char};continue;}var ch=free.shift()||list[j%list.length];setup.players[j]={name:ch.name,char:ch.id,npc:true,level:sl.level||'sedang'};}
   setup.names=setup.names||[];for(var h=0;h<setup.count;h++)if(!setup.slots[h].npc&&setup.players[h])setup.names[h]=setup.players[h].name;saveSetup();}
-function startNewGame(){if(setup.npcLevel&&setup.npcLevel!=='atur')setup.slots.forEach(function(sl){sl.level=setup.npcLevel;});fillNpcs();var m=Math.max(300000,Math.min(20000000,Math.round((setup.money||1500000)/10000)*10000));newGame({players:setup.players.slice(0,setup.count),turnLimit:setup.limit,money:m,buildMode:setup.build,theme:setup.theme,news:setup.news,passives:setup.passives&&setup.theme==='politik'});enterGame();}
+function startNewGame(){fillNpcs();var m=Math.max(300000,Math.min(20000000,Math.round((setup.money||1500000)/10000)*10000));newGame({players:setup.players.slice(0,setup.count),turnLimit:setup.limit,money:m,buildMode:setup.build,theme:setup.theme,news:setup.news,passives:setup.passives&&setup.theme==='politik'});enterGame();}
 function enterGame(){anim=null;diceRoll=null;cup.phase='idle';FX.take={};FX.build={};FX.collapse=[];FX.forest=null;HAND.key=null;npcReset();$('players').hidden=true;camHome();buildPanels();show('game');refresh();}
 
 

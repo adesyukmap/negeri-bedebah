@@ -661,3 +661,4 @@ Status: dibangun kecuali yang ditandai.
 
 - Lobby (29 Okt 20.12): dua kolom di layar lebar. Tiap pemain cukup sakelar Manusia/NPC. Level NPC satu pilihan (Mudah/Sedang/Sulit/Atur sendiri); pilihan per baris hanya muncul kalau Atur sendiri. Batas ronde dan modal awal punya opsi Atur sendiri yang memunculkan isian.
 - Fix lag (29 Okt 23.20): momen kecil pulau tengah (burung, orangutan, batuk) tiap 2-3 kocokan tadinya ikut mengunci game 10 detik dan menarik kamera; sekarang tidak mengunci. Jeda dadu ke token jalan 300 ke 120 ms, jeda mendarat ke kotak pilihan 1000 ke 450 ms.
+- Lobby surat suara (29 Okt 23.30): peserta = kotak calon bernomor urut warna pemain; tambah/hapus peserta langsung di daftar (tombol Jumlah pemain dihapus); level NPC muncul di kotak NPC itu, pilih sekali dan NPC lain yang belum diatur ikut; pilihan aktif ditandai bekas coblos; tombol utama merah stempel.

@@ -252,14 +252,33 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
 .disc-card h2{font:800 30px 'Baloo 2',Nunito,sans-serif;margin:6px 0 10px}
 .disc-card p{font:700 18px/1.45 Nunito,sans-serif;margin:0 0 20px}
 .disc-card .btn[disabled]{opacity:.5}
-#lobby .sheet{width:min(1060px,100%)}
+#lobby{--paper:#FAFBF8;--ink:#1F2430;--line:#C9CDD4;--stamp:#C8102E}
+#lobby .sheet{width:min(1060px,100%);background:var(--paper);box-shadow:0 8px 0 #D9DDE2,0 18px 40px rgba(10,40,70,.35)}
+#lobby h2{color:var(--ink)}
+#lobby .label{text-transform:none;letter-spacing:0;font-size:15px;color:var(--ink);font-weight:800}
+#lobby .wallet{color:#5A6270}
+#lobby .seg button{background:#fff;border:2px solid var(--line);color:var(--ink);position:relative;box-shadow:none}
+#lobby .seg button[aria-pressed="true"]{border:3px solid var(--ink);background:#fff;box-shadow:none}
+#lobby .seg button[aria-pressed="true"]::after{content:"";position:absolute;top:5px;right:6px;width:11px;height:11px;border-radius:50% 45% 55% 48%;background:radial-gradient(circle at 45% 45%,#1F2430 0 48%,#5A6270 52% 62%,rgba(31,36,48,0) 66%);transform:rotate(18deg)}
+#lobby .row .btn:not(.ghost){background:var(--stamp);color:#fff;box-shadow:0 5px 0 #8E0B20}
+#lobby .row .btn.ghost{background:#fff;border:2px solid var(--line);color:var(--ink);box-shadow:0 4px 0 #D9DDE2}
+.slot{border:2px solid var(--line);border-radius:14px;background:#fff;padding:8px 10px}
+.slot-no{font:800 30px/1 'Baloo 2',Nunito,sans-serif;color:var(--pc);text-align:center}
+.slot-who{display:flex;align-items:center;gap:10px;min-width:0}
+.slot-rm{margin-left:auto;width:36px;height:36px;border-radius:50%;border:2px solid var(--line);background:#fff;color:#5A6270;font:800 18px Nunito,sans-serif;cursor:pointer;flex:0 0 auto}
+.slot-rm:focus-visible,.add-slot:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.lobby-go{padding-top:6px}
+.lobby-cols .col:last-child{align-self:stretch}
+.add-slot{align-self:flex-start;border:2px dashed var(--line);background:transparent;border-radius:12px;padding:10px 16px;font:800 16px Nunito,sans-serif;color:var(--ink);cursor:pointer}
+.slot .slot-kind{flex:1 1 auto}
+#lobby .sheet{gap:14px}
 .lobby-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 28px;align-items:start}
 .lobby-cols .col{display:flex;flex-direction:column;gap:16px;min-width:0}
 @media (max-width:760px){.lobby-cols{grid-template-columns:minmax(0,1fr)}}
 #lobby .seg button{white-space:nowrap;padding:0 6px}
 #segLimit,#segMoney,#segNpcLvl{flex-wrap:nowrap}
 #segLimit button,#segMoney button,#segNpcLvl button{font-size:16px;flex:1 1 auto;padding:0 10px;min-width:0}
-@media (max-height:520px){#lobby .sheet{padding:14px 16px;gap:12px}.lobby-cols .col{gap:10px}#lobby .seg button{min-height:40px;font-size:14px}#segLimit button,#segMoney button,#segNpcLvl button{font-size:13px}#lobby h2{font-size:20px;margin:0}}
+@media (max-height:520px){#lobby .sheet{padding:14px 16px;gap:12px}.lobby-cols .col{gap:10px}#lobby .seg button{min-height:40px;font-size:14px}#segLimit button,#segMoney button,#segNpcLvl button{font-size:13px}#lobby h2{font-size:20px;margin:0}#lobby .seg button[aria-pressed="true"]::after{width:7px;height:7px;top:3px;right:3px}#lobby .seg button{padding:0 12px}}
 @media (prefers-reduced-motion: reduce){.rot-phone{animation:none; transform:rotate(-90deg)}}
 .wallet.rentpaid{background:#FDECEA; color:#A52A1E; font-weight:800; padding:8px 12px; border-radius:12px}
 @media (max-width:620px){.srow{flex-wrap:wrap}.sacts{width:100%; justify-content:flex-end}}
@@ -358,16 +377,16 @@ body:has(#modal.compact.right:not([hidden])) #camBtn{visibility:hidden}
     <div class="sheet">
       <h2>Siapkan permainan</h2>
       <div class="lobby-cols"><div class="col"><div class="field"><span class="label">Tema</span><div class="seg" id="segTheme"></div><span class="wallet" id="themeHint"></span></div>
-      <div class="field"><span class="label">Jumlah pemain</span><div class="seg" id="segCount"></div></div>
-      <div class="field"><span class="label">Siapa yang main</span><div class="slots" id="slotList"></div><span class="wallet" id="slotHint"></span></div>
-      <div class="field" id="npcLvlField"><span class="label">Level NPC</span><div class="seg" id="segNpcLvl"></div><span class="wallet" id="npcLvlHint"></span></div>
+            <div class="field"><span class="label">Peserta</span><div class="slots" id="slotList"></div><button type="button" class="add-slot" id="addSlot">+ Tambah peserta</button><span class="wallet" id="slotHint"></span></div>
       </div><div class="col"><div class="field"><span class="label">Batas ronde</span><div class="seg" id="segLimit"></div><div class="custom" id="limitBox" hidden><label for="limitInput">Jumlah ronde</label><input type="text" inputmode="numeric" id="limitInput" autocomplete="off" placeholder="mis. 40"></div></div>
       <div class="field"><span class="label">Modal awal</span><div class="seg" id="segMoney"></div><div class="custom" id="moneyBox" hidden><label for="moneyInput">Modal per pemain (Rp)</label><input type="text" inputmode="numeric" id="moneyInput" autocomplete="off" placeholder="mis. 5000000"></div></div>
       <div class="field"><span class="label">Cara bangun</span><div class="seg" id="segBuild"></div><span class="wallet" id="buildHint"></span></div>
       <div class="field"><span class="label" id="newsLabel">Kabar Nusantara</span><div class="seg" id="segNews"></div><span class="wallet">Tiap 3 ronde ada peristiwa yang mengubah aturan selama satu ronde.</span></div>
       <div class="field" id="passiveField"><span class="label">Pasif karakter</span><div class="seg" id="segPassive"></div><span class="wallet">Tiap karakter punya satu kemampuan kecil. Mati = semua karakter sama, murni kosmetik.</span></div>
-      </div></div>
-      <div class="row"><button class="btn ghost" id="lobbyBack">Kembali</button><button class="btn" id="lobbyNext">Pilih Karakter</button></div>
+      <div class="row lobby-go"><button class="btn ghost" id="lobbyBack">Kembali</button><button class="btn" id="lobbyNext">Pilih karakter</button></div>
+      </div>
+      </div>
+      
     </div>
   </section>
 
