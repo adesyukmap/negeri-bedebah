@@ -90,6 +90,11 @@ function lhkpnImage(cb){var rows=lhkpnRows(),W=1080,H=360+rows.length*190,c=docu
     x.fillStyle='#1F2430';x.font='800 26px Nunito, sans-serif';x.textAlign='right';x.fillText(r.p.bankrupt?'Bangkrut':short(r.harta),W-80,y+60);x.fillStyle='#5A6270';x.font='700 22px Nunito, sans-serif';
     x.fillText('Sewa masuk '+short(r.got)+' · keluar '+short(r.paid)+' · '+(isPol()?'ditahan ':'terdampar ')+r.jail+'x',W-80,y+140);x.textAlign='left';});
   x.fillStyle='#5A6270';x.font='700 20px Nunito, sans-serif';x.fillText('Semua tokoh fiktif. Kesamaan hanya kebetulan yang menyebalkan.',60,H-30);c.toBlob(cb,'image/png');}
-function saveLhkpn(){lhkpnImage(function(blob){if(!blob)return;var f=null;try{f=new File([blob],'laporan-harta.png',{type:'image/png'});}catch(e){}
-  if(f&&navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'Laporan Harta Kekayaan'}).catch(function(){});return;}
-  var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='laporan-harta.png';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove();},2000);});}
+function saveLhkpn(){lhkpnImage(function(blob){if(!blob)return;
+  var fallback=function(){var f=null;try{f=new File([blob],'laporan-harta.png',{type:'image/png'});}catch(e){}
+    if(f&&navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'Laporan Harta Kekayaan'}).catch(function(){});return;}
+    var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='laporan-harta.png';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove();},2000);};
+  /* inside claude.ai the page may only hand files over through the downloads capability */
+  if(window.claude&&window.claude.use){window.claude.use('downloads').then(function(dl){if(!dl){toast('Simpan laporan tidak tersedia di tampilan ini','bad');return;}
+    dl.save({filename:'laporan-harta.png',data:blob}).catch(function(e){if(e&&e.code==='declined')return;toast('Laporan gagal disimpan','bad');});});return;}
+  fallback();});}
