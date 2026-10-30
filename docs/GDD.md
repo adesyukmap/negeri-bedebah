@@ -678,3 +678,11 @@ Status: dibangun kecuali yang ditandai.
 - Atur sendiri membuka layar RUU "Tentang Aturan Main": 4 pasal, kata merah bisa ditap. Ronde dan modal pakai popover (preset + stepper), cara bangun/berita/pasif tinggal tap untuk ganti. Modal Rp500rb sampai Rp100 jt. Peringatan kalau modal ≥20 jt tanpa batas ronde.
 - Panggung punya chip ringkasan aturan dengan tombol Ubah.
 - Kas Negara tidak lagi ikut modal: KAS_BASE Rp2,6 jt per 4 pemain. Sim 300 game: Standar bubar ~16%, IMF ~95%; Brutal bubar ~58%, median ronde 54; Kilat IMF di ronde ~19.
+
+## 31. Mode Chaos, kartu simpan, Opsi Tawar, Laporan Harta Kekayaan (31 Okt 2026)
+- Chaos = Pasal 5 di RUU ("Negara dalam keadaan darurat"), bisa digabung dengan modal/ronde apa pun. Preset Chaos: 15 ronde, Rp1,5 jt, bangun bebas, pasif nyala.
+- Chaos: Breaking News tiap ronde dari 26 berita (6 lama + 20 khusus Chaos), peluang 1/3 berita kilat setelah separuh pemain jalan, bocoran berita ronde depan di chip atas papan. Kas Negara 80%. Sim 300 game: bubar ~20%, IMF median ronde 12.
+- Mode biasa tetap 6 berita tiap 3 ronde.
+- Kartu simpan (Chaos): 1 kartu tiap lewat Gajian, maks 3, tertutup ("Buka kartu" saat lawan tidak melihat). 15 kartu pakai (sebelum kocok) + 5 penangkal otomatis (Imunitas Hukum, Bunker, Praperadilan, Rekening Luar Negeri, Bantah di Medsos). NPC memakai kartu sendiri.
+- Opsi Tawar (tombol Lobi/Tawar): tukar kota/aset dan uang dengan satu pemain. NPC menilai untung-rugi dan menolak deal yang bikin lawan monopoli. Manusia: oper iPad untuk Terima/Tolak. NPC belum mengajukan tawaran sendiri.
+- Laporan Harta Kekayaan di layar akhir: gelar per pemain, harta, puncak, sewa masuk/keluar, ditahan; tombol Simpan laporan (PNG / share sheet).

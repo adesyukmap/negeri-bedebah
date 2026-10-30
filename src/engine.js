@@ -50,7 +50,7 @@ function pEmit(p,k,text){emit({t:'passive',pid:p.id,key:k,name:PASSIVES[k].n,tex
 function kasLimit(){return S&&S.theme==='politik'?(S.kasMax||KAS_BASE):KAS_LIMIT;}
 /* sized for 4 players, scaled by player count so the drain lands at the same point in the game */
 /* the treasury no longer scales with starting money: rich players, same fragile state */
-function kasStart(cfg){return Math.round(KAS_BASE*cfg.players.length/4/100000)*100000;}
+function kasStart(cfg){return Math.round(KAS_BASE*cfg.players.length/4*(cfg.chaos?0.8:1)/100000)*100000;}
 function polKas(){return !!(S&&S.theme==='politik'&&S.kasMax);}
 /* pay a player out of the Kas Negara; returns what was actually paid */
 function kasOut(p,amt){amt=Math.round(amt);if(amt<=0||!p||p.bankrupt||S.phase==='over')return 0;var got=Math.min(amt,Math.max(0,S.kas||0));
@@ -179,9 +179,10 @@ function save(){try{localStorage.setItem(SAVE_KEY, JSON.stringify(S));}catch(e){
 function loadSave(){try{var s=localStorage.getItem(SAVE_KEY); return s?JSON.parse(s):null;}catch(e){return null;}}
 function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
 
-function newsOn(id){return S.news&&S.news.round===S.round&&S.news.id===id;}
+function newsGet(id){var a=[S.news,S.news2];for(var k=0;k<2;k++){var n=a[k];if(n&&n.round===S.round&&n.id===id&&!n.void)return n;}return null;}
+function newsOn(id){return !!newsGet(id);}
 function bmul(){return newsOn('diskon')?0.7:1;}
-function tileL(i){return REGIONS[T[i].region].L;}
+function tileL(i){return REGIONS[T[i].region].L*((S&&S.tileMul&&S.tileMul[i])||1);}
 function invested(i){var st=S.tiles[i],t=T[i].type; if(st.owner===null)return 0; if(t==='wisata')return WIS_PRICE; if(t==='transport')return TRANS_PRICE; return tileL(i)*CUM[st.level];}
 function assetPrice(i,p){p=p||cur();var b=T[i].type==='wisata'?WIS_PRICE:TRANS_PRICE;return hasP(p,'izin')?Math.round(b*0.8):b;}
 function countType(pid,ty){return ownedTiles(pid).filter(function(i){return T[i].type===ty;}).length;}
@@ -204,21 +205,24 @@ function rentMult(i){var st=S.tiles[i],extra=festMult(i)*(S.festival===i&&hasP(P
 function lmBump(p,i){var st=S.tiles[i],cur=lmLadder(i);if(cur>=LM_MAX){toast(tileName(i)+' sudah mentok x'+LM_MAX+'. Pengunjungnya yang deg-degan.');return;}
   st.v=Math.min(LM_MAX,cur*2);emit({t:'lmUp',tile:i,pid:p.id,mult:st.v});sfx('landmark');toast(p.name+' mampir ke '+T[i].landmark+'! Sewa '+tileName(i)+' naik jadi x'+st.v,'good big');}
 function sealFee(i){return Math.max(20000,Math.round(invested(i)*0.1/1000)*1000);}
-function sealed(i){return newsOn('demo')&&S.news.tile===i&&!S.news.lifted;}
-function cityRent(i){var st=S.tiles[i]; if(st.owner===null)return 0; if(newsOn('banjir')&&T[i].region===6)return 0; if(sealed(i))return 0; return tileL(i)*RENTM[st.level]*rentMult(i);}
-function wisRent(i){var st=S.tiles[i]; if(st.owner===null)return 0; return WIS_RENT[countWis(st.owner)]*(newsOn('viral')&&S.news.tile===i?3:1);}
-function transRent(i){var st=S.tiles[i];return st.owner===null?0:TRANS_RENT[countType(st.owner,'transport')];}
+function sealed(i){var n=newsGet('demo');return !!(n&&n.tile===i&&!n.lifted);}
+function cityRent(i){var st=S.tiles[i]; if(st.owner===null)return 0; if(newsOn('banjir')&&T[i].region===6)return 0; if(sealed(i))return 0; return rmod(i,tileL(i)*RENTM[st.level]*rentMult(i));}
+function wisRent(i){var st=S.tiles[i]; if(st.owner===null)return 0; return rmod(i,WIS_RENT[countWis(st.owner)]*(newsGet('viral')&&newsGet('viral').tile===i?3:1));}
+function transRent(i){var st=S.tiles[i];return st.owner===null?0:rmod(i,TRANS_RENT[countType(st.owner,'transport')]);}
+/* chaos rent modifiers: inflation, rent holiday, carnival, stalled projects, black campaign */
+function rmod(i,r){if(!S||!r)return r;if(newsOn('tanpapajak'))return 0;if(S.mati&&S.mati[i]>=S.round)return 0;if(S.hitam&&S.hitam[i]>=S.round)return 0;r*=(S.inflasi||1);if(newsOn('karnaval'))r*=T[i].type==='wisata'?2:0.5;return Math.round(r);}
 function rentOf(i){var t=T[i].type;return t==='city'?cityRent(i):t==='wisata'?wisRent(i):t==='transport'?transRent(i):0;}
 function takeoverPrice(i,p){return Math.round(invested(i)*2*(hasP(p||cur(),'gusur')?0.85:1));}
 function stepMode(){return (S.buildMode||'bebas')==='bertahap';}
-function buyCost(i,l,p){if(l===0&&canUseP(p||cur(),'instan'))return 0;return Math.round(tileL(i)*CUM[l]*bmul());}
-function upCost(i,l){return Math.round(tileL(i)*(CUM[l]-CUM[S.tiles[i].level])*bmul());}
+function lobiMul(p){p=p||(S&&cur());return p&&p.lobi?0.5:1;}
+function buyCost(i,l,p){if(l===0&&canUseP(p||cur(),'instan'))return 0;return Math.round(tileL(i)*CUM[l]*bmul()*lobiMul(p));}
+function upCost(i,l){return Math.round(tileL(i)*(CUM[l]-CUM[S.tiles[i].level])*bmul()*lobiMul());}
 function buyOptions(p,i){return (stepMode()?[0]:[0,1,2]).filter(function(l){return p.money>=buyCost(i,l,p);});}
 function upgradeOptions(p,i){var c=S.tiles[i].level,lv=[];
   if(c<3){for(var l=c+1;l<=(stepMode()?c+1:3);l++)lv.push(l);} else if(c===3&&p.laps>=1){lv.push(4);}
   return lv.filter(function(l){return p.money>=upCost(i,l);});}
 function alivePlayers(){return S.players.filter(function(p){return !p.bankrupt;});}
-function salaryAmt(){return Math.round(START_SALARY*(newsOn('mudik')?2:1)*(S&&S.imf?0.5:1));}
+function salaryAmt(){if(S&&newsOn('subsidi'))return 0;return Math.round(START_SALARY*(newsOn('mudik')?2:1)*(S&&S.imf?0.5:1));}
 
 function newGame(cfg){
   var order=shuffle(cfg.players.map(function(_,i){return i;})),th=THEMES[cfg.theme||'santai'];
@@ -226,18 +230,20 @@ function newGame(cfg){
     tiles:T.map(function(){return {owner:null,level:-1};}), order:order, turnIdx:0, current:order[0], round:1, turnLimit:cfg.turnLimit, startMoney:cfg.money, buildMode:cfg.buildMode||'bertahap',
     festival:null, festLevel:0, phase:'handoff', pending:null, dice:[3,4], winner:null, anim:null, threats:{},
     chanceDeck:shuffle(th.chance.map(function(_,i){return i;})), danaDeck:shuffle(th.dana.map(function(_,i){return i;})),
-    passives:!!cfg.passives&&th.id==='politik', kas:th.id==='politik'?kasStart(cfg):0, kasMax:th.id==='politik'?kasStart(cfg):0, imf:0, kasStage:0, story:0, newsEnabled:cfg.news!==false, news:null, baliho:null, lastSum:7, fajar:false};
+    passives:!!cfg.passives&&th.id==='politik', kas:th.id==='politik'?kasStart(cfg):0, kasMax:th.id==='politik'?kasStart(cfg):0, imf:0, kasStage:0, story:0, newsEnabled:cfg.news!==false, news:null, baliho:null, lastSum:7, fajar:false, chaos:!!cfg.chaos, news2:null, newsNext:null, inflasi:1, tileMul:{}, mati:{}, hitam:{}, handDeck:[]};
+  S.players.forEach(function(q){q.hand=[];q.st={rentPaid:0,rentGot:0,jail:0,maxMoney:q.money,cards:0,built:0,trades:0};});
+  if(S.chaos&&S.newsEnabled){S.newsNext=pickNews();}
   toast('Urutan main: '+order.map(function(i){return S.players[i].name;}).join(', '));
   save(); return S;
 }
 function startTurn(){if(S.phase!=='handoff')return; S.phase='turn'; save();}
 
-function salary(p,landed){if(S.phase==='over')return;var a=salaryAmt()+(hasP(p,'banteng')?30000:0); p.laps++; if(polKas()){var want=a;a=kasOut(p,a);if(S.phase==='over')return;if(a<want)toast('Kas Negara seret. Gaji '+p.name+' cuma cair '+fmt(a),'bad');}else{p.money+=a; emit({t:'money',pid:p.id,d:a});} emit({t:'salary',pid:p.id,amt:a,landed:!!landed}); sfx('coin'); if(p.nuke>0){var nt=kasTax(p,nukeTax()*p.nuke,'nuklir');if(nt)toast(p.name+' bayar pajak gudang nuklir '+fmt(nt),'bad');} if(hasP(p,'banteng'))pEmit(p,'banteng',p.name+' dapat iuran partai +Rp30rb');}
+function salary(p,landed){if(S.phase==='over')return;var a=salaryAmt()+(hasP(p,'banteng')?30000:0); p.laps++; if(polKas()){var want=a;a=kasOut(p,a);if(S.phase==='over')return;if(a<want)toast('Kas Negara seret. Gaji '+p.name+' cuma cair '+fmt(a),'bad');}else{p.money+=a; emit({t:'money',pid:p.id,d:a});} emit({t:'salary',pid:p.id,amt:a,landed:!!landed}); sfx('coin'); if(p.nuke>0){var nt=kasTax(p,nukeTax()*p.nuke,'nuklir');if(nt)toast(p.name+' bayar pajak gudang nuklir '+fmt(nt),'bad');} if(hasP(p,'banteng'))pEmit(p,'banteng',p.name+' dapat iuran partai +Rp30rb'); if(S.chaos)handDraw(p);}
 function walk(p,n,mode){var from=p.pos,path=[];for(var k=0;k<n;k++){p.pos=(p.pos+1)%NT;path.push(p.pos);if(p.pos===0)salary(p,k===n-1);} if(S.phase==='over')return save(); S.anim={pid:p.id,from:from,path:path,mode:mode||'walk',dbl:p.doubles}; S.phase='moving'; save();}
 function walkTo(p,target,mode){var n=(target-p.pos+NT)%NT; if(n===0)n=NT; walk(p,n,mode);}
 function walkBack(p,n){var from=p.pos,path=[];for(var k=0;k<n;k++){p.pos=(p.pos+NT-1)%NT;path.push(p.pos);} S.anim={pid:p.id,from:from,path:path,mode:'walk'}; S.phase='moving'; save();}
 function jumpTo(p,i,mode){var from=p.pos; p.pos=i; S.anim={pid:p.id,from:from,path:[i],jump:true,mode:mode||'jump'}; S.phase='moving'; save();}
-function sendJail(p,anim){p.rolledDouble=false;p.doubles=0;var cs=TH_().ottCases;emit({t:anim||'karam',pid:p.id,caseText:cs?cs[Math.floor(Math.random()*cs.length)]:''});if(anim==='ott')emit({t:'quip',pid:p.id,key:'lawan'});jumpTo(p,IDX.jail,anim||'karam');}
+function sendJail(p,anim){if(p.st)p.st.jail++;p.rolledDouble=false;p.doubles=0;var cs=TH_().ottCases;emit({t:anim||'karam',pid:p.id,caseText:cs?cs[Math.floor(Math.random()*cs.length)]:''});if(anim==='ott')emit({t:'quip',pid:p.id,key:'lawan'});jumpTo(p,IDX.jail,anim||'karam');}
 
 /* ---- dice: power 0..1 biases the sum (0 = small, 1 = big), every sum stays possible ---- */
 var ROLL_K=1.6;
@@ -253,7 +259,7 @@ function rollAvg(pw,p){var d=rollDist(pw,p),m=0;for(var k=2;k<=12;k++)m+=k*d[k];
 function rollDice(pw,p){var pr=rollPairs(pw,p),r=Math.random(),acc=0;for(var k=0;k<pr.length;k++){acc+=pr[k].w;if(r<acc)return [pr[k].a,pr[k].b];}var l=pr[pr.length-1];return [l.a,l.b];}
 function roll(power){
   if(S.phase!=='turn')return; var p=cur(); if(p.pelni)return;
-  var dv=rollDice(power,p),a=dv[0],b=dv[1],dbl=a===b,sum=a+b; S.dice=[a,b]; S.lastSum=sum; emit({t:'dice'});
+  var dv=rollDice(power,p),a=dv[0],b=dv[1];if(p.fixSum&&!p.inJail){var fs=p.fixSum,lo=Math.max(1,fs-6),hi=Math.min(6,fs-1);p.fixSum=0;a=lo+Math.floor(Math.random()*(hi-lo+1));b=fs-a;}var dbl=a===b,sum=a+b;if(!p.inJail){if(newsOn('dadurusak'))sum*=2;if(newsOn('lockdown'))sum=Math.max(1,Math.ceil(sum/2));} S.dice=[a,b]; S.lastSum=sum; emit({t:'dice'});
   if(p.inJail){
     if(dbl){p.inJail=false;p.jailTurns=0;p.rolledDouble=false; toast('Double! '+p.name+' bebas dari '+tileName(IDX.jail),'good'); if(S.theme==='politik')emit({t:'court',kind:'bebas',how:'double',pid:p.id}); if(gemoyDice(p))pEmit(p,'gemoy',p.name+' joget, dadunya double terus'); return walk(p,sum);}
     p.jailTurns++;
@@ -288,7 +294,7 @@ function land(){
   switch(t.type){
     case 'start': return finish();
     case 'jail': if(S.theme==='politik'){var cs2=TH_().ottCases;emit({t:'ott',pid:p.id,caseText:cs2[Math.floor(Math.random()*cs2.length)]});emit({t:'quip',pid:p.id,key:'lawan'});}
-      p.inJail=true;p.jailTurns=0;p.rolledDouble=false;p.doubles=0; toast(p.name+' '+TH_().jailVerb+'! '+(S.theme==='politik'?'Pilih: ikuti masa tahanan, banding, atau sogok hakim':'Butuh double atau bayar untuk keluar'),'bad'); sfx('bad'); return finish();
+      p.inJail=true;if(p.st)p.st.jail++;p.jailTurns=0;p.rolledDouble=false;p.doubles=0; toast(p.name+' '+TH_().jailVerb+'! '+(S.theme==='politik'?'Pilih: ikuti masa tahanan, banding, atau sogok hakim':'Butuh double atau bayar untuk keluar'),'bad'); sfx('bad'); return finish();
     case 'festival': if(ownedCities(p.id).length)return ask({type:'festival'}); toast(tileName(i)+'! Sayang belum punya kota buat dirayakan'); return finish();
     case 'pelni': if(p.money>=pelniFee(p))return ask({type:'pelni'}); toast('Uang belum cukup buat '+tileName(i)); return finish();
     case 'parkir': var pf=parkirTotal(); emit({t:'parkir',pid:p.id,amt:pf}); toast('Parkir '+fmt(parkirFee())+' x '+(S.lastSum||1)+' langkah = '+fmt(pf),'bad'); sfx('pay'); payKas(p.id,pf,kasPart()); if(S.phase==='over')return save(); return finish();
@@ -313,8 +319,9 @@ function landCity(p,i){
   if(rent>0&&S.festival===i&&hasP(owner,'pinguin'))pEmit(owner,'pinguin',owner.name+' rambut putih, sewa kampanye x1,5 lagi');
   if(rent<=0){toast(sealed(i)?tileName(i)+' lagi disegel. Gratis lewat!':tileName(i)+' lagi kebanjiran. Gratis lewat!');return finish();}
   if(rent>=300000)emit({t:'quip',pid:st.owner,key:'repot'});
+  if(bigRent(p,rent)&&guard(p,['imunitas'],'Sewa '+fmt(rent)))return finish();
   toast(p.name+' bayar sewa '+fmt(rent)+' ke '+owner.name,'bad'); sfx('pay');
-  pay(p.id,rent,st.owner);
+  rentStat(p,owner,rent);pay(p.id,rent,st.owner);
   if(S.phase==='over')return save();
   var sw=(!p.bankrupt&&st.owner!==null&&st.owner!==p.id)?swapCandidate(p,i):null;
   if(!p.bankrupt && st.owner!==null && st.owner!==p.id && st.level<4 && (p.money>=takeoverPrice(i)||sw!=null)) return ask({type:'takeover',tile:i,swap:sw,rent:rent,owner:st.owner});
@@ -331,13 +338,16 @@ function nukeHit(p,i){var st=S.tiles[i],prev=st.level,own=st.owner;st.level=0;st
   toast('NUKLIR! '+T[i].landmark+' milik '+P(own).name+' rata. '+tileName(i)+' tinggal '+levelName(0)+'.','bad big');}
 /* stored nuke, used at the start of your own turn */
 function useNuke(){var p=cur();if(S.phase!=='turn'||!(p.nuke>0)||p.inJail||p.pelni)return;var tg=nukeTargets(p);if(!tg.length)return;ask({type:'nuke',targets:tg,held:true});}
+function bigRent(p,r){return r>0&&(r>=p.money*0.25||r>=scaleAmt(300000));}
+function rentStat(p,o,r){var g=Math.min(r,p.money+propValue(p.id));if(p.st)p.st.rentPaid+=g;if(o&&o.st)o.st.rentGot+=g;}
 function landAsset(p,i){
   var st=S.tiles[i];
   if(st.owner===null){ if(p.money>=assetPrice(i,p))return ask({type:'buywis',tile:i}); toast('Uang belum cukup buat beli '+tileName(i)); return finish(); }
   if(st.owner===p.id)return finish();
   var rent=rentOf(i); if(hasP(p,'opung')&&rent>0){rent=Math.round(rent*0.85);pEmit(p,'opung',p.name+' Lord, sewanya didiskon 15%');}
+  if(bigRent(p,rent)&&guard(p,['imunitas'],'Sewa '+fmt(rent)))return finish();
   toast(p.name+' bayar '+fmt(rent)+' ke '+P(st.owner).name+' di '+tileName(i),'bad'); sfx('pay');
-  pay(p.id,rent,st.owner); if(S.phase==='over')return save(); if(S.theme==='politik'&&!p.bankrupt&&rent>0)emit({t:'noTake',pid:p.id,owner:st.owner,tile:i}); finish();
+  rentStat(p,P(st.owner),rent);pay(p.id,rent,st.owner); if(S.phase==='over')return save(); if(S.theme==='politik'&&!p.bankrupt&&rent>0)emit({t:'noTake',pid:p.id,owner:st.owner,tile:i}); finish();
 }
 var landWis=landAsset;
 function spend(p,amt){p.money-=amt; emit({t:'money',pid:p.id,d:-amt}); emit({t:'spend',pid:p.id,amt:amt});}
@@ -386,7 +396,7 @@ function liquidate(pid,need){
   var list=ownedTiles(pid).sort(function(a,b){return invested(a)-invested(b);});
   while(P(pid).money<need&&list.length){var i=list.shift(),v=Math.round(invested(i)*0.5);emit({t:'collapse',tiles:[{i:i,level:S.tiles[i].level,color:P(pid).color}]}); releaseTile(i); P(pid).money+=v; emit({t:'money',pid:pid,d:v}); toast(P(pid).name+' jual '+tileName(i)+' ke bank ('+fmt(v)+')');}
 }
-function goBankrupt(pid){var p=P(pid); p.bankrupt=true; p.inJail=false; p.pelni=false;
+function goBankrupt(pid){var p=P(pid); p.bankrupt=true; if(p.st)p.st.outRound=S.round; p.inJail=false; p.pelni=false;
   var tl=ownedTiles(pid);emit({t:'collapse',tiles:tl.map(function(i){return {i:i,level:S.tiles[i].level,color:p.color};})}); tl.forEach(releaseTile);
   toast(p.name+' BANGKRUT!','bad big'); sfx('broke'); emit({t:'bankrupt',pid:pid}); checkWin();}
 function checkWin(){
@@ -424,6 +434,7 @@ function finish(){
 }
 function choose(opt){
   if(S.phase!=='prompt')return; var pd=S.pending,p=cur(),st; S.pending=null; S.phase='resolve';
+  if(pd.type==='hand'){S.phase='turn';if(opt==='skip'){save();return;}var hp=cur();if(hp.hand[pd.ix]!==pd.card){save();return;}S.phase='turn';return playHand(pd.ix,typeof opt==='string'&&opt.charAt(0)==='p'?opt:+opt);}
   switch(pd.type){
     case 'buy':
       if(opt==='skip')return finish();
@@ -472,14 +483,14 @@ function choose(opt){
     case 'unseal':
       if(opt!=='yes'){toast(tileName(pd.tile)+' tetap disegel. Belum bisa bangun.');return finish();}
       var sf=sealFee(pd.tile);if(p.money<sf)return finish();
-      payKas(p.id,sf,1);if(S.phase==='over')return save();S.news.lifted=true;emit({t:'unseal',tile:pd.tile,pid:p.id,fee:sf});sfx('stamp');
+      payKas(p.id,sf,1);if(S.phase==='over')return save();newsGet('demo').lifted=true;emit({t:'unseal',tile:pd.tile,pid:p.id,fee:sf});sfx('stamp');
       toast(p.name+' bayar denda '+fmt(sf)+'. Segel '+tileName(pd.tile)+' dicabut!','good');
       return ownLand(p,pd.tile);
     case 'nuke':
       if(opt==='keep'){if(!pd.held)p.nuke=(p.nuke||0)+1;toast(p.name+' simpan nuklir. Pajak gudang '+fmt(nukeTax())+' tiap lewat '+tileName(0)+'.');if(pd.held){S.phase='turn';return save();}return finish();}
       var ti=+opt;if(pd.targets.indexOf(ti)<0)return pd.held?(S.phase='turn',save()):finish();
       if(pd.held)p.nuke=Math.max(0,(p.nuke||0)-1);
-      nukeHit(p,ti);if(pd.held){S.phase='turn';return save();}return finish();
+      if(!guard(P(S.tiles[ti].owner),['bunker'],'Nuklir',true))nukeHit(p,ti);if(pd.held){S.phase='turn';return save();}return finish();
   }
   finish();
 }
@@ -495,12 +506,12 @@ function applyCard(deck,ci){
     case 'gain': gain(p,ca); break;
     case 'kasGain': if(!polKas()){gain(p,ca);break;} var kg=kasOut(p,ca); if(kg<=0){if(S.phase!=='over')toast('Kas Negara kosong, acara batal. Tidak dapat apa-apa.');break;} emit({t:'kasDrain',pid:p.id,amt:kg}); toast('Kas Negara berkurang '+fmt(kg)+' untuk '+c.name,'bad'); break;
     case 'pay': sfx('pay'); payBank(p.id,stoikAmt(p,ca)); break;
-    case 'payPct': var amt=Math.round(p.money*c.amt/1000)*1000; if(amt>0){amt=stoikAmt(p,amt);sfx('pay');payBank(p.id,amt);} break;
+    case 'payPct': var amt=Math.round(p.money*c.amt/1000)*1000; if(amt>0&&!guard(p,['rekening'],c.name)){amt=stoikAmt(p,amt);sfx('pay');payBank(p.id,amt);} break;
     case 'collect': others.forEach(function(o){if(S.phase!=='over')pay(o.id,ca,p.id);}); sfx('coin'); break;
     case 'payAll': var pa=others.length?stoikAmt(p,ca):0; others.forEach(function(o){if(!p.bankrupt&&S.phase!=='over')pay(p.id,pa,o.id);}); break;
     case 'robin': var al=alivePlayers().slice().sort(function(a,b){return b.money-a.money;});
       if(al.length>1&&al[0].id!==al[al.length-1].id){toast(al[0].name+' bayar '+fmt(ca)+' ke '+al[al.length-1].name); pay(al[0].id,ca,al[al.length-1].id);} break;
-    case 'jail': return sendJail(p,c.anim);
+    case 'jail': if(guard(p,['praper'],'OTT'))break; return sendJail(p,c.anim);
     case 'toStart': return walkTo(p,0);
     case 'goto': return walkTo(p,c.amt);
     case 'back': return walkBack(p,c.amt);
@@ -521,22 +532,152 @@ function applyCard(deck,ci){
   if(S.phase==='over')return save();
   finish();
 }
-function startNews(){
-  if(!S.newsEnabled)return; var list=TH_().news,n=list[Math.floor(Math.random()*list.length)];
-  S.news={id:n.id,round:S.round};
-  if(n.id==='viral'){var w=[];for(var i=0;i<NT;i++)if(T[i].type==='wisata')w.push(i);S.news.tile=w[Math.floor(Math.random()*w.length)];}
-  if(n.id==='demo'){var cs=[];for(var j=0;j<NT;j++)if(T[j].type==='city'&&S.tiles[j].owner!==null)cs.push(j);if(!cs.length)for(var j2=0;j2<NT;j2++)if(T[j2].type==='city')cs.push(j2);S.news.tile=cs[Math.floor(Math.random()*cs.length)];}
-  emit({t:'news',id:n.id,name:n.name,text:n.text+((n.id==='viral'||n.id==='demo')?' ('+tileName(S.news.tile)+')':''),tile:S.news.tile});
+/* ---- news: normal mode = theme's 6 every 3 rounds; Chaos = 26 every round + flash + preview ---- */
+var CHAOS_NEWS=[
+  {id:'rombak',name:'Rombak Kementerian',text:'Dua kota milik pemain berbeda bertukar pemilik.'},
+  {id:'bansos2',name:'Bansos Salah Sasaran',text:'Pemain termiskin dapat Rp300.000 dari pemain terkaya.'},
+  {id:'inflasi',name:'Inflasi Meroket',text:'Semua sewa naik x1,5. Permanen.'},
+  {id:'pemilu',name:'Pemilu Dadakan',text:'Semua token pindah ke petak acak.'},
+  {id:'amnesti',name:'Amnesti Massal',text:'Semua tahanan bebas, semua segel dicabut.'},
+  {id:'gempapol',name:'Gempa Politik',text:'Satu Proyek Strategis acak turun satu level.'},
+  {id:'tanpapajak',name:'Hari Tanpa Pajak',text:'Tidak ada yang bayar sewa selama ronde ini.'},
+  {id:'tender',name:'Tender Kilat',text:'Satu kota kosong otomatis jatuh ke pemain terkaya, bayar harga tanah.'},
+  {id:'utangln',name:'Utang Luar Negeri',text:'Kas Negara dapat Rp1 jt, tapi semua pemain bayar 5% uang tunai.'},
+  {id:'dadurusak',name:'Dadu Rusak',text:'Semua langkah ronde ini dikali 2.'},
+  {id:'blusukan',name:'Blusukan Massal',text:'Semua pemain mampir ke Gedung Wakil Rakyat dan dapat gaji.'},
+  {id:'hoaks',name:'Ternyata Hoaks',text:'Berita lain yang sedang berlaku dibatalkan.'},
+  {id:'gantinama',name:'Ganti Nama Kota',text:'Satu kota ganti nama, harga dan sewanya naik 50%. Permanen.'},
+  {id:'terbengkalai',name:'Proyek Terbengkalai',text:'Satu bangunan acak tidak menghasilkan sewa selama 2 ronde.'},
+  {id:'kuorum',name:'Rapat Paripurna Sepi',text:'Kuorum tidak tercapai. Semua yang ditahan dibebaskan.'},
+  {id:'investor',name:'Investor Asing Masuk',text:'Pemilik konsesi dapat Rp200.000 per konsesi.'},
+  {id:'subsidi',name:'Subsidi Dicabut',text:'Gaji lewat Gajian Pejabat nol selama ronde ini.'},
+  {id:'sidak',name:'Sidak Mendadak',text:'Pemain terkaya kena denda 10% uang tunai.'},
+  {id:'lockdown',name:'Lockdown',text:'Semua langkah ronde ini dibagi dua.'},
+  {id:'karnaval',name:'Karnaval Rakyat',text:'Sewa konsesi x2, sewa lainnya setengah, selama ronde ini.'}];
+function newsPool(){return S.chaos?TH_().news.concat(CHAOS_NEWS):TH_().news;}
+function newsById(id){var l=newsPool();for(var k=0;k<l.length;k++)if(l[k].id===id)return l[k];return l[0];}
+function pickNews(avoid){var l=newsPool().filter(function(n){return n.id!==avoid&&!(S.news&&S.news.id===n.id&&S.news.round===S.round);});return l[Math.floor(Math.random()*l.length)].id;}
+function scaleAmt(a){var sm=(S&&S.startMoney)||1500000;return Math.max(1000,Math.round(a*sm/1500000/1000)*1000);}
+function rnd(a){return a.length?a[Math.floor(Math.random()*a.length)]:null;}
+function startNews(flash){
+  if(!S.newsEnabled)return; var id;
+  if(S.chaos&&!flash&&S.newsNext){id=S.newsNext;}else id=S.chaos?pickNews():rnd(TH_().news).id;
+  var n=newsById(id),o={id:n.id,round:S.round,flash:!!flash};
+  if(flash)S.news2=o;else{S.news=o;S.news2=null;}
+  if(n.id==='viral'){var w=[];for(var i=0;i<NT;i++)if(T[i].type==='wisata')w.push(i);o.tile=rnd(w);}
+  if(n.id==='demo'){var cs=[];for(var j=0;j<NT;j++)if(T[j].type==='city'&&S.tiles[j].owner!==null)cs.push(j);if(!cs.length)for(var j2=0;j2<NT;j2++)if(T[j2].type==='city')cs.push(j2);o.tile=rnd(cs);}
+  var extra=chaosNewsFx(n.id,o);
+  emit({t:'news',id:n.id,name:(flash?'KILAT: ':'')+n.name,text:scaleText(n.text)+((n.id==='viral'||n.id==='demo')?' ('+tileName(o.tile)+')':'')+(extra?' '+extra:''),tile:o.tile});
   alivePlayers().forEach(function(q){if(hasP(q,'dungu')){bankGain(q,30000);pEmit(q,'dungu',q.name+' jadi narasumber, dapat Rp30rb');}});
-  if(n.id==='krismon'){alivePlayers().forEach(function(q){var a=Math.round(q.money*0.1/1000)*1000;if(a>0&&S.phase!=='over')payKas(q.id,a,kasPart());});}
+  if(n.id==='krismon'){alivePlayers().forEach(function(q){var a=Math.round(q.money*0.1/1000)*1000;if(a>0&&S.phase!=='over'&&!guard(q,['rekening'],n.name))payKas(q.id,a,kasPart());});}
+  if(S.chaos&&!flash&&S.phase!=='over'){S.newsNext=pickNews(n.id);emit({t:'newsNext',id:S.newsNext,name:newsById(S.newsNext).name});toast('Bocoran ronde depan: '+newsById(S.newsNext).name,'big');}
 }
+function scaleText(t){return t.replace(/Rp(\d{1,3}(?:\.\d{3})+)/g,function(m,d){return fmt(scaleAmt(+d.replace(/\./g,'')));}).replace(/Rp1 jt/,fmt(scaleAmt(1000000)));}
+function richest(){return alivePlayers().slice().sort(function(a,b){return b.money-a.money;})[0];}
+function poorest(){return alivePlayers().slice().sort(function(a,b){return a.money-b.money;})[0];}
+function chaosNewsFx(id,o){var al=alivePlayers(),k,x,y;
+  switch(id){
+    case 'rombak': var own=ownedAll().filter(function(i){return T[i].type==='city'&&S.tiles[i].level<4;});x=rnd(own);if(x==null)return 'Belum ada kota yang bisa dirombak.';
+      y=rnd(own.filter(function(i){return S.tiles[i].owner!==S.tiles[x].owner;}));if(y==null)return 'Semua kota masih milik satu orang.';
+      k=S.tiles[x].owner;S.tiles[x].owner=S.tiles[y].owner;S.tiles[y].owner=k;emit({t:'build',tile:x,level:S.tiles[x].level});emit({t:'build',tile:y,level:S.tiles[y].level});updateThreats();checkWin();return '('+tileName(x)+' ⇄ '+tileName(y)+')';
+    case 'bansos2': x=poorest();y=richest();if(!x||!y||x.id===y.id)return '';pay(y.id,scaleAmt(300000),x.id);return '('+y.name+' → '+x.name+')';
+    case 'inflasi': S.inflasi=Math.min(4,(S.inflasi||1)*1.5);return '(Sekarang x'+(Math.round(S.inflasi*100)/100).toString().replace('.',',')+')';
+    case 'pemilu': al.forEach(function(q){if(q.inJail)return;var t;do{t=Math.floor(Math.random()*NT);}while(t===IDX.jail||t===IDX.pelni);q.pos=t;});emit({t:'teleport'});return '';
+    case 'amnesti': case 'kuorum': al.forEach(function(q){if(q.inJail){q.inJail=false;q.jailTurns=0;}});if(id==='amnesti'){var d=newsGet('demo');if(d)d.lifted=true;S.mati={};S.hitam={};}return '';
+    case 'gempapol': x=rnd(ownedAll().filter(function(i){return T[i].type==='city'&&S.tiles[i].level===4;}));if(x==null)return 'Belum ada Proyek Strategis. Aman.';S.tiles[x].level=3;S.tiles[x].v=1;emit({t:'quake',tile:x,level:4,color:P(S.tiles[x].owner).color});sfx('quake');return '('+T[x].landmark+')';
+    case 'tender': x=rnd((function(){var a=[];for(var i=0;i<NT;i++)if(T[i].type==='city'&&S.tiles[i].owner===null)a.push(i);return a;})());y=richest();if(x==null||!y)return 'Tidak ada kota kosong.';var c=tileL(x);if(y.money<c)return y.name+' tidak sanggup bayar.';spend(y,c);S.tiles[x]={owner:y.id,level:0};emit({t:'build',tile:x,level:0});updateThreats();checkWin();return '('+tileName(x)+' → '+y.name+')';
+    case 'utangln': if(polKas()){S.kas=(S.kas||0)+scaleAmt(1000000);}al.forEach(function(q){var a=Math.round(q.money*0.05/1000)*1000;if(a>0&&S.phase!=='over'&&!guard(q,['rekening'],'Utang Luar Negeri'))payKas(q.id,a,1);});return '';
+    case 'blusukan': al.forEach(function(q){if(q.inJail||S.phase==='over')return;q.pos=0;salary(q,true);});emit({t:'teleport'});return '';
+    case 'hoaks': var other=o.flash?S.news:S.news2;if(other&&other.round===S.round&&!other.void){other.void=true;return '('+newsById(other.id).name+' batal)';}return 'Tapi tidak ada berita lain yang bisa dibatalkan.';
+    case 'gantinama': x=rnd((function(){var a=[];for(var i=0;i<NT;i++)if(T[i].type==='city'&&!(S.tileMul[i]>1))a.push(i);return a;})());if(x==null)return '';S.tileMul[x]=1.5;return '('+tileName(x)+')';
+    case 'terbengkalai': x=rnd(ownedAll().filter(function(i){return T[i].type==='city'&&S.tiles[i].level>=1;}));if(x==null)return 'Belum ada bangunan.';S.mati[x]=S.round+1;return '('+tileName(x)+')';
+    case 'investor': al.forEach(function(q){var n=countWis(q.id);if(n)gain(q,scaleAmt(200000)*n);});return '';
+    case 'sidak': y=richest();if(!y)return '';if(guard(y,['rekening'],'Sidak Mendadak'))return '';var a2=Math.round(y.money*0.1/1000)*1000;if(a2>0)payKas(y.id,a2,1);return '('+y.name+')';
+  }
+  return '';}
+/* ---- kartu simpan (Chaos): one per Gajian, max 3, hidden; counters fire automatically ---- */
+var HAND_CARDS=[
+  {id:'sakti',n:'Surat Sakti',d:'Bebas dari Lapas tanpa bayar.',k:'untung',tg:'none',jail:1},
+  {id:'dadu',n:'Dadu Pesanan',d:'Pilih angka dadu sendiri (2 sampai 12) untuk lemparan berikutnya.',k:'untung',tg:'sum'},
+  {id:'lobi',n:'Lobi Harga',d:'Beli dan bangun diskon 50% sampai giliranmu selesai.',k:'untung',tg:'none'},
+  {id:'segel',n:'Segel Lawan',d:'Segel satu kota lawan selama 1 ronde. Sewanya nol.',k:'serang',tg:'oppCity'},
+  {id:'ambil',n:'Ambil Alih Paksa',d:'Beli kota lawan seharga investasinya + 50%. Bukan Proyek Strategis.',k:'serang',tg:'oppTake'},
+  {id:'kampanye',n:'Pindah Kampanye',d:'Pindahkan Kampanye Akbar ke kota milikmu.',k:'untung',tg:'ownCity'},
+  {id:'nuklir',n:'Nuklir',d:'Ratakan satu Proyek Strategis lawan jadi Izin Lahan.',k:'serang',tg:'oppLm'},
+  {id:'kpk',n:'Laporkan ke KPK Konoha',d:'Kirim satu lawan ke Lapas.',k:'serang',tg:'opp'},
+  {id:'sadap',n:'Sadap Rekening',d:'Ambil 10% uang tunai satu lawan.',k:'serang',tg:'opp'},
+  {id:'mekar',n:'Pemekaran Wilayah',d:'Satu kota milikmu naik 1 level gratis (bukan ke Proyek Strategis).',k:'untung',tg:'ownUp'},
+  {id:'mobil',n:'Mobil Dinas',d:'Pindah ke petak mana saja dalam 12 langkah ke depan. Ini menggantikan lemparan dadu.',k:'untung',tg:'ahead'},
+  {id:'siluman',n:'Pajak Siluman',d:'Semua lawan bayar Rp50.000 ke kamu.',k:'serang',tg:'none'},
+  {id:'cabut',n:'Cabut Segel',d:'Buka segel, proyek terbengkalai, atau kampanye hitam di kota milikmu.',k:'untung',tg:'ownBlocked'},
+  {id:'tukar',n:'Tukar Guling',d:'Tukar kota termurahmu dengan satu kota lawan yang harganya setara. Bukan Proyek Strategis.',k:'serang',tg:'oppSwap'},
+  {id:'hitam',n:'Kampanye Hitam',d:'Sewa satu kota lawan nol selama 1 ronde.',k:'serang',tg:'oppCity'},
+  {id:'imunitas',n:'Imunitas Hukum',d:'Penangkal: otomatis membatalkan satu sewa besar.',k:'tangkal'},
+  {id:'bunker',n:'Bunker',d:'Penangkal: otomatis menahan Nuklir.',k:'tangkal'},
+  {id:'praper',n:'Praperadilan',d:'Penangkal: otomatis menolak OTT dan laporan KPK.',k:'tangkal'},
+  {id:'rekening',n:'Rekening Luar Negeri',d:'Penangkal: otomatis lolos dari sadap, audit, krismon, sidak, dan potongan utang.',k:'tangkal'},
+  {id:'bantah',n:'Bantah di Medsos',d:'Penangkal: otomatis membatalkan kartu serang apa pun dari lawan.',k:'tangkal'}];
+var HAND_W={bantah:1,nuklir:1,ambil:1,kpk:1};
+function handCard(id){for(var k=0;k<HAND_CARDS.length;k++)if(HAND_CARDS[k].id===id)return HAND_CARDS[k];return null;}
+function handDraw(p){if(!p||p.bankrupt||S.phase==='over')return;if(!S.handDeck||!S.handDeck.length){var d=[];HAND_CARDS.forEach(function(c){var w=HAND_W[c.id]||2;for(var k=0;k<w;k++)d.push(c.id);});S.handDeck=shuffle(d);}
+  var id=S.handDeck.pop();p.hand=p.hand||[];if(p.hand.length>=3){toast(p.name+' dapat kartu, tapi tangan sudah penuh (3). Kartunya hangus.');return;}
+  p.hand.push(id);p.st&&(p.st.cards++);emit({t:'handGet',pid:p.id,n:p.hand.length});toast(p.name+' dapat 1 kartu simpan ('+p.hand.length+'/3)','good');}
+/* q is attacked; kinds = counters that fit; attack=true means it came from a player's card, so Bantah also works */
+function guard(q,kinds,what,attack){if(!q||!q.hand||!q.hand.length)return false;var list=kinds.slice();if(attack)list.push('bantah');
+  for(var k=0;k<list.length;k++){var ix=q.hand.indexOf(list[k]);if(ix>=0){q.hand.splice(ix,1);var c=handCard(list[k]);emit({t:'guard',pid:q.id,card:c.id,name:c.n});toast(q.name+' pakai '+c.n+'! '+what+' gagal.','good big');sfx('stamp');return true;}}
+  return false;}
+function oppCities(p,f){return ownedAll().filter(function(i){var st=S.tiles[i];return T[i].type==='city'&&st.owner!==p.id&&!P(st.owner).bankrupt&&(!f||f(i,st));});}
+function handTargets(p,c){var al=alivePlayers().filter(function(o){return o.id!==p.id;});
+  switch(c.tg){
+    case 'none': return null;
+    case 'sum': return [2,3,4,5,6,7,8,9,10,11,12];
+    case 'opp': return al.map(function(o){return 'p'+o.id;});
+    case 'oppCity': return oppCities(p);
+    case 'oppLm': return nukeTargets(p);
+    case 'oppTake': return oppCities(p,function(i,st){return st.level<4&&p.money>=Math.round(invested(i)*1.5);});
+    case 'oppSwap': var mine=ownedCities(p.id).filter(function(i){return S.tiles[i].level<4;});if(!mine.length)return [];var lo=mine.sort(function(a,b){return invested(a)-invested(b);})[0],v=invested(lo);
+      return oppCities(p,function(i,st){return st.level<4&&invested(i)<=v*1.5&&invested(i)>=v*0.5;});
+    case 'ownCity': return S.festival==null?[]:ownedCities(p.id).filter(function(i){return i!==S.festival;});
+    case 'ownUp': return ownedCities(p.id).filter(function(i){return S.tiles[i].level<3;});
+    case 'ownBlocked': return ownedCities(p.id).filter(function(i){return sealed(i)||(S.mati[i]>=S.round)||(S.hitam[i]>=S.round);});
+    case 'ahead': var a=[];for(var k=1;k<=12;k++)a.push((p.pos+k)%NT);return a;
+  }return [];}
+function handUsable(p,ix){var id=p.hand&&p.hand[ix],c=id&&handCard(id);if(!c||c.k==='tangkal'||S.phase!=='turn'||p.pelni)return false;if(p.inJail)return !!c.jail;if(c.jail)return false;var t=handTargets(p,c);return t===null||t.length>0;}
+/* human taps Pakai: ask for a target when needed; bots pass the target straight in */
+function useHand(ix){var p=cur();if(!handUsable(p,ix))return;var c=handCard(p.hand[ix]),t=handTargets(p,c);if(t===null)return playHand(ix,null);ask({type:'hand',ix:ix,card:c.id,targets:t});}
+function playHand(ix,tg){var p=cur(),id=p.hand[ix],c=handCard(id);if(!c)return;p.hand.splice(ix,1);emit({t:'handUse',pid:p.id,card:id,name:c.n});toast(p.name+' pakai kartu '+c.n+'!','big');sfx('card');
+  var vic=null,i=typeof tg==='number'?tg:null;if(typeof tg==='string'&&tg.charAt(0)==='p')vic=P(+tg.slice(1));else if(i!=null&&S.tiles[i]&&S.tiles[i].owner!=null&&S.tiles[i].owner!==p.id)vic=P(S.tiles[i].owner);
+  var blocked=function(kinds){return vic&&guard(vic,kinds,c.n,true);};
+  switch(id){
+    case 'sakti': p.inJail=false;p.jailTurns=0;toast(p.name+' keluar dari '+tileName(IDX.jail)+' pakai Surat Sakti','good');if(S.theme==='politik')emit({t:'court',kind:'bebas',how:'sogok',pid:p.id});break;
+    case 'dadu': p.fixSum=+tg;toast('Lemparan berikutnya pasti '+tg,'good');break;
+    case 'lobi': p.lobi=true;S.lobiPid=p.id;break;
+    case 'segel': if(blocked([]))break;S.hitam[i]=S.round+1;toast(tileName(i)+' disegel sampai ronde depan','bad');break;
+    case 'hitam': if(blocked([]))break;S.hitam[i]=S.round+1;toast('Kampanye hitam! Sewa '+tileName(i)+' nol sampai ronde depan','bad');break;
+    case 'ambil': if(blocked([]))break;var pr=Math.round(invested(i)*1.5);pay(p.id,pr,vic.id);if(S.phase==='over')return save();S.tiles[i].owner=p.id;emit({t:'takeover',tile:i,from:vic.id,to:p.id});toast(p.name+' ambil paksa '+tileName(i)+' ('+fmt(pr)+')','bad big');updateThreats();if(checkWin())return;break;
+    case 'kampanye': S.festival=i;S.festLevel=S.festLevel||2;emit({t:'festival',tile:i,pid:p.id});toast(tileName(IDX.fest)+' pindah ke '+tileName(i),'good');break;
+    case 'nuklir': if(blocked(['bunker']))break;nukeHit(p,i);break;
+    case 'kpk': if(blocked(['praper']))break;vic.inJail=true;vic.jailTurns=0;vic.pos=IDX.jail;vic.st.jail++;emit({t:'ott',pid:vic.id,caseText:rnd(TH_().ottCases||[''])});emit({t:'teleport'});toast(vic.name+' dilaporkan dan langsung ditahan!','bad big');break;
+    case 'sadap': if(blocked(['rekening']))break;var sa=Math.round(vic.money*0.1/1000)*1000;if(sa>0)pay(vic.id,sa,p.id);toast(p.name+' menyadap '+fmt(sa)+' dari '+vic.name,'bad');break;
+    case 'mekar': S.tiles[i].level++;emit({t:'build',tile:i,level:S.tiles[i].level});toast(tileName(i)+' naik jadi '+levelName(S.tiles[i].level)+' gratis','good');sfx('build');break;
+    case 'mobil': S.phase='resolve';emit({t:'quip',pid:p.id,key:'repot'});walkTo(p,i);return;
+    case 'siluman': var amt=scaleAmt(50000);alivePlayers().forEach(function(o){if(o.id===p.id||S.phase==='over')return;if(guard(o,[],c.n,true))return;pay(o.id,amt,p.id);});break;
+    case 'cabut': var d=newsGet('demo');if(d&&d.tile===i)d.lifted=true;delete S.mati[i];delete S.hitam[i];toast(tileName(i)+' kembali normal','good');break;
+    case 'tukar': if(blocked([]))break;var mine=ownedCities(p.id).filter(function(k){return S.tiles[k].level<4;}).sort(function(a,b){return invested(a)-invested(b);})[0];if(mine==null)break;var ow=S.tiles[i].owner;S.tiles[i].owner=p.id;S.tiles[mine].owner=ow;emit({t:'build',tile:i,level:S.tiles[i].level});emit({t:'build',tile:mine,level:S.tiles[mine].level});toast('Tukar guling: '+tileName(mine)+' ⇄ '+tileName(i),'bad');updateThreats();if(checkWin())return;break;
+  }
+  if(S.phase==='over')return save();
+  if(S.phase==='prompt'||S.phase==='resolve'||S.phase==='turn'){S.pending=null;S.phase='turn';}
+  save();}
 function endTurn(){
   if(S.phase!=='end')return; var p=cur(); p.doubles=0; p.rolledDouble=false; p.appealed=false; p.turns=(p.turns||0)+1; if(hasP(p,'fufufafa')&&p.turns%3===0){bankGain(p,20000);pEmit(p,'fufufafa',p.name+' nggak ngapa-ngapain dapat Rp20rb');}
   var n=S.order.length, idx=S.turnIdx, newRound=false;
   for(var k=1;k<=n;k++){var j=(idx+k)%n; if(!P(S.order[j]).bankrupt){ if(j<=idx){S.round++; newRound=true; if(S.turnLimit&&S.round>S.turnLimit){S.round=S.turnLimit; return endByLimit();}} S.turnIdx=j; S.current=S.order[j]; break;}}
   S.phase='handoff';
   if(newRound)yearTax();
-  if(newRound&&S.round%3===1&&S.phase!=='over')startNews();
+  if(newRound&&(S.chaos||S.round%3===1)&&S.phase!=='over')startNews();
+  if(!newRound&&S.chaos&&S.newsEnabled&&S.flashR!==S.round&&S.phase!=='over'){var alive=S.order.filter(function(id){return !P(id).bankrupt;}).length,pos=0;for(var q=0;q<=S.turnIdx;q++)if(!P(S.order[q]).bankrupt)pos++;if(pos-1===Math.floor(alive/2)){S.flashR=S.round;if(Math.random()<1/3)startNews(true);}}
+  if(S.lobiPid!=null){P(S.lobiPid).lobi=false;S.lobiPid=null;}
+  S.players.forEach(function(q){if(q.st){var a=assets(q.id);if(a>q.st.maxAssets||!q.st.maxAssets)q.st.maxAssets=a;}});
   if(newRound&&S.turnLimit&&S.round===S.turnLimit&&!S.fajar){S.fajar=true;var th=TH_(),got=[];alivePlayers().forEach(function(q){if(!q.inJail&&S.phase!=='over'){if(polKas()){if(kasOut(q,100000)>0)got.push(q.id);}else{q.money+=100000;emit({t:'money',pid:q.id,d:100000});got.push(q.id);}}});if(S.phase==='over')return save();emit({t:'fajar',name:th.fajarName,text:th.fajarText,got:got});}
   if(S.phase==='over')return save();
   if(S.phase!=='handoff')S.phase='handoff';
@@ -659,13 +800,51 @@ function botChoose(p,pd){
     case 'nuke': var bt=pd.targets.slice().sort(function(a,b){return cityRent(b)-cityRent(a)||invested(b)-invested(a);});return bt.length?bt[0]:'keep';
   }
   return 'skip';}
+function botHand(p){if(!p.hand||!p.hand.length||p.inJail||p.pelni)return null;var lv=botLvl(p);if(S.botHandR===S.round+':'+p.id+':'+p.hand.length)return null;S.botHandR=S.round+':'+p.id+':'+p.hand.length;
+  if(lv==='mudah'&&Math.random()<0.5)return null;
+  var opp=alivePlayers().filter(function(o){return o.id!==p.id;}).sort(function(a,b){return assets(b.id)-assets(a.id);}),top=opp[0];
+  for(var ix=0;ix<p.hand.length;ix++){if(!handUsable(p,ix))continue;var c=handCard(p.hand[ix]),t=handTargets(p,c),pick;
+    switch(c.id){
+      case 'siluman': case 'lobi': return {a:'hand',ix:ix,tg:null};
+      case 'dadu': var best=7,bv=-1e18;for(var sm=2;sm<=12;sm++){var ti=(p.pos+sm)%NT,st=S.tiles[ti],v=0;if(buyable(ti)&&st.owner===null)v=T[ti].type==='city'?tileL(ti):200000;else if(st.owner===p.id)v=100000;else if(st.owner!=null)v=-rentOf(ti);if(ti===IDX.jail)v=-500000;if(v>bv){bv=v;best=sm;}}if(bv>0)return {a:'hand',ix:ix,tg:best};break;
+      case 'kpk': case 'sadap': if(top)return {a:'hand',ix:ix,tg:'p'+top.id};break;
+      case 'nuklir': case 'segel': case 'hitam': pick=t.slice().sort(function(a,b){return rentOf(b)-rentOf(a);})[0];if(pick!=null&&rentOf(pick)>0)return {a:'hand',ix:ix,tg:pick};break;
+      case 'ambil': pick=t.slice().sort(function(a,b){return rentOf(b)-rentOf(a);})[0];if(pick!=null&&p.money-Math.round(invested(pick)*1.5)>=botBuffer(p))return {a:'hand',ix:ix,tg:pick};break;
+      case 'tukar': pick=t.slice().sort(function(a,b){return rentOf(b)-rentOf(a);})[0];if(pick!=null)return {a:'hand',ix:ix,tg:pick};break;
+      case 'mekar': case 'kampanye': pick=t.slice().sort(function(a,b){return tileL(b)-tileL(a);})[0];if(pick!=null)return {a:'hand',ix:ix,tg:pick};break;
+      case 'cabut': if(t.length)return {a:'hand',ix:ix,tg:t[0]};break;
+      case 'mobil': pick=null;t.forEach(function(ti){if(pick==null&&buyable(ti)&&S.tiles[ti].owner===null&&T[ti].type==='city'&&p.money>=tileL(ti)*1.3)pick=ti;});if(pick!=null)return {a:'hand',ix:ix,tg:pick};break;
+    }}
+  return null;}
+/* ---- Opsi Tawar: swap tiles and money between two players; NPCs judge the offer ---- */
+function tradeTileOk(pid,i){var st=S.tiles[i];return st&&st.owner===pid&&buyable(i);}
+function tradeValue(i){return invested(i)+(T[i].type==='city'?tileL(i)*0.3:0);}
+function tradeCheck(o){var a=P(o.from),b=P(o.to);if(!a||!b||a.bankrupt||b.bankrupt||a.id===b.id)return 'Pemain tidak valid';
+  if(!(o.give.length||o.get.length||o.money))return 'Tawaran masih kosong';
+  if(!o.give.every(function(i){return tradeTileOk(a.id,i);})||!o.get.every(function(i){return tradeTileOk(b.id,i);}))return 'Ada petak yang bukan milik mereka';
+  if(o.money>0&&a.money<o.money)return a.name+' tidak punya uang segitu';if(o.money<0&&b.money<-o.money)return b.name+' tidak punya uang segitu';return null;}
+/* positive = good for the receiving player b */
+function tradeGain(o){var g=0;o.give.forEach(function(i){g+=tradeValue(i);});o.get.forEach(function(i){g-=tradeValue(i);});return g+o.money;}
+function tradeWinsFor(pid,o,side){var save=o.give.concat(o.get).map(function(i){return S.tiles[i].owner;});o.give.forEach(function(i){S.tiles[i].owner=o.to;});o.get.forEach(function(i){S.tiles[i].owner=o.from;});
+  var t=threatOf(pid)||(fullRegions(pid)>=3)||(countWis(pid)>=WIS_WIN);o.give.concat(o.get).forEach(function(i,k){S.tiles[i].owner=save[k];});return !!t;}
+function botTradeAccept(o){var b=P(o.to),lv=botLvl(b),g=tradeGain(o),base=S.startMoney*0.05;if(tradeCheck(o))return false;
+  if(o.money<0&&b.money+o.money<botBuffer(b))return false;
+  if(lv!=='mudah'&&tradeWinsFor(o.from,o))return g>=S.startMoney*(lv==='sulit'?1.5:0.8);
+  var need=lv==='mudah'?-base:lv==='sedang'?base:base*3;return g>=need;}
+function doTrade(o){var err=tradeCheck(o);if(err){toast(err,'bad');return false;}var a=P(o.from),b=P(o.to);
+  o.give.forEach(function(i){S.tiles[i].owner=b.id;emit({t:'build',tile:i,level:S.tiles[i].level});});o.get.forEach(function(i){S.tiles[i].owner=a.id;emit({t:'build',tile:i,level:S.tiles[i].level});});
+  if(o.money>0){a.money-=o.money;b.money+=o.money;emit({t:'money',pid:a.id,d:-o.money});emit({t:'money',pid:b.id,d:o.money});}
+  if(o.money<0){b.money+=o.money;a.money-=o.money;emit({t:'money',pid:b.id,d:o.money});emit({t:'money',pid:a.id,d:-o.money});}
+  a.st&&a.st.trades++;b.st&&b.st.trades++;emit({t:'trade',from:a.id,to:b.id});sfx('stamp');toast('Deal! '+a.name+' dan '+b.name+' salaman di belakang panggung.','good big');
+  updateThreats();if(checkWin())return true;save();return true;}
 function botNext(){
   if(!S||S.phase==='over')return null;var p=cur();if(!p||!p.npc)return null;if(p.bankrupt)return S.phase==='end'?{a:'end'}:null;
   switch(S.phase){
     case 'handoff': return {a:'start'};
     case 'turn': if(p.pelni)return {a:'pelni',tile:botPelniTile(p)};
-      if(p.inJail)return botJail(p);
+      if(p.inJail){var sk=p.hand?p.hand.indexOf('sakti'):-1;if(sk>=0)return {a:'hand',ix:sk,tg:null};return botJail(p);}
       if(p.nuke>0&&nukeTargets(p).length)return {a:'nuke'};
+      var bh=botHand(p);if(bh)return bh;
       return {a:'roll',power:botPower(p)};
     case 'prompt': return S.pending?{a:'choose',opt:botChoose(p,S.pending)}:null;
     case 'end': return {a:'end'};

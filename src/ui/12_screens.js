@@ -1,9 +1,9 @@
 /* ---------- screens ---------- */
-var setup={preset:'standar',lastLvl:'sedang',passives:false,theme:'politik',count:3,limit:35,money:3500000,build:'bertahap',news:true,players:[],picking:0,slots:[0,1,2,3,4].map(function(){return {npc:false,level:'sedang'};})};
+var setup={preset:'standar',chaos:false,lastLvl:'sedang',passives:false,theme:'politik',count:3,limit:35,money:3500000,build:'bertahap',news:true,players:[],picking:0,slots:[0,1,2,3,4].map(function(){return {npc:false,level:'sedang'};})};
 var SETUP_KEY='kc-setup';
-function loadSetup(){try{var o=JSON.parse(localStorage.getItem(SETUP_KEY)||'null');if(!o)return;['preset','lastLvl','passives','theme','count','limit','money','build','news'].forEach(function(k){if(o[k]!==undefined)setup[k]=o[k];});
+function loadSetup(){try{var o=JSON.parse(localStorage.getItem(SETUP_KEY)||'null');if(!o)return;['preset','lastLvl','passives','theme','count','limit','money','build','news','chaos'].forEach(function(k){if(o[k]!==undefined)setup[k]=o[k];});
   if(o.slots&&o.slots.length)o.slots.forEach(function(sl,i){if(setup.slots[i]&&sl)setup.slots[i]={npc:!!sl.npc,level:['mudah','sedang','sulit'].indexOf(sl.level)>=0?sl.level:'sedang'};});if(o.names)setup.names=o.names;if(setup.preset!=='atur'&&presetOf()==='atur'){setup.preset='standar';var P=PRESETS.standar;for(var f in P)setup[f]=P[f];}}catch(e){}}
-function saveSetup(){try{var o={};['preset','lastLvl','passives','theme','count','limit','money','build','news','slots','names'].forEach(function(k){o[k]=setup[k];});localStorage.setItem(SETUP_KEY,JSON.stringify(o));}catch(e){}}
+function saveSetup(){try{var o={};['preset','lastLvl','passives','theme','count','limit','money','build','news','chaos','slots','names'].forEach(function(k){o[k]=setup[k];});localStorage.setItem(SETUP_KEY,JSON.stringify(o));}catch(e){}}
 function humanSlots(){var a=[];for(var i=0;i<setup.count;i++)if(!setup.slots[i].npc)a.push(i);return a;}
 var LVL_OPTS=[['mudah','Mudah'],['sedang','Sedang'],['sulit','Sulit']],LVL_STAR={mudah:'★',sedang:'★★',sulit:'★★★'};
 /* lobby as a debate stage: each player is a candidate on a podium; tap a podium to set character, name, human/NPC, level */
@@ -42,20 +42,20 @@ function openPod(i){POD=i;var sl=setup.slots[i],sh=$('podSheet');sh.hidden=false
   $('podRandom').onclick=function(){var free=list.filter(function(ch){return byOf(ch.id)<0&&ch.id!==mine;});var ch=free[Math.floor(Math.random()*free.length)];if(ch){play('buy');setup.players[i].char=ch.id;openPod(i);renderSlots();}};
   $('podDone').onclick=closePod;sh.onclick=function(e){if(e.target===sh)closePod();};}
 function closePod(){$('podSheet').hidden=true;POD=-1;renderSlots();saveSetup();}
-var PRESETS={standar:{limit:35,money:3500000,build:'bertahap',news:true,passives:false},kilat:{limit:20,money:1000000,build:'bebas',news:true,passives:false},brutal:{limit:0,money:10000000,build:'bertahap',news:true,passives:true}};
-var PRESET_INFO={standar:['Standar','Pas buat main pertama. Santai, jarang ada yang bangkrut.'],kilat:['Kilat','Cepat panas, cepat bangkrut.'],brutal:['Brutal','Main sampai tinggal satu calon, atau negaranya yang bubar duluan.']};
+var PRESETS={standar:{limit:35,money:3500000,build:'bertahap',news:true,passives:false,chaos:false},kilat:{limit:20,money:1000000,build:'bebas',news:true,passives:false,chaos:false},brutal:{limit:0,money:10000000,build:'bertahap',news:true,passives:true,chaos:false},chaos:{limit:15,money:1500000,build:'bebas',news:true,passives:true,chaos:true}};
+var PRESET_INFO={standar:['Standar','Pas buat main pertama. Santai, jarang ada yang bangkrut.'],kilat:['Kilat','Cepat panas, cepat bangkrut.'],brutal:['Brutal','Main sampai tinggal satu calon, atau negaranya yang bubar duluan.'],chaos:['Chaos','Berita tiap ronde, kartu simpan tiap gajian, kas negara tipis. Serampangan.']};
 function presetOf(){for(var k in PRESETS){var P=PRESETS[k],ok=true;for(var f in P)if(setup[f]!==P[f])ok=false;if(ok)return k;}return 'atur';}
 function curPreset(){return setup.preset==='atur'?'atur':presetOf();}
 function fmtJt(v){if(v>=1000000){var j=v/1000000;return 'Rp'+(Math.round(j*10)/10).toString().replace('.',',')+' jt';}return 'Rp'+Math.round(v/1000)+'rb';}
 function rondeTxt(l){return l?l+' ronde':'Tanpa batas ronde';}
-function chipsOf(P){var a=[rondeTxt(P.limit),'Modal '+fmtJt(P.money),P.build==='bebas'?'Bangun bebas':'Bangun bertahap'];if(P.passives&&setup.theme==='politik')a.push('Pasif karakter nyala');return a;}
-function ruleSummary(){var c=curPreset(),nm=c==='atur'?'Atur sendiri':PRESET_INFO[c][0];return nm+' · '+rondeTxt(setup.limit)+' · '+fmtJt(setup.money);}
+function chipsOf(P){var a=[rondeTxt(P.limit),'Modal '+fmtJt(P.money),P.build==='bebas'?'Bangun bebas':'Bangun bertahap'];if(P.passives&&setup.theme==='politik')a.push('Pasif karakter nyala');if(P.chaos)a.push('Negara darurat');return a;}
+function ruleSummary(){var c=curPreset(),nm=c==='atur'?'Atur sendiri':PRESET_INFO[c][0];return nm+' · '+rondeTxt(setup.limit)+' · '+fmtJt(setup.money)+(setup.chaos&&c==='atur'?' · Chaos':'');}
 function stageTitle(){$('stageTitle').textContent=setup.theme==='politik'?'DEBAT CALON NEGERI BEDEBAH':'PANGGUNG PESERTA';}
 /* step 1: rules as four big cards; "Atur sendiri" opens the RUU screen */
 function renderRules(){var g=$('presetGrid'),cur=curPreset();g.innerHTML='';
   seg($('segTheme'),[['politik','Politik'],['santai','Santai']],setup.theme,function(v){setup.theme=v;renderRules();});
   $('themeHint').textContent=THEMES[setup.theme].tag;
-  ['standar','kilat','brutal','atur'].forEach(function(k){var b=document.createElement('button');b.type='button';b.className='preset-card'+(k==='atur'?' atur':'');b.setAttribute('aria-pressed',String(cur===k));
+  ['standar','kilat','brutal','chaos','atur'].forEach(function(k){var b=document.createElement('button');b.type='button';b.className='preset-card'+(k==='atur'?' atur':'')+(k==='chaos'?' chaos':'');b.setAttribute('aria-pressed',String(cur===k));
     var t=document.createElement('span');t.className='pc-t';t.textContent=k==='atur'?'Atur sendiri':PRESET_INFO[k][0];b.appendChild(t);
     var ch=document.createElement('span');ch.className='pc-chips';var list=k==='atur'?(cur==='atur'?chipsOf(setup):[]):chipsOf(PRESETS[k]);list.forEach(function(x){var c=document.createElement('span');c.textContent=x;ch.appendChild(c);});if(list.length)b.appendChild(ch);
     var d=document.createElement('span');d.className='pc-d';d.textContent=k==='atur'?(setup.theme==='politik'?'Tulis RUU aturan mainmu sendiri: ronde, modal, cara bangun, berita, pasif.':'Tulis aturan mainmu sendiri: ronde, modal, cara bangun, berita.'):PRESET_INFO[k][1];b.appendChild(d);
@@ -74,11 +74,13 @@ function renderRuu(){var pol=setup.theme==='politik',L=THEMES[setup.theme].level
   h+='<li><b>'+P+'2.</b> Setiap '+(pol?'calon':'pemain')+' menerima modal '+(pol?'kampanye ':'')+blank(fmtJt(setup.money),'money')+'.</li>';
   h+='<li><b>'+P+'3.</b> Pembangunan dilakukan secara '+blank(setup.build,'build')+(setup.build==='bebas'?', boleh langsung sampai '+L[2]+'.':', naik satu level tiap kunjungan.')+'</li>';
   h+='<li><b>'+P+'4.</b> '+news+' '+blank(setup.news?(pol?'diberlakukan':'nyala'):(pol?'dihapus':'mati'),'news')+(setup.news?' tiap 3 ronde':'')+(pol?', dan kemampuan pasif karakter '+blank(setup.passives?'diberlakukan':'dihapus','passives'):'')+'.</li>';
+  h+='<li><b>'+P+'5.</b> '+(pol?'Negara dalam keadaan ':'Suasana ')+blank(setup.chaos?(pol?'darurat':'kacau'):'normal','chaos')+(setup.chaos?': berita tiap ronde, kartu simpan tiap gajian, kas '+(pol?'negara ':'')+'menipis.':'.')+'</li>';
   $('pasalList').innerHTML=h;
   [].forEach.call($('pasalList').querySelectorAll('.blank'),function(b){b.onclick=function(e){e.stopPropagation();play('tap');var k=b.dataset.k;
     if(k==='build'){setup.build=setup.build==='bebas'?'bertahap':'bebas';closePop();renderRuu();}
     else if(k==='news'){setup.news=!setup.news;closePop();renderRuu();}
     else if(k==='passives'){setup.passives=!setup.passives;closePop();renderRuu();}
+    else if(k==='chaos'){setup.chaos=!setup.chaos;if(setup.chaos)setup.news=true;closePop();renderRuu();}
     else openPop(k,b);};});
   var long=(setup.limit===0||setup.limit>60)&&setup.money>=20000000;$('ruuWarn').hidden=!long;if(long)$('ruuWarn').textContent='Modal sebesar ini tanpa batas ronde bisa main lebih dari 2 jam.';
   if(RUU_POP){var b2=$('pasalList').querySelector('.blank[data-k="'+RUU_POP+'"]');if(b2){b2.classList.add('on');placePop(b2);}}}
@@ -117,7 +119,7 @@ function fillNpcs(){var list=charsFor(setup.theme),used=[];podChars();for(var i=
   var free=shuffleArr(list.filter(function(ch){return used.indexOf(ch.id)<0;}));
   for(var j=0;j<setup.count;j++){var sl=setup.slots[j];if(!sl.npc){setup.players[j]={name:slotName(j)||('Pemain '+(j+1)),char:setup.players[j].char};continue;}var pc=setup.players[j]&&setup.players[j].char,ch=pc?CHARS.filter(function(x){return x.id===pc;})[0]:null;if(!ch)ch=free.shift()||list[j%list.length];setup.players[j]={name:ch.name,char:ch.id,npc:true,level:sl.level||'sedang'};}
   setup.names=setup.names||[];for(var h=0;h<setup.count;h++)if(!setup.slots[h].npc&&setup.players[h])setup.names[h]=setup.players[h].name;saveSetup();}
-function startNewGame(){fillNpcs();var m=Math.max(300000,Math.min(100000000,Math.round((setup.money||3500000)/10000)*10000));newGame({players:setup.players.slice(0,setup.count),turnLimit:setup.limit,money:m,buildMode:setup.build,theme:setup.theme,news:setup.news,passives:setup.passives&&setup.theme==='politik'});enterGame();}
+function startNewGame(){fillNpcs();var m=Math.max(300000,Math.min(100000000,Math.round((setup.money||3500000)/10000)*10000));newGame({players:setup.players.slice(0,setup.count),turnLimit:setup.limit,money:m,buildMode:setup.build,theme:setup.theme,news:setup.news,chaos:!!setup.chaos,passives:setup.passives&&setup.theme==='politik'});enterGame();}
 function enterGame(){anim=null;diceRoll=null;cup.phase='idle';FX.take={};FX.build={};FX.collapse=[];FX.forest=null;HAND.key=null;npcReset();$('players').hidden=true;camHome();buildPanels();show('game');refresh();}
 
 
