@@ -71,7 +71,7 @@ function boot(){
   $('btnNew').onclick=function(){audioUnlock();play('tap');setup.players=[];setup.picking=0;initLobby();show('lobby');};
   $('btnResume').onclick=function(){audioUnlock();var s=loadSave();if(!s)return;S=s;if(S.phase==='resolve')S.phase='end';if(S.phase==='moving'&&!S.anim)S.phase='end';enterGame();};
   $('lobbyBack').onclick=function(){show('splash');};
-  $('lobbyNext').onclick=function(){play('tap');saveSetup();setup.players=[];var hs=humanSlots();if(!hs.length){startNewGame();return;}setup.picking=hs[0];renderPick();show('pick');};
+  $('lobbyNext').onclick=function(){play('tap');saveSetup();withDisclaimer(setup.theme,startNewGame);};
   $('pickBack').onclick=function(){var pv=prevHuman(setup.picking);if(pv>=0){setup.picking=pv;renderPick();}else show('lobby');};
   $('camBtn').onclick=function(){play('tap');setCamMode(cam.mode==='all'?'follow':'all');};
   $('btnStudio').onclick=function(){play('tap');openStudio();};$('pStudio').onclick=function(){play('tap');openStudio();};$('studioClose').onclick=function(){play('tap');$('studio').hidden=true;};

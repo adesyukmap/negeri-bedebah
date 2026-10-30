@@ -665,3 +665,10 @@ Status: dibangun kecuali yang ditandai.
 - 29 Okt 23.55: (A) utang yang tidak tertutup aset ditalangi Kas Negara ke penagih, pemain tetap bangkrut; kas kosong = penagih dapat sisa. Batas piksel papan ~3,2 juta (layar PC besar). Klip dialog di-decode saat pertama diputar, maksimal 40 di memori. Penjaga tombol aksi (bar kosong >1,5 dtk saat giliran manusia = gambar ulang). Sound Studio: Buang/Pulihkan suara bawaan + Salin daftar dibuang.
 - 30 Okt 00.07: semua file suara dialog (319 VO Hermes + 10 celetukan lama) dihapus dari repo atas keputusan Dede; yang tersisa efek suara, bunyi transportasi, musik. Slot suara tetap ada di Sound Studio untuk diisi manual. Registri VO_LINES dan alat impor tetap ada kalau nanti mau diisi lagi.
 - 31 Okt: Jumlah peserta 2-5 kembali sebagai tombol; tambah/hapus per kotak dihapus. Di layar lebar level NPC satu baris dengan Manusia/NPC, 5 peserta muat satu layar iPad.
+
+## 29. Lobby Panggung Calon (31 Okt 2026)
+- Lobby = panggung debat dengan 5 podium. Podium kosong bertanda +, tap untuk menambah calon NPC (level ikut level terakhir).
+- Tap podium membuka laci: nama (khusus manusia), Manusia/NPC, level NPC, karakter (yang dipakai calon lain terkunci), Acak.
+- Layar pilih karakter terpisah dihapus; "Mulai kampanye" langsung dari lobby (lewat disclaimer di tema Politik).
+- Aturan main: preset Standar (25 ronde, 1,5jt, bertahap), Kilat (20 ronde, 1jt, bebas), Bedebah brutal (tanpa batas, 2jt, pasif nyala), Atur sendiri (semua opsi).
+- HP landscape: podium dan judul diperkecil; Atur sendiri membuat halaman bisa digulir.

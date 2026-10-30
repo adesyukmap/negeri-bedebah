@@ -280,6 +280,62 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
 #segLimit,#segMoney,#segNpcLvl{flex-wrap:nowrap}
 #segLimit button,#segMoney button,#segNpcLvl button{font-size:16px;flex:1 1 auto;padding:0 10px;min-width:0}
 @media (max-height:520px){#lobby .sheet{padding:14px 16px;gap:12px}.lobby-cols .col{gap:10px}#lobby .seg button{min-height:40px;font-size:14px}#segLimit button,#segMoney button,#segNpcLvl button{font-size:13px}#lobby h2{font-size:20px;margin:0}#lobby .seg button[aria-pressed="true"]::after{width:8px;height:8px;top:-4px;right:-4px}#lobby .seg button{padding:0 12px}}
+/* lobby: panggung calon */
+#lobby{padding:0;gap:0;justify-content:flex-start;background:#1F2430}
+#lobby::before,#lobby::after{display:none}
+#lobby.custom .stage{flex:0 0 auto}#lobby.custom .lobby-panel{flex:1 0 auto}#lobby.custom .podium canvas,#lobby.custom .podium.empty .plus{height:clamp(56px,16vh,140px)}#lobby.custom .stage-hint{display:none}
+#podGrid .char-card.on{border:3px solid var(--ink);position:relative}#podGrid .char-card.on::after{content:"";position:absolute;top:-6px;right:-6px;width:13px;height:13px;border-radius:50% 45% 55% 48%;background:radial-gradient(circle at 45% 45%,#1F2430 0 48%,#5A6270 52% 62%,rgba(31,36,48,0) 66%);transform:rotate(18deg)}
+#lobby .stage{position:relative;flex:1 1 auto;min-height:300px;width:100%;box-sizing:border-box;background:radial-gradient(ellipse at 50% 0%,#3A4258 0%,#1F2430 70%);display:flex;flex-direction:column;align-items:center;padding:18px max(16px,env(safe-area-inset-left,0px)) 0;overflow:hidden}
+.stage-head{width:100%;max-width:1100px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.stage-title{background:var(--stamp);color:#fff;font:800 clamp(18px,3vw,32px)/1 var(--f-display);padding:9px 24px;transform:skewX(-8deg)}
+.stage-count{display:flex;align-items:center;gap:10px;color:#E6E9EE;font:800 15px var(--f-body)}
+.stage-count .seg button{min-height:42px;min-width:44px;font-size:16px}
+.stage-hint{margin:8px 0 0;color:#C9CDD4;font:700 13px var(--f-body);text-align:center}
+.podiums{position:relative;z-index:1;margin-top:auto;width:100%;max-width:1100px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(8px,2vw,22px);align-items:end;padding-bottom:30px}
+.floor{position:absolute;left:0;right:0;bottom:0;height:clamp(50px,13vh,110px);background:#8A5A34;border-top:8px solid #A9724A}
+.podium{display:flex;flex-direction:column;align-items:center;background:none;border:0;padding:0;cursor:pointer;color:var(--ink);font-family:var(--f-body)}
+.podium canvas{width:clamp(70px,16vw,200px);height:clamp(84px,34vh,280px);margin-bottom:-6px}
+.podium .base{width:100%;background:var(--paper);border-radius:14px 14px 4px 4px;border-top:8px solid var(--pc);padding:8px 6px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:1px}
+.podium .no{font:800 clamp(22px,3.4vw,34px)/1 var(--f-display);color:var(--pc)}
+.podium .nm{font:800 clamp(12px,1.5vw,16px)/1.15 var(--f-display);text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.podium .who{font:800 12px var(--f-body);color:#5A6270}
+.podium .who.me{color:#1F6E52}
+.podium.empty canvas{display:none}
+.podium.empty .plus{width:clamp(70px,16vw,200px);height:clamp(84px,34vh,280px);display:flex;align-items:center;justify-content:center;color:#848D99;font:800 56px var(--f-display)}
+.podium.empty .base{background:rgba(250,251,248,.12);border:2px dashed #848D99;border-top-width:2px;color:#C9CDD4}
+.podium:focus-visible{outline:3px solid #fff;outline-offset:4px;border-radius:14px}
+#lobby .lobby-panel{width:100%;max-width:none;border-radius:22px 22px 0 0;margin-top:-14px;position:relative;z-index:2;padding:18px max(24px,env(safe-area-inset-left,0px)) max(18px,env(safe-area-inset-bottom,0px));gap:12px;box-shadow:none}
+.lp-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;width:100%;max-width:1100px;margin:0 auto}
+.lp-row>.label{width:110px}
+.lp-row #segPreset{flex:1}
+.theme-field{flex-direction:row!important;align-items:center;gap:14px}
+.theme-field .wallet{display:none}
+.lobby-go{margin-left:auto;padding-top:0}
+.custom-panel{width:100%;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px}
+#segPreset button{flex:1 1 auto}
+.pod-sheet{width:min(860px,100%)}
+.pod-head{display:flex;align-items:center;gap:12px}.pod-head h2{margin:0;flex:1}
+.pod-no{font:800 40px/1 var(--f-display);color:var(--pc)}
+.pod-ctl{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:12px}
+#podSheet .char-grid{max-height:44vh;overflow-y:auto}
+@media (max-height:520px){
+  #lobby .stage{min-height:0;padding-top:8px}
+  .stage-head{flex-wrap:nowrap;gap:10px}
+  .stage-title{font-size:18px;padding:7px 16px;white-space:nowrap}
+  .stage-count{font-size:13px;gap:6px}.stage-count .seg button{min-height:36px;min-width:38px;font-size:14px}
+  .stage-hint{display:none}
+  .podium canvas,.podium.empty .plus{height:clamp(56px,24vh,100px)}
+  .podium .base{padding:4px 4px 5px;border-top-width:6px;border-radius:10px 10px 3px 3px}
+  .podium .no{font-size:20px}.podium .nm{font-size:12px}.podium .who{font-size:10px}
+  .podium.empty .plus{font-size:40px}
+  .podiums{padding-bottom:20px;gap:8px}
+  .floor{height:40px}
+  #lobby .lobby-panel{padding:10px 16px;gap:8px}
+  .custom-panel{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pod-ctl{grid-template-columns:1fr 1fr}
+  #podSheet .char-grid{max-height:48vh}
+}
+@media (max-width:760px){.custom-panel{grid-template-columns:minmax(0,1fr)}.pod-ctl{grid-template-columns:1fr}}
 @media (prefers-reduced-motion: reduce){.rot-phone{animation:none; transform:rotate(-90deg)}}
 .wallet.rentpaid{background:#FDECEA; color:#A52A1E; font-weight:800; padding:8px 12px; border-radius:12px}
 @media (max-width:620px){.srow{flex-wrap:wrap}.sacts{width:100%; justify-content:flex-end}}
@@ -375,21 +431,36 @@ body:has(#modal.compact.right:not([hidden])) #camBtn{visibility:hidden}
   </section>
 
   <section id="lobby" class="screen" hidden>
-    <div class="sheet">
-      <h2>Siapkan permainan</h2>
-      <div class="lobby-cols"><div class="col"><div class="field"><span class="label">Tema</span><div class="seg" id="segTheme"></div><span class="wallet" id="themeHint"></span></div>
-            <div class="field"><span class="label">Jumlah peserta</span><div class="seg" id="segCount"></div></div>
-            <div class="field"><span class="label">Peserta</span><div class="slots" id="slotList"></div><span class="wallet" id="slotHint"></span></div>
-      </div><div class="col"><div class="field"><span class="label">Batas ronde</span><div class="seg" id="segLimit"></div><div class="custom" id="limitBox" hidden><label for="limitInput">Jumlah ronde</label><input type="text" inputmode="numeric" id="limitInput" autocomplete="off" placeholder="mis. 40"></div></div>
+    <div class="stage" id="stage0">
+      <div class="stage-head">
+        <div class="stage-title" id="stageTitle">DEBAT CALON NEGERI BEDEBAH</div>
+        <div class="stage-count"><span>Jumlah peserta</span><div class="seg" id="segCount"></div></div>
+      </div>
+      <p class="stage-hint" id="slotHint"></p>
+      <div class="podiums" id="podiums"></div>
+      <div class="floor" aria-hidden="true"></div>
+    </div>
+    <div class="sheet lobby-panel">
+      <div class="lp-row"><span class="label">Aturan main</span><div class="seg" id="segPreset"></div></div>
+      <div class="custom-panel" id="customPanel" hidden>
+      <div class="field"><span class="label">Batas ronde</span><div class="seg" id="segLimit"></div><div class="custom" id="limitBox" hidden><label for="limitInput">Jumlah ronde</label><input type="text" inputmode="numeric" id="limitInput" autocomplete="off" placeholder="mis. 40"></div></div>
       <div class="field"><span class="label">Modal awal</span><div class="seg" id="segMoney"></div><div class="custom" id="moneyBox" hidden><label for="moneyInput">Modal per pemain (Rp)</label><input type="text" inputmode="numeric" id="moneyInput" autocomplete="off" placeholder="mis. 5000000"></div></div>
       <div class="field"><span class="label">Cara bangun</span><div class="seg" id="segBuild"></div><span class="wallet" id="buildHint"></span></div>
       <div class="field"><span class="label" id="newsLabel">Kabar Nusantara</span><div class="seg" id="segNews"></div><span class="wallet">Tiap 3 ronde ada peristiwa yang mengubah aturan selama satu ronde.</span></div>
       <div class="field" id="passiveField"><span class="label">Pasif karakter</span><div class="seg" id="segPassive"></div><span class="wallet">Tiap karakter punya satu kemampuan kecil. Mati = semua karakter sama, murni kosmetik.</span></div>
-      <div class="row lobby-go"><button class="btn ghost" id="lobbyBack">Kembali</button><button class="btn" id="lobbyNext">Pilih karakter</button></div>
       </div>
-      </div>
-      
+      <div class="lp-row"><div class="field theme-field"><span class="label">Tema</span><div class="seg" id="segTheme"></div><span class="wallet" id="themeHint"></span></div><div class="row lobby-go"><button class="btn ghost" id="lobbyBack">Kembali</button><button class="btn" id="lobbyNext">Mulai kampanye</button></div></div>
     </div>
+    <div class="overlay" id="podSheet" hidden><div class="sheet pod-sheet" role="dialog" aria-modal="true" aria-labelledby="podTitle">
+      <div class="pod-head"><span class="pod-no" id="podNo">1</span><h2 id="podTitle">Calon nomor 1</h2><button type="button" class="btn ghost small" id="podDone">Selesai</button></div>
+      <div class="pod-ctl">
+        <div class="field" id="podNameF"><label for="podName">Nama</label><input type="text" id="podName" maxlength="12" autocomplete="off"></div>
+        <div class="field"><span class="label">Siapa</span><div class="seg" id="podKind"></div></div>
+        <div class="field" id="podLvlF"><span class="label">Level NPC</span><div class="seg" id="podLvl"></div></div>
+      </div>
+      <div class="pick-row"><span class="label">Karakter</span><button type="button" class="btn ghost small" id="podRandom">Acak</button></div>
+      <div class="char-grid" id="podGrid"></div>
+    </div></div>
   </section>
 
   <section id="pick" class="screen" hidden>
