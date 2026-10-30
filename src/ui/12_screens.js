@@ -9,11 +9,10 @@ var LVL_OPTS=[['mudah','Mudah'],['sedang','Sedang'],['sulit','Sulit']];
 /* lobby as a ballot: each player is a numbered candidate box; NPC level sits inside that box; new NPCs inherit the last level picked */
 function renderSlots(){var box=$('slotList');if(!box)return;box.innerHTML='';
   for(var i=0;i<setup.count;i++)(function(i){var sl=setup.slots[i],row=document.createElement('div');row.className='slot';row.style.setProperty('--pc',PCOLORS[i]);
-    row.innerHTML='<span class="slot-no" aria-hidden="true">'+(i+1)+'</span><div class="slot-who"><div class="seg slot-kind" role="group" aria-label="Peserta '+(i+1)+'"></div>'+(setup.count>2&&i>0?'<button type="button" class="slot-rm" aria-label="Hapus peserta '+(i+1)+'">✕</button>':'')+'</div>'+(sl.npc?'<div class="seg slot-lvl" role="group" aria-label="Level NPC peserta '+(i+1)+'"></div>':'');box.appendChild(row);
+    row.innerHTML='<span class="slot-no" aria-hidden="true">'+(i+1)+'</span><div class="slot-who"><div class="seg slot-kind" role="group" aria-label="Peserta '+(i+1)+'"></div>'+''+'</div>'+(sl.npc?'<div class="seg slot-lvl" role="group" aria-label="Level NPC peserta '+(i+1)+'"></div>':'');box.appendChild(row);
     seg(row.querySelector('.slot-kind'),[[false,'Manusia'],[true,'NPC']],sl.npc,function(v){sl.npc=v;if(v)sl.level=setup.lastLvl||sl.level||'sedang';renderSlots();});
     var lv=row.querySelector('.slot-lvl');if(lv)seg(lv,LVL_OPTS,sl.level,function(v){sl.level=v;sl.own=true;setup.lastLvl=v;var ch=false;setup.slots.forEach(function(o,k){if(k<setup.count&&o!==sl&&o.npc&&!o.own&&o.level!==v){o.level=v;ch=true;}});if(ch)renderSlots();});
-    var rm=row.querySelector('.slot-rm');if(rm)rm.onclick=function(){play('tap');var gone=setup.slots.splice(i,1)[0];setup.slots.push({npc:true,level:setup.lastLvl||'sedang'});if(setup.names)setup.names.splice(i,1);setup.count--;renderSlots();};})(i);
-  var add=$('addSlot');add.hidden=setup.count>=5;
+})(i);
   var nh=humanSlots().length,nn=setup.count-nh;$('slotHint').textContent=nh===0?'Semua NPC: game jalan sendiri, kamu tinggal nonton.':nh===setup.count?setup.count+' manusia, gantian di satu perangkat.':nh+' manusia lawan '+nn+' NPC.';}
 function show(id){['splash','lobby','pick','game'].forEach(function(s){$(s).hidden=s!==id;});if(id==='game')setTimeout(layout,0);syncMusic();}
 function seg(el,opts,val,onPick){el.innerHTML='';opts.forEach(function(o){var b=document.createElement('button');b.type='button';b.textContent=o[1];b.setAttribute('aria-pressed',String(o[0]===val));b.onclick=function(){play('tap');onPick(o[0]);seg(el,opts,o[0],onPick);};el.appendChild(b);});}
@@ -23,7 +22,7 @@ var MONEY_P=[1000000,1500000,2000000,3000000],LIMIT_P=[20,25,30,0];
 function syncMoneyInput(){var mi=$('moneyInput');if(mi&&document.activeElement!==mi)mi.value=setup.money;}
 function custSeg(id,presets,labels,cur,isCust,onPick){var opts=presets.map(function(v,k){return [v,labels[k]];}).concat([['atur','Atur sendiri']]);seg($(id),opts,isCust?'atur':cur,onPick);}
 function initLobby(){
-  $('addSlot').onclick=function(){if(setup.count>=5)return;play('tap');var sl=setup.slots[setup.count];sl.npc=true;sl.level=setup.lastLvl||'sedang';setup.count++;renderSlots();};renderSlots();
+  seg($('segCount'),[[2,'2'],[3,'3'],[4,'4'],[5,'5']],setup.count,function(v){for(var k=setup.count;k<v;k++){var sl=setup.slots[k];sl.npc=true;sl.level=setup.lastLvl||'sedang';sl.own=false;}setup.count=v;renderSlots();});renderSlots();
   var limCust=LIMIT_P.indexOf(setup.limit)<0||setup.limitCustom;
   var pickLim=function(v){if(v==='atur'){setup.limitCustom=true;$('limitBox').hidden=false;var li=$('limitInput');li.value=LIMIT_P.indexOf(setup.limit)<0?setup.limit:'';setTimeout(function(){li.focus();},0);}else{setup.limitCustom=false;setup.limit=v;$('limitBox').hidden=true;}};
   custSeg('segLimit',LIMIT_P,['20','25','30','Tanpa batas'],setup.limit,limCust,pickLim);$('limitBox').hidden=!limCust;if(limCust)$('limitInput').value=setup.limit;
