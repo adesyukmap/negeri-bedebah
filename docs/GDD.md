@@ -672,3 +672,9 @@ Status: dibangun kecuali yang ditandai.
 - Layar pilih karakter terpisah dihapus; "Mulai kampanye" langsung dari lobby (lewat disclaimer di tema Politik).
 - Aturan main: preset Standar (25 ronde, 1,5jt, bertahap), Kilat (20 ronde, 1jt, bebas), Bedebah brutal (tanpa batas, 2jt, pasif nyala), Atur sendiri (semua opsi).
 - HP landscape: podium dan judul diperkecil; Atur sendiri membuat halaman bisa digulir.
+
+## 30. Alur baru: Aturan main lalu Panggung calon (31 Okt 2026)
+- Main baru → layar Aturan main (4 kartu: Standar 3,5 jt · 35 ronde · bertahap; Kilat 1 jt · 20 ronde · bebas; Brutal 10 jt · tanpa batas · pasif nyala; Atur sendiri) + Tema → Panggung calon → disclaimer → game.
+- Atur sendiri membuka layar RUU "Tentang Aturan Main": 4 pasal, kata merah bisa ditap. Ronde dan modal pakai popover (preset + stepper), cara bangun/berita/pasif tinggal tap untuk ganti. Modal Rp500rb sampai Rp100 jt. Peringatan kalau modal ≥20 jt tanpa batas ronde.
+- Panggung punya chip ringkasan aturan dengan tombol Ubah.
+- Kas Negara tidak lagi ikut modal: KAS_BASE Rp2,6 jt per 4 pemain. Sim 300 game: Standar bubar ~16%, IMF ~95%; Brutal bubar ~58%, median ronde 54; Kilat IMF di ronde ~19.

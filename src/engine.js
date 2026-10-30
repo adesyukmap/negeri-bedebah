@@ -16,7 +16,7 @@ var IDX={start:0,jail:10,fest:20,pelni:30};
 var TRANS_PRICE=200000, TRANS_RENT=[0,25000,50000,75000,100000], PARKIR_PER=2000, APPEAL_FEE=150000;
 /* Kas Negara (Politik only): one treasury that starts full and pays every state payout (gaji, bansos, hibah, serangan fajar).
    Pungli and taxes only partly flow back. Stories advance as it empties; first empty = IMF loan + gaji -50%, second = Negara Bubar */
-var KAS_MULT=1.6, IMF_REFILL=0.5, KAS_STEPS=[0.9,0.8,0.7,0.6,0.5,0.4,0.27,0.14];
+var KAS_BASE=2600000, KAS_MULT=1.6, IMF_REFILL=0.5, KAS_STEPS=[0.9,0.8,0.7,0.6,0.5,0.4,0.27,0.14];
 var KAS_PART=0.4, TX_TAX=0.02, YEAR_TAX=0.0025, YEAR_TAX_MIN=2000;
 var T=[
   {type:'start',name:'Start'},
@@ -47,9 +47,10 @@ function hasP(p,k){return !!(S&&S.passives&&p&&!p.bankrupt&&p.char===k);}
 function useP(p,k){if(!hasP(p,k))return false;p.pu=p.pu||{};if(p.pu[k])return false;p.pu[k]=1;return true;}
 function canUseP(p,k){return hasP(p,k)&&!(p.pu&&p.pu[k]);}
 function pEmit(p,k,text){emit({t:'passive',pid:p.id,key:k,name:PASSIVES[k].n,text:text||(p.name+': '+PASSIVES[k].d)});}
-function kasLimit(){return S&&S.theme==='politik'?(S.kasMax||KAS_MULT*(S.startMoney||1500000)):KAS_LIMIT;}
+function kasLimit(){return S&&S.theme==='politik'?(S.kasMax||KAS_BASE):KAS_LIMIT;}
 /* sized for 4 players, scaled by player count so the drain lands at the same point in the game */
-function kasStart(cfg){return Math.round(KAS_MULT*cfg.money*cfg.players.length/4/100000)*100000;}
+/* the treasury no longer scales with starting money: rich players, same fragile state */
+function kasStart(cfg){return Math.round(KAS_BASE*cfg.players.length/4/100000)*100000;}
 function polKas(){return !!(S&&S.theme==='politik'&&S.kasMax);}
 /* pay a player out of the Kas Negara; returns what was actually paid */
 function kasOut(p,amt){amt=Math.round(amt);if(amt<=0||!p||p.bankrupt||S.phase==='over')return 0;var got=Math.min(amt,Math.max(0,S.kas||0));

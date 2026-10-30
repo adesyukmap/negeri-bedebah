@@ -336,6 +336,67 @@ input[type=text]:focus{outline:none; border-color:var(--ink)}
   #podSheet .char-grid{max-height:48vh}
 }
 @media (max-width:760px){.custom-panel{grid-template-columns:minmax(0,1fr)}.pod-ctl{grid-template-columns:1fr}}
+
+/* step 1: rules cards, RUU screen */
+#rules,#ruu{--paper:#FAFBF8;--ink:#1F2430;--line:#C9CDD4;--stamp:#C8102E}
+#rules .sheet,#ruu .sheet{width:min(1060px,100%);background:var(--paper);box-shadow:0 8px 0 #D9DDE2,0 18px 40px rgba(10,40,70,.35);color:var(--ink);gap:14px}
+#rules .seg button,#ruu .seg button{background:#fff;border:2px solid var(--line);color:var(--ink);position:relative;box-shadow:none;white-space:nowrap}
+#rules .seg button[aria-pressed="true"],#ruu .seg button[aria-pressed="true"]{border:3px solid var(--ink)}
+#rules .seg button[aria-pressed="true"]::after,#ruu .seg button[aria-pressed="true"]::after,.preset-card[aria-pressed="true"]::after{content:"";position:absolute;top:-5px;right:-5px;width:11px;height:11px;border-radius:50% 45% 55% 48%;background:radial-gradient(circle at 45% 45%,#1F2430 0 48%,#5A6270 52% 62%,rgba(31,36,48,0) 66%);transform:rotate(18deg)}
+#rules .row .btn:not(.ghost),#ruu .row .btn:not(.ghost){background:var(--stamp);color:#fff;box-shadow:0 5px 0 #8E0B20}
+#rules .row .btn.ghost,#ruu .btn.ghost{background:#fff;border:2px solid var(--line);color:var(--ink);box-shadow:0 4px 0 #D9DDE2}
+#rules .label,#ruu .label{text-transform:none;letter-spacing:0;font-size:15px;color:var(--ink);font-weight:800}
+.rules-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.theme-pick{display:flex;align-items:center;gap:10px}.theme-pick .seg button{min-height:42px;padding:0 16px}
+.steps{list-style:none;margin:0;padding:0;display:flex;align-items:center;gap:14px;font:800 15px var(--f-body);color:#5A6270}
+.steps li{display:flex;align-items:center;gap:8px}
+.steps li span{width:26px;height:26px;border-radius:999px;border:2px solid #848D99;display:inline-flex;align-items:center;justify-content:center;font:800 15px var(--f-display);box-sizing:border-box}
+.steps li.cur{color:var(--ink,#1F2430)}.steps li.cur span{background:#1F2430;border-color:#1F2430;color:#fff}
+.steps li.done{color:#1F6E52}.steps li.done span{border-color:#1F6E52;color:#1F6E52}
+.steps li+li::before{content:"";width:32px;height:3px;background:#C9CDD4;margin-right:6px}
+.rules-h{margin:0;font:800 clamp(26px,3.6vw,40px)/1.05 var(--f-display);color:var(--ink)}
+#themeHint{margin:-6px 0 0}
+.preset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.preset-card{position:relative;text-align:left;background:#fff;border:2px solid #848D99;border-radius:16px;padding:16px 20px;color:var(--ink);display:flex;flex-direction:column;gap:10px;font-family:var(--f-body);cursor:pointer;min-height:132px}
+.preset-card[aria-pressed="true"]{border:3px solid var(--ink)}
+.preset-card[aria-pressed="true"]::after{top:-8px;right:-8px;width:16px;height:16px}
+.preset-card.atur{background:transparent;border-style:dashed}.preset-card.atur[aria-pressed="true"]{border-style:solid;background:#fff}
+.pc-t{font:800 28px/1 var(--f-display)}
+.pc-chips{display:flex;flex-wrap:wrap;gap:6px}.pc-chips span{background:#EEF0F3;border-radius:999px;padding:4px 12px;font:800 14px var(--f-body)}
+.pc-d{font:700 14px/1.35 var(--f-body);color:#5A6270}
+.rules-go,.ruu-go{justify-content:space-between;align-items:center}
+.ruu-sheet{position:relative}
+.ruu-top{display:flex;align-items:center;justify-content:space-between}
+.ruu-no{font:800 13px var(--f-body);color:#5A6270;letter-spacing:.08em}
+.ruu-head{text-align:center;display:flex;flex-direction:column;gap:4px;border-bottom:2px solid var(--ink);padding-bottom:12px}
+.ruu-head span{font:800 17px/1 var(--f-display);color:#5A6270}.ruu-head h2{margin:0;font:800 clamp(28px,3.6vw,40px)/1.05 var(--f-display);color:var(--ink)}.ruu-head p{margin:0;font:700 14px var(--f-body);color:#5A6270}
+.pasal{list-style:none;margin:0;padding:0 clamp(0px,2vw,24px);display:flex;flex-direction:column;gap:16px;font:700 clamp(17px,2vw,22px)/1.55 var(--f-body);color:var(--ink)}
+.pasal b{font-family:var(--f-display)}
+.blank{font:800 1.15em/1.2 var(--f-display);color:#C8102E;background:#FFF6D6;border:0;border-bottom:3px dashed #C8102E;border-radius:6px 6px 0 0;padding:0 10px;cursor:pointer;min-height:40px}
+.blank.on{outline:3px solid #1F2430;outline-offset:2px}
+.blank:focus-visible{outline:3px solid #1F2430;outline-offset:2px}
+.ruu-warn{margin:0;background:#FFF6D6;border-radius:10px;padding:8px 12px;font:800 14px var(--f-body);color:#8A5A00}
+.linkbtn{background:none;border:0;font:800 16px var(--f-body);color:var(--ink);text-decoration:underline;cursor:pointer;min-height:44px;padding:0 6px}
+.ruu-pop{position:absolute;z-index:5;width:min(440px,calc(100% - 24px));background:#fff;border:2px solid #1F2430;border-radius:16px;box-shadow:0 12px 30px rgba(31,36,48,.25);padding:14px;box-sizing:border-box;display:flex;flex-direction:column;gap:10px}
+.ruu-pop .seg{display:flex;gap:6px}.ruu-pop .seg button{flex:1;min-height:44px;padding:0 6px;font-size:15px}
+.ruu-pop .stepper{display:flex;align-items:center;gap:10px}.ruu-pop .stepper .btn{width:52px;min-height:48px;font:800 26px var(--f-display);padding:0}
+.ruu-pop output{flex:1;height:48px;border:3px solid #1F2430;border-radius:10px;display:flex;align-items:center;justify-content:center;font:800 24px var(--f-display);color:#1F2430}
+.ruu-pop .wallet{color:#5A6270;font-size:13px}
+.lobby-panel .lp-row{flex-wrap:nowrap}
+.lobby-panel .sp{flex:1}
+.rule-chip{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #C9CDD4;border-radius:999px;padding:0 16px;min-height:44px;font:800 15px var(--f-body);color:#1F2430;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rule-chip i{font-style:normal;color:#C8102E;text-decoration:underline}
+@media (max-height:520px){
+  #rules .sheet,#ruu .sheet{padding:12px 16px;gap:8px}
+  .rules-h{font-size:24px}#themeHint{display:none}
+  .preset-card{min-height:0;padding:10px 14px;gap:6px}.pc-t{font-size:20px}.pc-chips span{font-size:12px;padding:2px 9px}.pc-d{font-size:12px}
+  .ruu-head{padding-bottom:6px}.ruu-head h2{font-size:24px}.ruu-head span{font-size:13px}.pasal{gap:6px;font-size:15px}.blank{min-height:34px}
+  .steps{font-size:13px}.steps li span{width:22px;height:22px}
+  .lobby-panel .steps{display:none}.rule-chip{font-size:13px}
+  .preset-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.pc-d{display:none}.preset-card.atur .pc-d{display:block}
+  .ruu-pop{position:fixed;left:50%!important;top:auto!important;bottom:10px;transform:translateX(-50%)}
+}
+.ruu-pop .seg button:last-child{flex:1.7}
 @media (prefers-reduced-motion: reduce){.rot-phone{animation:none; transform:rotate(-90deg)}}
 .wallet.rentpaid{background:#FDECEA; color:#A52A1E; font-weight:800; padding:8px 12px; border-radius:12px}
 @media (max-width:620px){.srow{flex-wrap:wrap}.sacts{width:100%; justify-content:flex-end}}
@@ -430,6 +491,30 @@ body:has(#modal.compact.right:not([hidden])) #camBtn{visibility:hidden}
     </div>
   </section>
 
+  <section id="rules" class="screen" hidden>
+    <div class="sheet rules-sheet">
+      <div class="rules-top">
+        <ol class="steps" aria-label="Langkah"><li class="cur"><span>1</span>Aturan main</li><li><span>2</span>Pilih calon</li></ol>
+        <div class="theme-pick"><span class="label">Tema</span><div class="seg" id="segTheme"></div></div>
+      </div>
+      <h2 class="rules-h">Mau main kayak gimana?</h2>
+      <p class="wallet" id="themeHint"></p>
+      <div class="preset-grid" id="presetGrid"></div>
+      <div class="row rules-go"><button class="btn ghost" id="rulesBack">Kembali</button><button class="btn" id="rulesNext">Lanjut: pilih calon</button></div>
+    </div>
+  </section>
+
+  <section id="ruu" class="screen" hidden>
+    <div class="sheet ruu-sheet" id="ruuSheet">
+      <div class="ruu-top"><button type="button" class="btn ghost small" id="ruuBack">&lsaquo; Preset</button><span class="ruu-no" id="ruuNo"></span></div>
+      <div class="ruu-head"><span id="ruuKicker">RANCANGAN UNDANG-UNDANG</span><h2 id="ruuTitle">Tentang Aturan Main</h2><p>Tap kata berwarna merah untuk mengubahnya.</p></div>
+      <ol class="pasal" id="pasalList"></ol>
+      <p class="ruu-warn" id="ruuWarn" hidden></p>
+      <div class="row ruu-go"><button type="button" class="linkbtn" id="ruuReset">Kembalikan ke Standar</button><button class="btn" id="ruuOk">Sahkan, lanjut pilih calon</button></div>
+      <div class="ruu-pop" id="ruuPop" role="dialog" aria-label="Ubah nilai" hidden></div>
+    </div>
+  </section>
+
   <section id="lobby" class="screen" hidden>
     <div class="stage" id="stage0">
       <div class="stage-head">
@@ -441,15 +526,12 @@ body:has(#modal.compact.right:not([hidden])) #camBtn{visibility:hidden}
       <div class="floor" aria-hidden="true"></div>
     </div>
     <div class="sheet lobby-panel">
-      <div class="lp-row"><span class="label">Aturan main</span><div class="seg" id="segPreset"></div></div>
-      <div class="custom-panel" id="customPanel" hidden>
-      <div class="field"><span class="label">Batas ronde</span><div class="seg" id="segLimit"></div><div class="custom" id="limitBox" hidden><label for="limitInput">Jumlah ronde</label><input type="text" inputmode="numeric" id="limitInput" autocomplete="off" placeholder="mis. 40"></div></div>
-      <div class="field"><span class="label">Modal awal</span><div class="seg" id="segMoney"></div><div class="custom" id="moneyBox" hidden><label for="moneyInput">Modal per pemain (Rp)</label><input type="text" inputmode="numeric" id="moneyInput" autocomplete="off" placeholder="mis. 5000000"></div></div>
-      <div class="field"><span class="label">Cara bangun</span><div class="seg" id="segBuild"></div><span class="wallet" id="buildHint"></span></div>
-      <div class="field"><span class="label" id="newsLabel">Kabar Nusantara</span><div class="seg" id="segNews"></div><span class="wallet">Tiap 3 ronde ada peristiwa yang mengubah aturan selama satu ronde.</span></div>
-      <div class="field" id="passiveField"><span class="label">Pasif karakter</span><div class="seg" id="segPassive"></div><span class="wallet">Tiap karakter punya satu kemampuan kecil. Mati = semua karakter sama, murni kosmetik.</span></div>
+      <div class="lp-row">
+        <ol class="steps mini" aria-label="Langkah"><li class="done"><span aria-hidden="true">✓</span>Aturan</li><li class="cur"><span>2</span>Calon</li></ol>
+        <button type="button" class="rule-chip" id="ruleChip" aria-label="Ubah aturan main"><b></b><i>Ubah</i></button>
+        <span class="sp"></span>
+        <div class="row lobby-go"><button class="btn ghost" id="lobbyBack">Kembali</button><button class="btn" id="lobbyNext">Mulai kampanye</button></div>
       </div>
-      <div class="lp-row"><div class="field theme-field"><span class="label">Tema</span><div class="seg" id="segTheme"></div><span class="wallet" id="themeHint"></span></div><div class="row lobby-go"><button class="btn ghost" id="lobbyBack">Kembali</button><button class="btn" id="lobbyNext">Mulai kampanye</button></div></div>
     </div>
     <div class="overlay" id="podSheet" hidden><div class="sheet pod-sheet" role="dialog" aria-modal="true" aria-labelledby="podTitle">
       <div class="pod-head"><span class="pod-no" id="podNo">1</span><h2 id="podTitle">Calon nomor 1</h2><button type="button" class="btn ghost small" id="podDone">Selesai</button></div>

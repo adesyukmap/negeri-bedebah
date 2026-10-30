@@ -1,8 +1,8 @@
 /* ---------- screens ---------- */
-var setup={preset:'',lastLvl:'sedang',passives:false,theme:'politik',count:3,limit:25,money:1500000,build:'bertahap',news:true,players:[],picking:0,slots:[0,1,2,3,4].map(function(){return {npc:false,level:'sedang'};})};
+var setup={preset:'standar',lastLvl:'sedang',passives:false,theme:'politik',count:3,limit:35,money:3500000,build:'bertahap',news:true,players:[],picking:0,slots:[0,1,2,3,4].map(function(){return {npc:false,level:'sedang'};})};
 var SETUP_KEY='kc-setup';
 function loadSetup(){try{var o=JSON.parse(localStorage.getItem(SETUP_KEY)||'null');if(!o)return;['preset','lastLvl','passives','theme','count','limit','money','build','news'].forEach(function(k){if(o[k]!==undefined)setup[k]=o[k];});
-  if(o.slots&&o.slots.length)o.slots.forEach(function(sl,i){if(setup.slots[i]&&sl)setup.slots[i]={npc:!!sl.npc,level:['mudah','sedang','sulit'].indexOf(sl.level)>=0?sl.level:'sedang'};});if(o.names)setup.names=o.names;}catch(e){}}
+  if(o.slots&&o.slots.length)o.slots.forEach(function(sl,i){if(setup.slots[i]&&sl)setup.slots[i]={npc:!!sl.npc,level:['mudah','sedang','sulit'].indexOf(sl.level)>=0?sl.level:'sedang'};});if(o.names)setup.names=o.names;if(setup.preset!=='atur'&&presetOf()==='atur'){setup.preset='standar';var P=PRESETS.standar;for(var f in P)setup[f]=P[f];}}catch(e){}}
 function saveSetup(){try{var o={};['preset','lastLvl','passives','theme','count','limit','money','build','news','slots','names'].forEach(function(k){o[k]=setup[k];});localStorage.setItem(SETUP_KEY,JSON.stringify(o));}catch(e){}}
 function humanSlots(){var a=[];for(var i=0;i<setup.count;i++)if(!setup.slots[i].npc)a.push(i);return a;}
 var LVL_OPTS=[['mudah','Mudah'],['sedang','Sedang'],['sulit','Sulit']],LVL_STAR={mudah:'★',sedang:'★★',sulit:'★★★'};
@@ -21,7 +21,7 @@ function renderSlots(){var box=$('podiums');if(!box)return;podChars();box.innerH
     else{b.setAttribute('aria-label','Tambah calon nomor '+(i+1));b.innerHTML='<span class="plus">+</span><span class="base"><span class="no">'+(i+1)+'</span><span class="nm">Podium kosong</span></span>';
       b.onclick=function(){play('tap');addNpcUpTo(i+1);syncCount();renderSlots();};}
     box.appendChild(b);})(i);
-  var nh=humanSlots().length,nn=setup.count-nh;$('slotHint').textContent=(nh===0?'Semua NPC, kamu tinggal nonton. ':nh+' manusia lawan '+nn+' NPC. ')+'Tap calon untuk ganti karakter, nama, atau level.';}
+  var nh=humanSlots().length,nn=setup.count-nh;$('slotHint').textContent=(nh===0?'Semua NPC, kamu tinggal nonton. ':nn===0?nh+' manusia, gantian di satu perangkat. ':nh+' manusia lawan '+nn+' NPC. ')+'Tap calon untuk ganti karakter, nama, atau level.';}
 function syncCount(){seg($('segCount'),[[2,'2'],[3,'3'],[4,'4'],[5,'5']],setup.count,function(v){addNpcUpTo(v);renderSlots();});}
 var POD=-1;
 function openPod(i){POD=i;var sl=setup.slots[i],sh=$('podSheet');sh.hidden=false;sh.querySelector('.pod-sheet').style.setProperty('--pc',PCOLORS[i]);
@@ -42,36 +42,58 @@ function openPod(i){POD=i;var sl=setup.slots[i],sh=$('podSheet');sh.hidden=false
   $('podRandom').onclick=function(){var free=list.filter(function(ch){return byOf(ch.id)<0&&ch.id!==mine;});var ch=free[Math.floor(Math.random()*free.length)];if(ch){play('buy');setup.players[i].char=ch.id;openPod(i);renderSlots();}};
   $('podDone').onclick=closePod;sh.onclick=function(e){if(e.target===sh)closePod();};}
 function closePod(){$('podSheet').hidden=true;POD=-1;renderSlots();saveSetup();}
-var PRESETS={standar:{limit:25,money:1500000,build:'bertahap',news:true,passives:false},kilat:{limit:20,money:1000000,build:'bebas',news:true,passives:false},brutal:{limit:0,money:2000000,build:'bertahap',news:true,passives:true}};
+var PRESETS={standar:{limit:35,money:3500000,build:'bertahap',news:true,passives:false},kilat:{limit:20,money:1000000,build:'bebas',news:true,passives:false},brutal:{limit:0,money:10000000,build:'bertahap',news:true,passives:true}};
+var PRESET_INFO={standar:['Standar','Pas buat main pertama. Santai, jarang ada yang bangkrut.'],kilat:['Kilat','Cepat panas, cepat bangkrut.'],brutal:['Brutal','Main sampai tinggal satu calon, atau negaranya yang bubar duluan.']};
 function presetOf(){for(var k in PRESETS){var P=PRESETS[k],ok=true;for(var f in P)if(setup[f]!==P[f])ok=false;if(ok)return k;}return 'atur';}
-function renderPreset(){var cur=setup.preset==='atur'?'atur':presetOf();
-  seg($('segPreset'),[['standar','Standar · 25 ronde'],['kilat','Kilat · 20 ronde'],['brutal','Bedebah brutal'],['atur','Atur sendiri']],cur,function(v){setup.preset=v;if(PRESETS[v]){var P=PRESETS[v];for(var f in P)setup[f]=P[f];setup.moneyCustom=false;setup.limitCustom=false;}initLobby();});
-  $('customPanel').hidden=cur!=='atur';$('lobby').classList.toggle('custom',cur==='atur');}
+function curPreset(){return setup.preset==='atur'?'atur':presetOf();}
+function fmtJt(v){if(v>=1000000){var j=v/1000000;return 'Rp'+(Math.round(j*10)/10).toString().replace('.',',')+' jt';}return 'Rp'+Math.round(v/1000)+'rb';}
+function rondeTxt(l){return l?l+' ronde':'Tanpa batas ronde';}
+function chipsOf(P){var a=[rondeTxt(P.limit),'Modal '+fmtJt(P.money),P.build==='bebas'?'Bangun bebas':'Bangun bertahap'];if(P.passives&&setup.theme==='politik')a.push('Pasif karakter nyala');return a;}
+function ruleSummary(){var c=curPreset(),nm=c==='atur'?'Atur sendiri':PRESET_INFO[c][0];return nm+' · '+rondeTxt(setup.limit)+' · '+fmtJt(setup.money);}
 function stageTitle(){$('stageTitle').textContent=setup.theme==='politik'?'DEBAT CALON NEGERI BEDEBAH':'PANGGUNG PESERTA';}
-function show(id){['splash','lobby','pick','game'].forEach(function(s){$(s).hidden=s!==id;});if(id==='game')setTimeout(layout,0);syncMusic();}
+/* step 1: rules as four big cards; "Atur sendiri" opens the RUU screen */
+function renderRules(){var g=$('presetGrid'),cur=curPreset();g.innerHTML='';
+  seg($('segTheme'),[['politik','Politik'],['santai','Santai']],setup.theme,function(v){setup.theme=v;renderRules();});
+  $('themeHint').textContent=THEMES[setup.theme].tag;
+  ['standar','kilat','brutal','atur'].forEach(function(k){var b=document.createElement('button');b.type='button';b.className='preset-card'+(k==='atur'?' atur':'');b.setAttribute('aria-pressed',String(cur===k));
+    var t=document.createElement('span');t.className='pc-t';t.textContent=k==='atur'?'Atur sendiri':PRESET_INFO[k][0];b.appendChild(t);
+    var ch=document.createElement('span');ch.className='pc-chips';var list=k==='atur'?(cur==='atur'?chipsOf(setup):[]):chipsOf(PRESETS[k]);list.forEach(function(x){var c=document.createElement('span');c.textContent=x;ch.appendChild(c);});if(list.length)b.appendChild(ch);
+    var d=document.createElement('span');d.className='pc-d';d.textContent=k==='atur'?(setup.theme==='politik'?'Tulis RUU aturan mainmu sendiri: ronde, modal, cara bangun, berita, pasif.':'Tulis aturan mainmu sendiri: ronde, modal, cara bangun, berita.'):PRESET_INFO[k][1];b.appendChild(d);
+    b.onclick=function(){play('tap');if(k==='atur'){setup.preset='atur';openRuu();return;}setup.preset=k;var P=PRESETS[k];for(var f in P)setup[f]=P[f];renderRules();};
+    g.appendChild(b);});}
+function goRules(){renderRules();show('rules');}
+function goLobby(){saveSetup();syncCount();renderSlots();stageTitle();$('ruleChip').querySelector('b').textContent=ruleSummary();show('lobby');}
+/* RUU: every rule is a sentence; the red words are buttons */
+var RUU_POP=null;
+function openRuu(){renderRuu();show('ruu');}
+function blank(txt,key){return '<button type="button" class="blank" data-k="'+key+'">'+txt+'</button>';}
+function renderRuu(){var pol=setup.theme==='politik',L=THEMES[setup.theme].levels,news=THEMES[setup.theme].newsName;
+  $('ruuKicker').textContent=pol?'RANCANGAN UNDANG-UNDANG':'BUKU ATURAN';$('ruuTitle').textContent=pol?'Tentang Aturan Main':'Aturan Main';$('ruuNo').textContent=pol?'LEMBARAN NEGERI BEDEBAH · NO. 1':'';
+  var P=pol?'Pasal ':'Aturan ',h='';
+  h+='<li><b>'+P+'1.</b> Permainan berlangsung '+(setup.limit?'selama ':'')+blank(setup.limit?setup.limit+' ronde':'tanpa batas ronde','limit')+'.</li>';
+  h+='<li><b>'+P+'2.</b> Setiap '+(pol?'calon':'pemain')+' menerima modal '+(pol?'kampanye ':'')+blank(fmtJt(setup.money),'money')+'.</li>';
+  h+='<li><b>'+P+'3.</b> Pembangunan dilakukan secara '+blank(setup.build,'build')+(setup.build==='bebas'?', boleh langsung sampai '+L[2]+'.':', naik satu level tiap kunjungan.')+'</li>';
+  h+='<li><b>'+P+'4.</b> '+news+' '+blank(setup.news?(pol?'diberlakukan':'nyala'):(pol?'dihapus':'mati'),'news')+(setup.news?' tiap 3 ronde':'')+(pol?', dan kemampuan pasif karakter '+blank(setup.passives?'diberlakukan':'dihapus','passives'):'')+'.</li>';
+  $('pasalList').innerHTML=h;
+  [].forEach.call($('pasalList').querySelectorAll('.blank'),function(b){b.onclick=function(e){e.stopPropagation();play('tap');var k=b.dataset.k;
+    if(k==='build'){setup.build=setup.build==='bebas'?'bertahap':'bebas';closePop();renderRuu();}
+    else if(k==='news'){setup.news=!setup.news;closePop();renderRuu();}
+    else if(k==='passives'){setup.passives=!setup.passives;closePop();renderRuu();}
+    else openPop(k,b);};});
+  var long=(setup.limit===0||setup.limit>60)&&setup.money>=20000000;$('ruuWarn').hidden=!long;if(long)$('ruuWarn').textContent='Modal sebesar ini tanpa batas ronde bisa main lebih dari 2 jam.';
+  if(RUU_POP){var b2=$('pasalList').querySelector('.blank[data-k="'+RUU_POP+'"]');if(b2){b2.classList.add('on');placePop(b2);}}}
+function closePop(){RUU_POP=null;$('ruuPop').hidden=true;}
+function placePop(b){var pop=$('ruuPop'),sh=pop.parentNode,r=b.getBoundingClientRect(),R=sh.getBoundingClientRect();pop.hidden=false;var w=pop.offsetWidth;var x=Math.max(12,Math.min(R.width-w-12,r.left-R.left));pop.style.left=x+'px';pop.style.top=(r.bottom-R.top+sh.scrollTop+10)+'px';}
+var RONDE_P=[[20,'20'],[25,'25'],[35,'35'],[50,'50'],[0,'Tanpa batas']],MODAL_P=[[1000000,'1 jt'],[3500000,'3,5 jt'],[10000000,'10 jt'],[100000000,'100 jt']];
+function stepMoney(v,d){var st=v<5000000?500000:v<20000000?1000000:v<50000000?5000000:10000000;if(d<0&&v<=5000000&&v>500000)st=500000;return Math.max(500000,Math.min(100000000,v+d*st));}
+function openPop(k,b){RUU_POP=k;var pop=$('ruuPop'),isL=k==='limit';
+  pop.innerHTML='<span class="label">'+(isL?'Jumlah ronde':'Modal per '+(setup.theme==='politik'?'calon':'pemain'))+'</span><div class="seg" id="popSeg"></div><div class="stepper"><button type="button" class="btn ghost" id="popMinus" aria-label="Kurangi">−</button><output id="popVal"></output><button type="button" class="btn ghost" id="popPlus" aria-label="Tambah">+</button></div><span class="wallet">'+(isL?'5 sampai 200 ronde, atau tanpa batas.':'Rp500rb sampai Rp100 jt.')+' Tap di luar untuk menutup.</span>';
+  var val=function(){return isL?setup.limit:setup.money;},paint=function(){$('popVal').textContent=isL?(setup.limit?setup.limit:'∞'):fmtJt(setup.money);seg($('popSeg'),isL?RONDE_P:MODAL_P,val(),function(v){if(isL)setup.limit=v;else setup.money=v;renderRuu();paint();});};
+  $('popMinus').onclick=function(){if(isL)setup.limit=setup.limit===0?200:Math.max(5,setup.limit-5);else setup.money=stepMoney(setup.money,-1);renderRuu();paint();};
+  $('popPlus').onclick=function(){if(isL)setup.limit=setup.limit===0?0:(setup.limit>=200?0:setup.limit+5);else setup.money=stepMoney(setup.money,1);renderRuu();paint();};
+  paint();renderRuu();}
+function show(id){['splash','rules','ruu','lobby','pick','game'].forEach(function(s){$(s).hidden=s!==id;});if(id==='game')setTimeout(layout,0);syncMusic();}
 function seg(el,opts,val,onPick){el.innerHTML='';opts.forEach(function(o){var b=document.createElement('button');b.type='button';b.textContent=o[1];b.setAttribute('aria-pressed',String(o[0]===val));b.onclick=function(){play('tap');onPick(o[0]);seg(el,opts,o[0],onPick);};el.appendChild(b);});}
-function buildHint(){var L=THEMES[setup.theme].levels;$('buildHint').textContent=setup.build==='bertahap'?'Tiap kunjungan naik satu level: '+L.slice(0,4).join(', ')+', lalu '+L[4]+'.':'Boleh langsung ambil sampai '+L[2]+' dan lompat level.';}
-function themeHint(){$('themeHint').textContent=THEMES[setup.theme].tag;$('passiveField').hidden=setup.theme!=='politik';$('newsLabel').textContent=THEMES[setup.theme].newsName;}
-var MONEY_P=[1000000,1500000,2000000,3000000],LIMIT_P=[20,25,30,0];
-function syncMoneyInput(){var mi=$('moneyInput');if(mi&&document.activeElement!==mi)mi.value=setup.money;}
-function custSeg(id,presets,labels,cur,isCust,onPick){var opts=presets.map(function(v,k){return [v,labels[k]];}).concat([['atur','Atur sendiri']]);seg($(id),opts,isCust?'atur':cur,onPick);}
-function initLobby(){
-  syncCount();renderSlots();renderPreset();stageTitle();
-  var limCust=LIMIT_P.indexOf(setup.limit)<0||setup.limitCustom;
-  var pickLim=function(v){if(v==='atur'){setup.limitCustom=true;$('limitBox').hidden=false;var li=$('limitInput');li.value=LIMIT_P.indexOf(setup.limit)<0?setup.limit:'';setTimeout(function(){li.focus();},0);}else{setup.limitCustom=false;setup.limit=v;$('limitBox').hidden=true;}};
-  custSeg('segLimit',LIMIT_P,['20','25','30','Tanpa batas'],setup.limit,limCust,pickLim);$('limitBox').hidden=!limCust;if(limCust)$('limitInput').value=setup.limit;
-  $('limitInput').oninput=function(){var v=parseInt(String(this.value).replace(/[^0-9]/g,''),10);if(v>=5&&v<=200)setup.limit=v;};
-  $('limitInput').onblur=function(){var v=parseInt(String(this.value).replace(/[^0-9]/g,''),10);if(!(v>=5))v=5;if(v>200)v=200;this.value=v;setup.limit=v;};
-  seg($('segTheme'),[['politik','Politik'],['santai','Santai']],setup.theme,function(v){setup.theme=v;themeHint();buildHint();renderSlots();stageTitle();});themeHint();
-  var monCust=MONEY_P.indexOf(setup.money)<0||setup.moneyCustom;
-  var pickMon=function(v){if(v==='atur'){setup.moneyCustom=true;$('moneyBox').hidden=false;var mi=$('moneyInput');mi.value=setup.money;setTimeout(function(){mi.focus();mi.select();},0);}else{setup.moneyCustom=false;setup.money=v;$('moneyBox').hidden=true;}};
-  custSeg('segMoney',MONEY_P,['1jt','1,5jt','2jt','3jt'],setup.money,monCust,pickMon);$('moneyBox').hidden=!monCust;syncMoneyInput();
-  $('moneyInput').oninput=function(){var v=parseInt(String(this.value).replace(/[^0-9]/g,''),10);if(v>0)setup.money=v;};
-  $('moneyInput').onblur=function(){var v=parseInt(String(this.value).replace(/[^0-9]/g,''),10)||1500000;v=Math.max(300000,Math.min(20000000,Math.round(v/10000)*10000));this.value=v;setup.money=v;};
-  seg($('segBuild'),[['bertahap','Bertahap'],['bebas','Bebas']],setup.build,function(v){setup.build=v;buildHint();});buildHint();
-  seg($('segNews'),[[true,'Nyala'],[false,'Mati']],setup.news,function(v){setup.news=v;});
-  seg($('segPassive'),[[false,'Mati'],[true,'Nyala']],setup.passives,function(v){setup.passives=v;});
-}
 function renderPick(){
   var k=setup.picking,hs=humanSlots();$('pickTitle').textContent='Pemain '+(k+1)+' dari '+setup.count+(hs.length<setup.count?' · '+(setup.count-hs.length)+' NPC':'');$('pickDot').style.background=PCOLORS[k];
   var ni=$('nameInput');ni.value=(setup.players[k]&&setup.players[k].name)||(setup.names&&setup.names[k])||('Pemain '+(k+1));
@@ -95,7 +117,7 @@ function fillNpcs(){var list=charsFor(setup.theme),used=[];podChars();for(var i=
   var free=shuffleArr(list.filter(function(ch){return used.indexOf(ch.id)<0;}));
   for(var j=0;j<setup.count;j++){var sl=setup.slots[j];if(!sl.npc){setup.players[j]={name:slotName(j)||('Pemain '+(j+1)),char:setup.players[j].char};continue;}var pc=setup.players[j]&&setup.players[j].char,ch=pc?CHARS.filter(function(x){return x.id===pc;})[0]:null;if(!ch)ch=free.shift()||list[j%list.length];setup.players[j]={name:ch.name,char:ch.id,npc:true,level:sl.level||'sedang'};}
   setup.names=setup.names||[];for(var h=0;h<setup.count;h++)if(!setup.slots[h].npc&&setup.players[h])setup.names[h]=setup.players[h].name;saveSetup();}
-function startNewGame(){fillNpcs();var m=Math.max(300000,Math.min(20000000,Math.round((setup.money||1500000)/10000)*10000));newGame({players:setup.players.slice(0,setup.count),turnLimit:setup.limit,money:m,buildMode:setup.build,theme:setup.theme,news:setup.news,passives:setup.passives&&setup.theme==='politik'});enterGame();}
+function startNewGame(){fillNpcs();var m=Math.max(300000,Math.min(100000000,Math.round((setup.money||3500000)/10000)*10000));newGame({players:setup.players.slice(0,setup.count),turnLimit:setup.limit,money:m,buildMode:setup.build,theme:setup.theme,news:setup.news,passives:setup.passives&&setup.theme==='politik'});enterGame();}
 function enterGame(){anim=null;diceRoll=null;cup.phase='idle';FX.take={};FX.build={};FX.collapse=[];FX.forest=null;HAND.key=null;npcReset();$('players').hidden=true;camHome();buildPanels();show('game');refresh();}
 
 
