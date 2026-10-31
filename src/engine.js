@@ -734,6 +734,7 @@ function botRollEV(p,pw,lv){var d=rollDist(pw,p),ev=0,buf=botBuffer(p),k=lv||{};
 function botPower(p){if(SIMU)return 0.5;var lv=botLvl(p);if(lv==='mudah'&&Math.random()<0.6)return 0.2+Math.random()*0.6;if(lv==='sedang'&&Math.random()<0.15)return 0.35+Math.random()*0.3;
   var memo={},best=0.5,bv=botRollEV(p,0.5,memo);[0,0.25,0.75,1].forEach(function(pw){var ev=botRollEV(p,pw,memo);if(ev>bv+1){bv=ev;best=pw;}});return best;}
 function botPelniTile(p){var lv=botLvl(p),best=-1,bv=-1e18;
+  if(lv==='licik'&&LK.pelni&&!SIMU){var ck='P'+S.round+':'+p.id;if(S._lp&&S._lp.k===ck)return S._lp.v;var bf=botBuffer(p),c=[];for(var q=0;q<NT;q++){if(q===p.pos)continue;c.push([evalLanding(p,q,7,true,bf)+((q<p.pos||q===0)?salaryAmt():0),q]);}c.sort(function(a,b){return b[0]-a[0];});var r=lookActs(p.id,c.slice(0,4).map(function(x){return {a:'pelni',tile:x[1]};})).tile;S._lp={k:ck,v:r};return r;}
   if(lv==='mudah'){var t=Math.floor(Math.random()*NT);return t===p.pos?(t+1)%NT:t;}
   var buf=botBuffer(p);for(var j=0;j<NT;j++){if(j===p.pos)continue;var v=evalLanding(p,j,S.lastSum,hardLv(lv),buf)+((j<p.pos||j===0)?salaryAmt():0)+Math.random();if(v>bv){bv=v;best=j;}}
   return best;}
@@ -741,6 +742,7 @@ function botJail(p){
   var lv=botLvl(p),af=appealFee(),jf=jailFee(),buf=botBuffer(p),pw=botPower(p);
   if(lv==='mudah'){var r=Math.random();if(!p.appealed&&p.money>=af&&r<0.3)return {a:'appeal'};if(p.money>=jf&&r<0.42)return {a:'payJail'};return {a:'roll',power:pw};}
   if(lv==='sedang'){if(!p.appealed&&p.money-af>=buf)return {a:'appeal'};if(p.appealed&&p.money-jf>=2*buf&&S.round<8)return {a:'payJail'};return {a:'roll',power:0.5};}
+  if(lv==='licik'&&LK.jail&&!SIMU){var ck='J'+S.round+':'+p.id+':'+p.jailTurns+':'+!!p.appealed;if(S._lj&&S._lj.k===ck)return S._lj.v;var ac=[{a:'roll',power:pw}];if(!p.appealed&&p.money>=af)ac.push({a:'appeal'});if(p.money>=jf)ac.push({a:'payJail'});var r=ac.length>1?lookActs(p.id,ac):ac[0];S._lj={k:ck,v:r};return r;}
   /* sulit: stay inside when the board is dangerous, get out cheaply when there is land to grab */
   var free=0;for(var i=0;i<NT;i++)if(buyable(i)&&S.tiles[i].owner===null)free++;
   var ev=botRollEV(p,pw);
@@ -844,7 +846,8 @@ function doTrade(o){var err=tradeCheck(o);if(err){toast(err,'bad');return false;
   a.st&&a.st.trades++;b.st&&b.st.trades++;emit({t:'trade',from:a.id,to:b.id});sfx('stamp');toast('Deal! '+a.name+' dan '+b.name+' salaman di belakang panggung.','good big');
   updateThreats();if(checkWin())return true;save();return true;}
 /* ================= Licik: plans a few turns ahead ================= */
-function slip(){return Math.random()<0.1;}
+var LK={slip:0.05,fut:0.6,oppf:0.6,rem:10,jail:1,pelni:1};
+function slip(){return Math.random()<LK.slip;}
 /* probability (summed over h turns) that someone at pos lands on each tile */
 function landProb(pos,h,p){var d=rollDist(0.5,p),cur={},out=new Array(NT).fill(0);cur[pos]=1;
   for(var t=0;t<(h||2);t++){var nx={};for(var k in cur){var pr=cur[k];for(var s=2;s<=12;s++){var j=(+k+s)%NT;if(j===IDX.jail)j=IDX.jail;nx[j]=(nx[j]||0)+pr*d[s];out[j]+=pr*d[s];}}cur=nx;}return out;}
@@ -915,10 +918,10 @@ function licikOffer(p){var sm=S.startMoney,key=p.id+':'+Math.floor(S.round/2);S.
   return best;}
 function lookBetter(pid,o){var a=0,b=0;for(var k=0;k<LOOK_N;k++){var sd=(Math.random()*1e9)|0;a+=rollout(pid,function(){},LOOK_R+1,sd);b+=rollout(pid,function(){doTrade(o);},LOOK_R+1,sd);}return b>a;}
 /* Monte Carlo look-ahead: copy the game, play it forward with every seat on Sulit, compare outcomes */
-function lookScore(pid){var me=P(pid),rem=Math.min(S.turnLimit?Math.max(0,S.turnLimit-S.round):12,10),opp=S.players.filter(function(q){return !q.bankrupt&&q.id!==pid;}),n=opp.length;
+function lookScore(pid){var me=P(pid),rem=Math.min(S.turnLimit?Math.max(0,S.turnLimit-S.round):12,LK.rem),opp=S.players.filter(function(q){return !q.bankrupt&&q.id!==pid;}),n=opp.length;
   if(S.phase==='over'||me.bankrupt)return S.winner&&S.winner.pid===pid?1e9:-1e9;
-  var fut=function(q){var r=0;ownedTiles(q.id).forEach(function(i){r+=rentOf(i);});return r*0.175*Math.max(1,n)*rem*0.6;};
-  var mine=assets(pid)+fut(me),best=0;opp.forEach(function(q){best=Math.max(best,assets(q.id)+fut(q)*0.6);});return mine-best;}
+  var fut=function(q){var r=0;ownedTiles(q.id).forEach(function(i){r+=rentOf(i);});return r*0.175*Math.max(1,n)*rem*LK.fut;};
+  var mine=assets(pid)+fut(me),best=0;opp.forEach(function(q){best=Math.max(best,assets(q.id)+fut(q)*LK.oppf);});return mine-best;}
 function botAct(a){switch(a.a){case 'start':startTurn();break;case 'roll':roll(a.power);break;case 'choose':choose(a.opt);break;case 'pelni':pelniTo(a.tile);break;case 'appeal':payAppeal();break;case 'payJail':payJail();break;case 'end':endTurn();break;case 'nuke':useNuke();break;case 'hand':playHand(a.ix,a.tg);break;default:return false;}return true;}
 function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
 function rollout(pid,apply,rounds,seed){var keep=S,ev=EVENTS.length,out=0,mr=Math.random;SIMU=true;if(seed!=null)Math.random=mulberry(seed);
@@ -928,6 +931,7 @@ function rollout(pid,apply,rounds,seed){var keep=S,ev=EVENTS.length,out=0,mr=Mat
     out=lookScore(pid);}catch(e){out=-1e12;}finally{S=keep;SIMU=false;EVENTS.length=ev;Math.random=mr;}return out;}
 var LOOK_N=8,LOOK_R=3;
 function lookPick(pid,opts){if(opts.length<2)return opts[0];var ck=S.round+'|'+S.current+'|'+JSON.stringify(S.pending)+'|'+opts.join(',');if(S._look&&S._look.k===ck)return S._look.v;var r=lookPick0(pid,opts);S._look={k:ck,v:r};return r;}
+function lookActs(pid,acts){var sc=acts.map(function(){return 0;});for(var k=0;k<LOOK_N;k++){var seed=(Math.random()*1e9)|0;acts.forEach(function(a,ix){sc[ix]+=rollout(pid,function(){botAct(a);},LOOK_R,seed);});}var bi=0;for(var i=1;i<acts.length;i++)if(sc[i]>sc[bi])bi=i;return acts[bi];}
 function lookPick0(pid,opts){var sc=opts.map(function(){return 0;});
   for(var k=0;k<LOOK_N;k++){var seed=(Math.random()*1e9)|0;opts.forEach(function(o,ix){sc[ix]+=rollout(pid,function(){choose(o);},LOOK_R,seed);});}
   var bi=0;for(var i=1;i<opts.length;i++)if(sc[i]>sc[bi])bi=i;return opts[bi];}

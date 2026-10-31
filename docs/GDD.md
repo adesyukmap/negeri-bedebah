@@ -693,3 +693,4 @@ Status: dibangun kecuali yang ditandai.
 - Mengajukan lobi sendiri tiap 2 ronde untuk melengkapi wilayah, hanya kalau simulasi bilang untung. Ke manusia muncul layar "X ngajak lobi" Terima/Tolak. Menilai tawaran masuk pakai simulasi juga.
 - 10% keputusan memakai logika Sulit (biar bisa salah).
 - Hasil sim: Standar 200 game Sulit vs Licik, win/seat Licik 29,2% vs Sulit 26,4%. Chaos 150 game: Licik 27,6% vs Sulit 32,1% (dalam batas noise). Keunggulan kecil, target 2x belum tercapai.
+- Update (31 Okt 2026, siang): Licik juga pakai simulasi untuk keputusan di Lapas dan tujuan Gorong-gorong; salah langkah turun ke 5%. Uji duel (1 Licik lawan 2–4 Sulit, Standar 35 ronde, 400 game): Licik menang 34,3% per kursi vs Sulit 22,0% = 1,56x. Chaos 15 ronde (300 game): 27,7% vs 24,1% = 1,15x, karena Chaos lebih ditentukan keberuntungan. Waktu mikir di Chromium desktop: median 22 ms, maks 35 ms per keputusan.
