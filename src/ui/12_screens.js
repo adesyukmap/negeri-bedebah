@@ -5,7 +5,7 @@ function loadSetup(){try{var o=JSON.parse(localStorage.getItem(SETUP_KEY)||'null
   if(o.slots&&o.slots.length)o.slots.forEach(function(sl,i){if(setup.slots[i]&&sl)setup.slots[i]={npc:!!sl.npc,level:['mudah','sedang','sulit','licik'].indexOf(sl.level)>=0?sl.level:'sedang'};});if(o.names)setup.names=o.names;if(setup.preset!=='atur'&&presetOf()==='atur'){setup.preset='standar';var P=PRESETS.standar;for(var f in P)setup[f]=P[f];}}catch(e){}}
 function saveSetup(){try{var o={};['preset','lastLvl','passives','theme','count','limit','money','build','news','chaos','slots','names'].forEach(function(k){o[k]=setup[k];});localStorage.setItem(SETUP_KEY,JSON.stringify(o));}catch(e){}}
 function humanSlots(){var a=[];for(var i=0;i<setup.count;i++)if(!setup.slots[i].npc)a.push(i);return a;}
-var LVL_OPTS=[['mudah','Mudah'],['sedang','Sedang'],['sulit','Sulit'],['licik','Licik']],LVL_STAR={mudah:'★',sedang:'★★',sulit:'★★★',licik:'★★★★'};
+var LVL_OPTS=[['mudah','★ Mudah'],['sedang','★★ Sedang'],['sulit','★★★ Sulit'],['licik','★★★★ Licik']],LVL_STAR={mudah:'★',sedang:'★★',sulit:'★★★',licik:'★★★★'};
 /* lobby as a debate stage: each player is a candidate on a podium; tap a podium to set character, name, human/NPC, level */
 function podChars(){var list=charsFor(setup.theme),ids=list.map(function(c){return c.id;}),used={};setup.players=setup.players||[];
   for(var i=0;i<setup.count;i++){var p=setup.players[i]||{};if(!p.char||ids.indexOf(p.char)<0||used[p.char]){var later=setup.players.slice(i+1,setup.count);var free=list.filter(function(c){return !used[c.id]&&!later.some(function(q){return q&&q.char===c.id;});});var ch=free[Math.floor(Math.random()*free.length)]||list[i%list.length];p={name:p.name,char:ch.id};}used[p.char]=1;setup.players[i]=p;}}
