@@ -87,6 +87,10 @@ function perfSample(now,dt){if(dt>250)return;PERF.win.push(dt);if(PERF.win.lengt
 function sceneBusy(now){if(anim||diceRoll||cup.phase!=='idle'||CINE.open||CONVOY||gest||coins.length||parts.length||floaters.length||SALQ.length||landFx.length||EVENTS.length||FX.shake||FX.quake)return true;
   for(var k in FX.take)return true;for(var b in FX.build)if(now-FX.build[b].t0<1200)return true;if(FX.collapse&&FX.collapse.length)return true;
   if(STV.trans&&now-STV.trans.t0<8000)return true;if(STV.moment&&now-STV.moment.t0<3500)return true;if(QUIPS.length||ACTORS.length)return true;
+  /* anything still animating on the board keeps full speed: the centre story past its calm stage, the forest FX, the mafia, story banners, news that marks tiles */
+  if(S&&isPol()&&(stStage()>0||STV.banner||STV.hold||(typeof MAF!=='undefined'&&MAF.vis>0)))return true;
+  if(FX.forest&&now-FX.forest.t0<6000)return true;
+  if(S&&S.news&&(newsOn('viral')||newsOn('demo')||newsOn('banjir')))return true;
   if(Math.abs(cam.z-CAMPREV.z)>0.0005||Math.abs(cam.px-CAMPREV.px)>0.3||Math.abs(cam.py-CAMPREV.py)>0.3)return true;return false;}
 /* salary feedback waits until the token actually reaches the Start tile */
 var SALQ=[];

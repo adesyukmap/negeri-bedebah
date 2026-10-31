@@ -698,4 +698,5 @@ Status: dibangun kecuali yang ditandai.
 ## 33. Hemat daya dan adegan (31 Okt 2026)
 - Penyebab "FPS drop kalau dibiarkan": papan sengaja diperlambat saat diam (dulu 15 fps setelah 2,5 detik, 10 fps setelah 15 detik). Sekarang: penuh 20 detik pertama, 30 fps sampai 2 menit, lalu 20 fps. Gerak mouse, sentuhan, tombol, atau scroll langsung membangunkan ke kecepatan penuh.
 - Penghitung FPS menampilkan mode (penuh / hemat 30fps / hemat 20fps), lama diam, ukuran kanvas, dan tanda kalau tab tersembunyi.
+- Papan tetap kecepatan penuh selama papan tengah di luar tahap Hutan Lebat (Karhutla, pemadaman, dst.), efek hutan, mafia, banner cerita, atau berita yang menandai petak (viral, demo, banjir). Hemat daya hanya saat papan benar-benar tenang.
 - Adegan (Breaking News, IMF, kampanye, OTT): tap di mana saja menutup seperti Skip. Tap di 0,4 detik pertama diabaikan.
