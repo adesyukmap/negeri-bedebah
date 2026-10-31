@@ -703,3 +703,6 @@ Status: dibangun kecuali yang ditandai.
 
 ## 34. Label pengali di semua kota (31 Okt 2026)
 - Label xN muncul di atas setiap kota yang sewanya dikali (wilayah lengkap x2, Kampanye Akbar, Baliho), bukan hanya landmark. Tahap cerita "Panen Raya" diganti "Panen Sawit" (suara narator tetap di slot story_4).
+
+## 35. Gusur saat banjir/segel (31 Okt 2026)
+- Kota lawan yang sewanya nol karena Banjir Rob atau segel tetap bisa digusur (bukan landmark). Status banjir/segel ikut kota sampai ronde berakhir. NPC juga bisa.

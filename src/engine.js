@@ -318,7 +318,10 @@ function landCity(p,i){
   if(st.owner===p.id){ if(sealed(i))return ask({type:'unseal',tile:i,fee:sealFee(i)}); return ownLand(p,i); }
   var owner=P(st.owner), rent=cityRent(i); if(hasP(p,'opung')&&rent>0){rent=Math.round(rent*0.85);pEmit(p,'opung',p.name+' Lord, sewanya didiskon 15%');}
   if(rent>0&&S.festival===i&&hasP(owner,'pinguin'))pEmit(owner,'pinguin',owner.name+' rambut putih, sewa kampanye x1,5 lagi');
-  if(rent<=0){toast(sealed(i)?tileName(i)+' lagi disegel. Gratis lewat!':tileName(i)+' lagi kebanjiran. Gratis lewat!');return finish();}
+  if(rent<=0){toast(sealed(i)?tileName(i)+' lagi disegel. Gratis lewat!':tileName(i)+' lagi kebanjiran. Gratis lewat!');
+    /* free pass, but the city can still be taken over (not a landmark) */
+    var sw0=!p.bankrupt?swapCandidate(p,i):null;if(!p.bankrupt&&st.level<4&&(p.money>=takeoverPrice(i)||sw0!=null))return ask({type:'takeover',tile:i,swap:sw0,rent:0,owner:st.owner});
+    return finish();}
   if(rent>=300000)emit({t:'quip',pid:st.owner,key:'repot'});
   if(bigRent(p,rent)&&guard(p,['imunitas'],'Sewa '+fmt(rent)))return finish();
   toast(p.name+' bayar sewa '+fmt(rent)+' ke '+owner.name,'bad'); sfx('pay');
