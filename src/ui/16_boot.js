@@ -19,7 +19,7 @@ function npcSig(){var p=cur();return [S.round,S.turnIdx,S.phase,JSON.stringify(S
 function npcValid(a){if(!a||!a.a)return false;var p=cur(),ph=S.phase;
   if(a.a==='roll')return ph==='turn'&&!p.pelni;if(a.a==='pelni')return ph==='turn'&&p.pelni&&a.tile!=null&&a.tile!==p.pos;
   if(a.a==='appeal')return ph==='turn'&&p.inJail&&!p.appealed&&p.money>=appealFee();if(a.a==='payJail')return ph==='turn'&&p.inJail&&p.money>=jailFee();if(a.a==='nuke')return ph==='turn'&&p.nuke>0&&!p.inJail;
-  if(a.a==='hand')return ph==='turn'&&p.hand&&a.ix<p.hand.length;if(a.a==='choose')return ph==='prompt'&&a.opt!==undefined;if(a.a==='end')return ph==='end';if(a.a==='start')return ph==='handoff';return false;}
+  if(a.a==='hand')return ph==='turn'&&p.hand&&a.ix<p.hand.length;if(a.a==='offer')return ph==='turn'&&!S.offer;if(a.a==='choose')return ph==='prompt'&&a.opt!==undefined;if(a.a==='end')return ph==='end';if(a.a==='start')return ph==='handoff';return false;}
 function npcFallback(){var p=cur(),ph=S.phase,pd=S.pending;
   if(ph==='end')return {a:'end'};
   if(ph==='turn'){if(p.pelni){var best=-1,bv=-1;for(var i=0;i<NT;i++){if(i===p.pos)continue;var st=S.tiles[i],v=st.owner===null&&buyable(i)?2:st.owner===p.id?1:0;v+=Math.random();if(v>bv){bv=v;best=i;}}return {a:'pelni',tile:best};}
@@ -39,7 +39,7 @@ function npcFallback(){var p=cur(),ph=S.phase,pd=S.pending;
 function npcExec(a,now){var p=cur();NPC.doneSig=npcSig();NPC.doneAt=now;
   if(a.a==='roll'){var pw=Math.max(0,Math.min(1,a.power==null?0.5:a.power));if(typeof npcRoll==='function'){npcRoll(pw);}else{cupStart();var hold=Math.max(420,pw*1600);NPC.timer=setTimeout(function(){if(cup.phase==='shake'){cup.t0=performance.now()-hold;doRelease(performance.now());}},hold/SPEED);}}
   else if(a.a==='pelni'){play('tap');pelniTo(a.tile);}
-  else if(a.a==='appeal')payAppeal();else if(a.a==='payJail')payJail();else if(a.a==='nuke')useNuke();else if(a.a==='hand')playHand(a.ix,a.tg);else if(a.a==='end')endTurn();else if(a.a==='start')startTurn();
+  else if(a.a==='appeal')payAppeal();else if(a.a==='payJail')payJail();else if(a.a==='nuke')useNuke();else if(a.a==='hand')playHand(a.ix,a.tg);else if(a.a==='offer'){botOfferGo(a.o);showOffer();}else if(a.a==='end')endTurn();else if(a.a==='start')startTurn();
   else if(a.a==='choose'){var b=document.querySelector('#modal [data-opt="'+String(a.opt)+'"]');if(b){b.classList.add('npcpick');}NPC.choosing=true;var sig=NPC.doneSig;
     NPC.timer=setTimeout(function(){NPC.choosing=false;if(!S||S.phase!=='prompt'||npcSig()!==sig)return;NPC.choosing=true;try{choose(a.opt);}finally{NPC.choosing=false;}refresh();},420/SPEED);return;}
   refresh();}

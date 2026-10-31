@@ -98,3 +98,8 @@ function saveLhkpn(){lhkpnImage(function(blob){if(!blob)return;
   if(window.claude&&window.claude.use){window.claude.use('downloads').then(function(dl){if(!dl){toast('Simpan laporan tidak tersedia di tampilan ini','bad');return;}
     dl.save({filename:'laporan-harta.png',data:blob}).catch(function(e){if(e&&e.code==='declined')return;toast('Laporan gagal disimpan','bad');});});return;}
   fallback();});}
+
+/* a Licik NPC proposes a deal to a human: pass the iPad, Terima / Tolak */
+function showOffer(){var o=S&&S.offer,sh=$('offerSheet');if(!sh)return;if(!o){sh.hidden=true;return;}if(!sh.hidden)return;sh.hidden=false;var a=P(o.from),b=P(o.to),box=$('offerBody');box.innerHTML='';
+  $('offerTitle').textContent=a.name+' ngajak '+(isPol()?'lobi':'tawar-menawar');box.appendChild(note('Oper iPad ke '+b.name+'. '+a.name+' (NPC Licik) menawarkan:'));box.appendChild(trSummary(o));
+  var op=document.createElement('div');op.className='opts';op.appendChild(btn('Terima, salaman','',function(){sh.hidden=true;answerOffer(true);refresh();}));op.appendChild(btn('Tolak','ghost',function(){sh.hidden=true;answerOffer(false);refresh();}));box.appendChild(op);}

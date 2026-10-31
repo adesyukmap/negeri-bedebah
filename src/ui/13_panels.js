@@ -5,7 +5,7 @@ var ICO={jail:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="7" w
   threat:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1z" fill="currentColor"/><path d="M8 6v4" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="8" cy="12" r="1.1" fill="#fff"/></svg>',
   baliho:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2" width="13" height="8" rx="1.5" fill="currentColor"/><path d="M5 10v5M11 10v5" stroke="currentColor" stroke-width="2"/></svg>',
   broke:'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3 3 13" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>'};
-function lvlName(l){return {mudah:'Mudah',sedang:'Sedang',sulit:'Sulit'}[l]||'Sedang';}
+function lvlName(l){return {mudah:'Mudah',sedang:'Sedang',sulit:'Sulit',licik:'Licik'}[l]||'Sedang';}
 function pStatus(p,i){var st=[],pol=isPol();if(p.bankrupt)st.push(['broke','Bangkrut']);if(p.inJail)st.push(['jail',(pol?'Ditahan':'Terdampar')+' · sisa '+Math.max(0,jailMax(p)-p.jailTurns)+' giliran']);if(p.pelni)st.push(['pelni',pol?'Siap blusukan':'Naik Pelni']);
   if(S.threats&&S.threats[i])st.push(['threat','Ancaman: '+S.threats[i]]);if(S.baliho&&S.baliho.owner===i&&S.round<=S.baliho.until)st.push(['baliho',pol?'Baliho':'Viral']);return st;}
 function buildPanels(){

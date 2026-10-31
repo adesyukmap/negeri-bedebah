@@ -175,7 +175,8 @@ function d6(){return 1+Math.floor(Math.random()*6);}
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function fmt(n){return 'Rp'+Math.round(n).toLocaleString('id-ID');}
 function short(n){n=Math.round(n); if(n>=1000000){var v=n/1000000; return (Math.round(v*10)/10).toString().replace('.',',')+'jt';} return Math.round(n/1000)+'rb';}
-function save(){try{localStorage.setItem(SAVE_KEY, JSON.stringify(S));}catch(e){}}
+var SIMU=false;
+function save(){if(SIMU)return;try{localStorage.setItem(SAVE_KEY, JSON.stringify(S));}catch(e){}}
 function loadSave(){try{var s=localStorage.getItem(SAVE_KEY); return s?JSON.parse(s):null;}catch(e){return null;}}
 function clearSave(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
 
@@ -685,7 +686,8 @@ function endTurn(){
 }
 
 /* ================= NPC bots: botNext() returns the next action, never executes it ================= */
-var BOT_LEVELS=['mudah','sedang','sulit'];
+var BOT_LEVELS=['mudah','sedang','sulit','licik'];
+function hardLv(lv){return lv==='sulit'||lv==='licik';}
 function botLvl(p){return p&&p.npc?(p.level||'sedang'):null;}
 function botOpp(p){return alivePlayers().filter(function(o){return o.id!==p.id;});}
 function botRemain(){return S.turnLimit?Math.max(1,S.turnLimit-S.round+1):15;}
@@ -729,11 +731,11 @@ function evalLanding(p,j,s,full,buf){
   }
   return 0;}
 function botRollEV(p,pw,lv){var d=rollDist(pw,p),ev=0,buf=botBuffer(p),k=lv||{};for(var s=2;s<=12;s++){var j=(p.pos+s)%NT,v=k[j]!=null?k[j]:(k[j]=evalLanding(p,j,s,true,buf));if(p.pos+s>=NT)v+=salaryAmt();ev+=d[s]*v;}return ev;}
-function botPower(p){var lv=botLvl(p);if(lv==='mudah'&&Math.random()<0.6)return 0.2+Math.random()*0.6;if(lv==='sedang'&&Math.random()<0.15)return 0.35+Math.random()*0.3;
+function botPower(p){if(SIMU)return 0.5;var lv=botLvl(p);if(lv==='mudah'&&Math.random()<0.6)return 0.2+Math.random()*0.6;if(lv==='sedang'&&Math.random()<0.15)return 0.35+Math.random()*0.3;
   var memo={},best=0.5,bv=botRollEV(p,0.5,memo);[0,0.25,0.75,1].forEach(function(pw){var ev=botRollEV(p,pw,memo);if(ev>bv+1){bv=ev;best=pw;}});return best;}
 function botPelniTile(p){var lv=botLvl(p),best=-1,bv=-1e18;
   if(lv==='mudah'){var t=Math.floor(Math.random()*NT);return t===p.pos?(t+1)%NT:t;}
-  var buf=botBuffer(p);for(var j=0;j<NT;j++){if(j===p.pos)continue;var v=evalLanding(p,j,S.lastSum,lv==='sulit',buf)+((j<p.pos||j===0)?salaryAmt():0)+Math.random();if(v>bv){bv=v;best=j;}}
+  var buf=botBuffer(p);for(var j=0;j<NT;j++){if(j===p.pos)continue;var v=evalLanding(p,j,S.lastSum,hardLv(lv),buf)+((j<p.pos||j===0)?salaryAmt():0)+Math.random();if(v>bv){bv=v;best=j;}}
   return best;}
 function botJail(p){
   var lv=botLvl(p),af=appealFee(),jf=jailFee(),buf=botBuffer(p),pw=botPower(p);
@@ -747,6 +749,7 @@ function botJail(p){
   if(p.money-jf>=buf*1.5&&free>=8&&(jailMax(p)-p.jailTurns)>1)return {a:'payJail'};
   return {a:'roll',power:pw};}
 function botBuy(p,i){
+  if(botLvl(p)==='licik'&&!slip())return licikBuy(p,i);
   var lv=botLvl(p),op=buyOptions(p,i),buf=botBuffer(p),sm=S.startMoney;if(!op.length)return 'skip';
   if(lv==='mudah'){if(p.money-botTx(buyCost(i,0,p))<buf)return 'skip';return Math.random()<0.92?op[Math.min(op.length-1,Math.random()<0.5?1:0)]:'skip';}
   if(lv==='sedang'){if(p.money-botTx(buyCost(i,0,p))<buf&&!(stratValue(p,i)>=0.3*sm&&p.money-botTx(buyCost(i,0,p))>=0))return 'skip';var b=0;op.forEach(function(l){if(p.money-botTx(buyCost(i,l,p))>=2*buf)b=l;});return b;}
@@ -754,17 +757,20 @@ function botBuy(p,i){
   if(p.money-c0<buf&&!(sv>=0.3*sm&&p.money-c0>=0))return 'skip';
   var best=0;op.forEach(function(l){if(p.money-botTx(buyCost(i,l,p))>=buf*1.2)best=l;});return best;}
 function botBuyAsset(p,i){
+  if(botLvl(p)==='licik'&&!slip())return licikBuyAsset(p,i);
   var lv=botLvl(p),pr=botTx(assetPrice(i,p)),buf=botBuffer(p);if(p.money<assetPrice(i,p))return 'no';
   if(lv==='mudah')return p.money-pr>=buf&&Math.random()<0.85?'yes':'no';
   if(lv==='sedang')return (p.money-pr>=buf||(stratValue(p,i)>=0.3*S.startMoney&&p.money-pr>=0))?'yes':'no';
   return (p.money-pr>=buf||(stratValue(p,i)>=0.3*S.startMoney&&p.money-pr>=0))?'yes':'no';}
 function botUpgrade(p,i){
+  if(botLvl(p)==='licik'&&!slip())return licikUpgrade(p,i);
   var lv=botLvl(p),op=upgradeOptions(p,i),buf=botBuffer(p),sm=S.startMoney,b='skip';if(!op.length)return 'skip';
   if(lv==='mudah'){if(Math.random()<0.45&&p.money-botTx(upCost(i,op[0]))>=buf*2)return op[0];return 'skip';}
   var full=regionFull(p.id,T[i].region);
   if(lv==='sedang'){if(!(tileL(i)<=160000||full||p.money>0.6*sm))return 'skip';op.forEach(function(l){if(p.money-botTx(upCost(i,l))>=buf)b=l;});return b;}
   op.forEach(function(l){var need=(l===4&&full)?buf*0.5:buf;if(p.money-botTx(upCost(i,l))>=need)b=l;});return b;}
 function botTakeover(p,pd){
+  if(botLvl(p)==='licik'&&!slip()&&S.phase==='prompt'){var tk=['no'];if(S.tiles[pd.tile].level<4&&p.money>=takeoverPrice(pd.tile,p))tk.push('yes');if(pd.swap!=null)tk.push('swap');if(tk.length>1)return lookPick(p.id,tk);}
   var lv=botLvl(p),i=pd.tile,st=S.tiles[i],buf=botBuffer(p),sm=S.startMoney;
   var price=takeoverPrice(i,p),can=st.level<4&&p.money>=price,full=st.owner!==null&&regionFull(st.owner,T[i].region);
   if(lv==='mudah'){if(st.level<4&&p.money-botTx(price)>=0.4*sm&&Math.random()<0.25)return 'yes';return 'no';}
@@ -794,13 +800,13 @@ function botChoose(p,pd){
     case 'buywis': return botBuyAsset(p,pd.tile);
     case 'festival': return botFestival(p);
     case 'pelni': var lv=botLvl(p),f=pelniFee(p);if(p.money<f)return 'no';
-      if(lv==='mudah')return Math.random()<0.5?'yes':'no';return p.money-f>=botBuffer(p)*(lv==='sulit'?0.5:1)?'yes':'no';
+      if(lv==='mudah')return Math.random()<0.5?'yes':'no';return p.money-f>=botBuffer(p)*(hardLv(lv)?0.5:1)?'yes':'no';
     case 'card': return 'ok';
     case 'unseal': return p.money-pd.fee>=botBuffer(p)*0.5?'yes':'no';
     case 'nuke': var bt=pd.targets.slice().sort(function(a,b){return cityRent(b)-cityRent(a)||invested(b)-invested(a);});return bt.length?bt[0]:'keep';
   }
   return 'skip';}
-function botHand(p){if(!p.hand||!p.hand.length||p.inJail||p.pelni)return null;var lv=botLvl(p);if(S.botHandR===S.round+':'+p.id+':'+p.hand.length)return null;S.botHandR=S.round+':'+p.id+':'+p.hand.length;
+function botHand(p){if(!p.hand||!p.hand.length||p.inJail||p.pelni)return null;var lv=botLvl(p);if(lv==='licik')return licikHand(p);if(S.botHandR===S.round+':'+p.id+':'+p.hand.length)return null;S.botHandR=S.round+':'+p.id+':'+p.hand.length;
   if(lv==='mudah'&&Math.random()<0.5)return null;
   var opp=alivePlayers().filter(function(o){return o.id!==p.id;}).sort(function(a,b){return assets(b.id)-assets(a.id);}),top=opp[0];
   for(var ix=0;ix<p.hand.length;ix++){if(!handUsable(p,ix))continue;var c=handCard(p.hand[ix]),t=handTargets(p,c),pick;
@@ -827,7 +833,7 @@ function tradeCheck(o){var a=P(o.from),b=P(o.to);if(!a||!b||a.bankrupt||b.bankru
 function tradeGain(o){var g=0;o.give.forEach(function(i){g+=tradeValue(i);});o.get.forEach(function(i){g-=tradeValue(i);});return g+o.money;}
 function tradeWinsFor(pid,o,side){var save=o.give.concat(o.get).map(function(i){return S.tiles[i].owner;});o.give.forEach(function(i){S.tiles[i].owner=o.to;});o.get.forEach(function(i){S.tiles[i].owner=o.from;});
   var t=threatOf(pid)||(fullRegions(pid)>=3)||(countWis(pid)>=WIS_WIN);o.give.concat(o.get).forEach(function(i,k){S.tiles[i].owner=save[k];});return !!t;}
-function botTradeAccept(o){var b=P(o.to),lv=botLvl(b),g=tradeGain(o),base=S.startMoney*0.05;if(tradeCheck(o))return false;
+function botTradeAccept(o){if(botLvl(P(o.to))==='licik')return licikAccept(o);var b=P(o.to),lv=botLvl(b),g=tradeGain(o),base=S.startMoney*0.05;if(tradeCheck(o))return false;
   if(o.money<0&&b.money+o.money<botBuffer(b))return false;
   if(lv!=='mudah'&&tradeWinsFor(o.from,o))return g>=S.startMoney*(lv==='sulit'?1.5:0.8);
   var need=lv==='mudah'?-base:lv==='sedang'?base:base*3;return g>=need;}
@@ -837,6 +843,98 @@ function doTrade(o){var err=tradeCheck(o);if(err){toast(err,'bad');return false;
   if(o.money<0){b.money+=o.money;a.money-=o.money;emit({t:'money',pid:b.id,d:o.money});emit({t:'money',pid:a.id,d:-o.money});}
   a.st&&a.st.trades++;b.st&&b.st.trades++;emit({t:'trade',from:a.id,to:b.id});sfx('stamp');toast('Deal! '+a.name+' dan '+b.name+' salaman di belakang panggung.','good big');
   updateThreats();if(checkWin())return true;save();return true;}
+/* ================= Licik: plans a few turns ahead ================= */
+function slip(){return Math.random()<0.1;}
+/* probability (summed over h turns) that someone at pos lands on each tile */
+function landProb(pos,h,p){var d=rollDist(0.5,p),cur={},out=new Array(NT).fill(0);cur[pos]=1;
+  for(var t=0;t<(h||2);t++){var nx={};for(var k in cur){var pr=cur[k];for(var s=2;s<=12;s++){var j=(+k+s)%NT;if(j===IDX.jail)j=IDX.jail;nx[j]=(nx[j]||0)+pr*d[s];out[j]+=pr*d[s];}}cur=nx;}return out;}
+function rentFor(p,i){var st=S.tiles[i];if(st.owner===null||st.owner===p.id||P(st.owner).bankrupt)return 0;var r=rentOf(i);return r*(hasP(p,'opung')?0.85:1);}
+function licikExposure(p){var pr=landProb(p.pos,2,p),e=0,mx=0;for(var i=0;i<NT;i++){var r=rentFor(p,i);if(T[i].type==='tax')r=punglAmt(p.id);e+=pr[i]*r;if(pr[i]>0.02)mx=Math.max(mx,r);}return {e:e,mx:mx};}
+function newsSoon(id){return S.newsNext===id||newsOn(id);}
+function licikBuffer(p){var ck=S.round+':'+S.current+':'+p.id+':'+p.pos+':'+p.money+':'+(S.newsNext||'');S._lb=S._lb||{};if(S._lb.k===ck)return S._lb.v;var v=licikBuffer0(p);S._lb={k:ck,v:v};return v;}
+function licikBuffer0(p){var sm=S.startMoney,x=licikExposure(p),b=Math.max(0.05*sm,Math.min(0.5*sm,x.e*1.3+x.mx*0.45));
+  if(newsSoon('tanpapajak'))b*=0.5;if(newsSoon('krismon')||newsSoon('sidak')||newsSoon('utangln'))b*=0.7;if(p.hand&&p.hand.indexOf('imunitas')>=0)b*=0.75;return b;}
+/* how many times opponents are expected to land on tile i for the rest of the game */
+function oppVisits(p,i){var rem=Math.min(botRemain(),20),v=0;botOpp(p).forEach(function(o){if(o.inJail)v+=0.05;else{var pr=landProb(o.pos,2,o);v+=pr[i];}});
+  return v+(botOpp(p).length*0.115*Math.max(0,rem-2));}
+function rentAt(i,pid,lvl){var st=S.tiles[i],sv={o:st.owner,l:st.level};st.owner=pid;st.level=lvl;var r=rentOf(i);st.owner=sv.o;st.level=sv.l;return r;}
+function licikBuy(p,i){var op=buyOptions(p,i).filter(function(l){return p.money-botTx(buyCost(i,l,p))>=0;});if(op.length&&S.phase==='prompt')return lookPick(p.id,op.concat(['skip']));
+  return licikBuy0(p,i);}
+function licikBuy0(p,i){var op=buyOptions(p,i),buf=botBuffer(p),sm=S.startMoney;if(!op.length)return 'skip';
+  var sv=stratValue(p,i),vis=oppVisits(p,i),best='skip',bv=-1e18;
+  op.forEach(function(l){var c=botTx(buyCost(i,l,p)),left=p.money-c;if(left<buf&&!(sv>=0.3*sm&&left>=0))return;var val=rentAt(i,p.id,l)*vis*(newsSoon('inflasi')?1.3:1)+Math.min(sv,2*sm)-c*0.6;if(l>0&&left<buf*1.5)val-=sm;if(val>bv){bv=val;best=l;}});
+  if(best==='skip'&&p.money-botTx(buyCost(i,0,p))>=buf*0.6&&sv>0)return 0;return best;}
+function licikBuyAsset(p,i){if(S.phase==='prompt'&&p.money>=assetPrice(i,p))return lookPick(p.id,['yes','no']);var pr=botTx(assetPrice(i,p)),buf=botBuffer(p),sv=stratValue(p,i);if(p.money<assetPrice(i,p))return 'no';
+  return (p.money-pr>=buf||(sv>=0.25*S.startMoney&&p.money-pr>=0))?'yes':'no';}
+function licikUpgrade(p,i){var o0=upgradeOptions(p,i).filter(function(l){return (l<4||p.laps>=1)&&p.money>=upCost(i,l);});if(o0.length&&S.phase==='prompt')return lookPick(p.id,o0.concat(['skip']));
+  var op=upgradeOptions(p,i),buf=botBuffer(p),sm=S.startMoney,b='skip',bv=0,vis=oppVisits(p,i),now=rentOf(i);if(!op.length)return 'skip';
+  op.forEach(function(l){if(l===4&&p.laps<1)return;var c=botTx(upCost(i,l)),left=p.money-c;if(left<buf)return;
+    var gain=(rentAt(i,p.id,l)-now)*vis*(newsSoon('inflasi')?1.3:1)+(l===4?0.15*sm:0),net=gain-c;if(net>bv){bv=net;b=l;}});
+  return b;}
+/* cards: keep counters, fire the big ones when they matter */
+function licikHand(p){if(S.botHandR===S.round+':'+p.id+':'+p.hand.length)return null;S.botHandR=S.round+':'+p.id+':'+p.hand.length;
+  var sm=S.startMoney,opp=botOpp(p).sort(function(a,b){return assets(b.id)-assets(a.id);}),lead=opp[0],rich=botOpp(p).sort(function(a,b){return b.money-a.money;})[0];
+  var meLead=lead&&assets(p.id)>=assets(lead.id);
+  for(var ix=0;ix<p.hand.length;ix++){if(!handUsable(p,ix))continue;var c=handCard(p.hand[ix]),t=handTargets(p,c),pick,v;
+    switch(c.id){
+      case 'siluman': if(botOpp(p).length>=2||S.turnLimit&&botRemain()<=3)return {a:'hand',ix:ix,tg:null};break;
+      case 'lobi': var shop=0;for(var k=2;k<=12;k++){var tj=(p.pos+k)%NT;if(buyable(tj)&&(S.tiles[tj].owner===null||S.tiles[tj].owner===p.id))shop++;}if(shop>=4&&p.money>0.4*sm)return {a:'hand',ix:ix,tg:null};break;
+      case 'dadu': var ev=botRollEV(p,0.5),best=null,bv=-1e18,buf=botBuffer(p);for(var sm2=2;sm2<=12;sm2++){var j=(p.pos+sm2)%NT,vv=evalLanding(p,j,sm2,true,buf)+(p.pos+sm2>=NT?salaryAmt():0);if(vv>bv){bv=vv;best=sm2;}}
+        if(best!=null&&(bv-ev>0.12*sm||ev<-0.15*sm))return {a:'hand',ix:ix,tg:best};break;
+      case 'nuklir': pick=t.slice().sort(function(a,b){return rentOf(b)-rentOf(a);})[0];if(pick!=null&&(lmLadder(pick)>=8||rentOf(pick)>=0.3*sm||S.turnLimit&&botRemain()<=2))return {a:'hand',ix:ix,tg:pick};break;
+      case 'kpk': if(lead&&!lead.inJail&&(S.threats[lead.id]||!meLead))return {a:'hand',ix:ix,tg:'p'+lead.id};break;
+      case 'sadap': if(rich&&rich.money>=0.5*sm)return {a:'hand',ix:ix,tg:'p'+rich.id};break;
+      case 'segel': case 'hitam': pick=t.slice().sort(function(a,b){return rentOf(b)-rentOf(a);})[0];if(pick!=null&&rentOf(pick)>=0.12*sm)return {a:'hand',ix:ix,tg:pick};break;
+      case 'ambil': pick=t.slice().sort(function(a,b){return stratValue(p,b)+rentOf(b)*3-(stratValue(p,a)+rentOf(a)*3);})[0];if(pick!=null&&p.money-Math.round(invested(pick)*1.5)>=botBuffer(p)&&(stratValue(p,pick)>0.3*sm||rentOf(pick)>0.1*sm))return {a:'hand',ix:ix,tg:pick};break;
+      case 'tukar': pick=t.slice().sort(function(a,b){return stratValue(p,b)-stratValue(p,a);})[0];if(pick!=null&&stratValue(p,pick)>0.1*sm)return {a:'hand',ix:ix,tg:pick};break;
+      case 'mekar': pick=t.slice().sort(function(a,b){return (rentAt(b,p.id,S.tiles[b].level+1)-rentOf(b))*oppVisits(p,b)-(rentAt(a,p.id,S.tiles[a].level+1)-rentOf(a))*oppVisits(p,a);})[0];if(pick!=null)return {a:'hand',ix:ix,tg:pick};break;
+      case 'kampanye': pick=t.slice().sort(function(a,b){return rentOf(b)-rentOf(a);})[0];if(pick!=null&&S.festival!=null&&S.tiles[S.festival].owner!==p.id)return {a:'hand',ix:ix,tg:pick};break;
+      case 'cabut': if(t.length)return {a:'hand',ix:ix,tg:t[0]};break;
+      case 'mobil': var ev2=botRollEV(p,0.5),bt=null,bb=-1e18;t.forEach(function(j){var vv=evalLanding(p,j,7,true,botBuffer(p))+(j<p.pos?salaryAmt():0);if(vv>bb){bb=vv;bt=j;}});if(bt!=null&&bb-ev2>0.15*sm)return {a:'hand',ix:ix,tg:bt};break;
+    }}
+  return null;}
+/* trades: Licik pays for the last pieces of a region, and never hands anyone a monopoly */
+function tileWorthTo(pid,i){var p=P(pid);return invested(i)+Math.min(stratValue(p,i),3*S.startMoney);}
+function licikAccept(o){var b=P(o.to),sm=S.startMoney;if(tradeCheck(o))return false;if(!SIMU)return lookBetter(b.id,o)&&!(tradeWinsFor(o.from,o)&&tradeGain(o)<2*sm);if(o.money<0&&b.money+o.money<botBuffer(b)*0.8)return false;
+  if(tradeWinsFor(o.from,o))return tradeGain(o)>=2*sm;
+  var g=o.money;o.give.forEach(function(i){g+=tileWorthTo(b.id,i);});o.get.forEach(function(i){g-=tileWorthTo(o.from,i)*0.5+tileWorthTo(b.id,i)*0.5+invested(i)*0.2;});
+  return g>=0.06*sm;}
+function licikOffer(p){var sm=S.startMoney,key=p.id+':'+Math.floor(S.round/2);S.offered=S.offered||{};if(S.offered[key])return null;S.offered[key]=1;
+  var best=null;
+  for(var r=0;r<REGIONS.length;r++){var rt=regionTiles(r),mine=rt.filter(function(i){return S.tiles[i].owner===p.id;});if(mine.length<rt.length-2||mine.length===rt.length)continue;
+    var miss=rt.filter(function(i){return S.tiles[i].owner!==p.id;});if(miss.some(function(i){return S.tiles[i].owner===null;}))continue;
+    var own=S.tiles[miss[0]].owner;if(!miss.every(function(i){return S.tiles[i].owner===own;})||P(own).bankrupt||miss.some(function(i){return S.tiles[i].level===4;}))continue;
+    var worth=miss.reduce(function(a,i){return a+invested(i);},0),cap=p.money-botBuffer(p)*0.8;
+    /* sweeten with a tile the partner wants and Licik does not need */
+    var spare=ownedTiles(p.id).filter(function(i){return T[i].type==='city'&&T[i].region!==r&&S.tiles[i].level<=1&&!regionFull(p.id,T[i].region);}).sort(function(a,b){return stratValue(P(own),b)-stratValue(P(own),a);});
+    var give=[];if(spare.length&&stratValue(P(own),spare[0])>0)give=[spare[0]];
+    for(var prem=1.3;prem<=2.6;prem+=0.3){var money=Math.round((worth*prem-(give.length?invested(give[0]):0)+0.1*sm)/10000)*10000;if(money>cap)break;money=Math.max(0,money);
+      var o={from:p.id,to:own,give:give,get:miss,money:money};if(tradeCheck(o))break;if(tradeWinsFor(own,o))break;
+      var target=P(own),ok=target.npc?botTradeAccept(o):true;if(ok){if(!best||money<best.money)best=o;break;}}}
+  if(best&&!lookBetter(p.id,best))best=null;
+  return best;}
+function lookBetter(pid,o){var a=0,b=0;for(var k=0;k<LOOK_N;k++){var sd=(Math.random()*1e9)|0;a+=rollout(pid,function(){},LOOK_R+1,sd);b+=rollout(pid,function(){doTrade(o);},LOOK_R+1,sd);}return b>a;}
+/* Monte Carlo look-ahead: copy the game, play it forward with every seat on Sulit, compare outcomes */
+function lookScore(pid){var me=P(pid),rem=Math.min(S.turnLimit?Math.max(0,S.turnLimit-S.round):12,10),opp=S.players.filter(function(q){return !q.bankrupt&&q.id!==pid;}),n=opp.length;
+  if(S.phase==='over'||me.bankrupt)return S.winner&&S.winner.pid===pid?1e9:-1e9;
+  var fut=function(q){var r=0;ownedTiles(q.id).forEach(function(i){r+=rentOf(i);});return r*0.175*Math.max(1,n)*rem*0.6;};
+  var mine=assets(pid)+fut(me),best=0;opp.forEach(function(q){best=Math.max(best,assets(q.id)+fut(q)*0.6);});return mine-best;}
+function botAct(a){switch(a.a){case 'start':startTurn();break;case 'roll':roll(a.power);break;case 'choose':choose(a.opt);break;case 'pelni':pelniTo(a.tile);break;case 'appeal':payAppeal();break;case 'payJail':payJail();break;case 'end':endTurn();break;case 'nuke':useNuke();break;case 'hand':playHand(a.ix,a.tg);break;default:return false;}return true;}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
+function rollout(pid,apply,rounds,seed){var keep=S,ev=EVENTS.length,out=0,mr=Math.random;SIMU=true;if(seed!=null)Math.random=mulberry(seed);
+  try{S=JSON.parse(JSON.stringify(keep));S.players.forEach(function(q){q.npc=true;q.level='sulit';});S.offer=null;
+    apply();var stop=S.round+rounds,steps=0;
+    while(S.phase!=='over'&&S.round<stop&&steps++<1500){if(S.phase==='moving'){land();continue;}var a=botNext();if(!a||!botAct(a))break;}
+    out=lookScore(pid);}catch(e){out=-1e12;}finally{S=keep;SIMU=false;EVENTS.length=ev;Math.random=mr;}return out;}
+var LOOK_N=8,LOOK_R=3;
+function lookPick(pid,opts){if(opts.length<2)return opts[0];var ck=S.round+'|'+S.current+'|'+JSON.stringify(S.pending)+'|'+opts.join(',');if(S._look&&S._look.k===ck)return S._look.v;var r=lookPick0(pid,opts);S._look={k:ck,v:r};return r;}
+function lookPick0(pid,opts){var sc=opts.map(function(){return 0;});
+  for(var k=0;k<LOOK_N;k++){var seed=(Math.random()*1e9)|0;opts.forEach(function(o,ix){sc[ix]+=rollout(pid,function(){choose(o);},LOOK_R,seed);});}
+  var bi=0;for(var i=1;i<opts.length;i++)if(sc[i]>sc[bi])bi=i;return opts[bi];}
+/* bot offer resolution: NPC partners answer at once, humans get a prompt */
+function botOfferGo(o){var t=P(o.to);if(t.npc){if(botTradeAccept(o)){doTrade(o);}else{toast(t.name+' menolak tawaran '+P(o.from).name,'bad');}S.offer=null;save();return;}
+  S.offer=o;emit({t:'offer',from:o.from,to:o.to});save();}
+function answerOffer(yes){var o=S.offer;if(!o)return;S.offer=null;if(yes)doTrade(o);else{toast(P(o.to).name+' menolak tawaran '+P(o.from).name,'bad');save();}}
 function botNext(){
   if(!S||S.phase==='over')return null;var p=cur();if(!p||!p.npc)return null;if(p.bankrupt)return S.phase==='end'?{a:'end'}:null;
   switch(S.phase){
@@ -845,6 +943,8 @@ function botNext(){
       if(p.inJail){var sk=p.hand?p.hand.indexOf('sakti'):-1;if(sk>=0)return {a:'hand',ix:sk,tg:null};return botJail(p);}
       if(p.nuke>0&&nukeTargets(p).length)return {a:'nuke'};
       var bh=botHand(p);if(bh)return bh;
+      if(S.offer)return null;
+      if(botLvl(p)==='licik'){var of=licikOffer(p);if(of)return {a:'offer',o:of};}
       return {a:'roll',power:botPower(p)};
     case 'prompt': return S.pending?{a:'choose',opt:botChoose(p,S.pending)}:null;
     case 'end': return {a:'end'};

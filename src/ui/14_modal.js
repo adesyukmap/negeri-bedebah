@@ -16,7 +16,7 @@ function refresh(){
       if(!p.inJail&&p.nuke>0&&cup.phase==='idle'){var ntg=nukeTargets(p);ab.appendChild(btn('\u2622 Pakai nuklir'+(p.nuke>1?' ('+p.nuke+')':''),'red',act(useNuke),!ntg.length,ntg.length?ntg.length+' target':'belum ada target'));}}
   }
   else if(S.phase==='end'){ab.appendChild(btn(p.bankrupt?'Lanjut':'Selesai','',act(endTurn)));if(!p.bankrupt&&!p.npc)tradeButton(ab,p);}
-  updateBocoran();
+  updateBocoran();showOffer();
   renderModal();
   if(S.phase==='over')showResult(); else $('result').hidden=true;
 }

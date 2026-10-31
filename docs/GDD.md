@@ -686,3 +686,10 @@ Status: dibangun kecuali yang ditandai.
 - Kartu simpan (Chaos): 1 kartu tiap lewat Gajian, maks 3, tertutup ("Buka kartu" saat lawan tidak melihat). 15 kartu pakai (sebelum kocok) + 5 penangkal otomatis (Imunitas Hukum, Bunker, Praperadilan, Rekening Luar Negeri, Bantah di Medsos). NPC memakai kartu sendiri.
 - Opsi Tawar (tombol Lobi/Tawar): tukar kota/aset dan uang dengan satu pemain. NPC menilai untung-rugi dan menolak deal yang bikin lawan monopoli. Manusia: oper iPad untuk Terima/Tolak. NPC belum mengajukan tawaran sendiri.
 - Laporan Harta Kekayaan di layar akhir: gelar per pemain, harta, puncak, sewa masuk/keluar, ditahan; tombol Simpan laporan (PNG / share sheet).
+
+## 32. NPC Licik ★★★★ (31 Okt 2026)
+- Level ke-4. Keputusan beli/bangun/gusur/aset pakai simulasi ke depan: salin game, mainkan 3 ronde ke depan 8 kali per pilihan (angka acak sama untuk tiap pilihan), pilih yang hasil akhirnya paling untung (harta + perkiraan sewa ke depan dibanding lawan terkuat). ~60 ms per keputusan di node.
+- Kartu simpan: Nuklir ditahan sampai landmark x8, Dadu Pesanan dipakai kalau jelas lebih untung dari lemparan biasa, Sadap ke yang paling kaya tunai, KPK ke pemimpin.
+- Mengajukan lobi sendiri tiap 2 ronde untuk melengkapi wilayah, hanya kalau simulasi bilang untung. Ke manusia muncul layar "X ngajak lobi" Terima/Tolak. Menilai tawaran masuk pakai simulasi juga.
+- 10% keputusan memakai logika Sulit (biar bisa salah).
+- Hasil sim: Standar 200 game Sulit vs Licik, win/seat Licik 29,2% vs Sulit 26,4%. Chaos 150 game: Licik 27,6% vs Sulit 32,1% (dalam batas noise). Keunggulan kecil, target 2x belum tercapai.
