@@ -594,7 +594,7 @@ Tiap kas penuh, board pindah tahap: Karhutla, Tanam Sawit, Bangun IKN, Proyek Ma
 
 ## 22. Cerita tengah board (dibangun 28 Okt 22.10)
 - Tema Politik. Kas Pungli memajukan babak. Babak 0 ke 1 di 125rb (kas tidak dikosongkan), selanjutnya tiap 250rb (separuh bansos ke pemain termiskin, separuh raib). Bar kas menampilkan babak berikutnya.
-- Babak: 0 Hutan Lebat, 1 Karhutla (api menjalar pelan, warga bermasker batuk, orangutan menangis di pucuk pohon, kabut asap), 2 Pemadaman (pesawat water bombing dan hujan, hutan jadi arang), 3 Tanam Sawit (pohon mati tumbang, Bos Mafia Sawit tertawa pongah sambil meremas tangan 5 detik, game ditahan, tap untuk lanjut; plang KONSESI PT SAWIT JAYA ABADI, orangutan di balik pagar), 4 Panen Raya (sawit besar, pabrik berasap, karung uang membesar sesuai kas, orangutan di kandang Konservasi), 5 Proyek IKN (sebagian sawit digusur, gunting pita, crane berputar), 6 Mangkrak (crane diam, pita STOP, papan "dalam peninjauan", orangutan duduk di ujung crane), 7 Banjir Rob (air naik menutup pulau, orangutan di atas balok kayu), 8 Reboisasi Pencitraan (pejabat tanam satu bibit di depan kamera), lalu kembali ke Karhutla.
+- Babak: 0 Hutan Lebat, 1 Karhutla (api menjalar pelan, warga bermasker batuk, orangutan menangis di pucuk pohon, kabut asap), 2 Pemadaman (pesawat water bombing dan hujan, hutan jadi arang), 3 Tanam Sawit (pohon mati tumbang, Bos Mafia Sawit tertawa pongah sambil meremas tangan 5 detik, game ditahan, tap untuk lanjut; plang KONSESI PT SAWIT JAYA ABADI, orangutan di balik pagar), 4 Panen Sawit (sawit besar, pabrik berasap, karung uang membesar sesuai kas, orangutan di kandang Konservasi), 5 Proyek IKN (sebagian sawit digusur, gunting pita, crane berputar), 6 Mangkrak (crane diam, pita STOP, papan "dalam peninjauan", orangutan duduk di ujung crane), 7 Banjir Rob (air naik menutup pulau, orangutan di atas balok kayu), 8 Reboisasi Pencitraan (pejabat tanam satu bibit di depan kamera), lalu kembali ke Karhutla.
 - Kejadian berkala tidak pakai timer: muncul saat dadu dilempar, satu kejadian tiap 2 sampai 3 lemparan, sesuai babak (orangutan tepuk dada, asap menyapu dan semua token batuk, burung panik, truk bibit atau buah sawit lewat, palu tiang pancang, angin dan crane berderit, perahu warga, kilatan kamera). Dadu istirahat di tepi kiri dan kanan pulau supaya tengah pulau terlihat.
 - Rata-rata kas terisi sekitar 1,5jt per game (simulasi), jadi umumnya sampai babak 5 sampai 6.
 
@@ -635,7 +635,7 @@ Status: dibangun kecuali yang ditandai.
 - **Satu kas, Kas Negara.** Mulai penuh: 1,6 x modal awal x (jumlah pemain / 4), dibulatkan Rp100rb. Contoh modal Rp1,5jt, 4 pemain = Rp2,4jt. Angka 5x usulan awal diuji simulasi: kas sisa 51% di ronde 25 dan IMF tidak pernah muncul, jadi diturunkan.
 - **Keluar dari kas:** gaji, semua kartu yang memberi uang, rapat hotel/studi banding, pasif yang memberi uang, serangan fajar. Kas seret = gaji cair sebagian.
 - **Masuk ke kas:** pungli 40% (sisanya raib), pajak transaksi/tahunan, denda, sogok, kartu bayar. Kas tidak bisa melebihi isi awal (lebihnya raib).
-- **Cerita tengah board maju saat kas menipis:** 90% Karhutla, 80% Pemadaman, 70% Tanam Sawit, 60% Panen Raya, 50% Proyek IKN, 40% Mangkrak, 27% Banjir Rob, 14% Reboisasi Pencitraan. Bar tengah: "Kas Negara X / Y · babak berikutnya di Z".
+- **Cerita tengah board maju saat kas menipis:** 90% Karhutla, 80% Pemadaman, 70% Tanam Sawit, 60% Panen Sawit, 50% Proyek IKN, 40% Mangkrak, 27% Banjir Rob, 14% Reboisasi Pencitraan. Bar tengah: "Kas Negara X / Y · babak berikutnya di Z".
 - **Kosong pertama: Ngutang ke IMF** (adegan 20 dtk: brankas kosong, pejabat memohon, bankir kasih syarat, perjanjian distempel DISETUJUI). Kas diisi 50% dari isi awal, gaji dipotong 50% sampai game selesai.
 - **Kosong kedua: Negara Bubar** (adegan 14 dtk: mafia nangis, pejabat kabur ke luar negeri bawa koper). Game selesai, harta terbesar menang: "Negara Bubar · Bedebah Terakhir".
 - Simulasi 200 game bot (25 ronde): IMF di hampir semua game, median ronde 17; Negara Bubar sekitar 12% game.
@@ -700,3 +700,6 @@ Status: dibangun kecuali yang ditandai.
 - Penghitung FPS menampilkan mode (penuh / hemat 30fps / hemat 20fps), lama diam, ukuran kanvas, dan tanda kalau tab tersembunyi.
 - Papan tetap kecepatan penuh selama papan tengah di luar tahap Hutan Lebat (Karhutla, pemadaman, dst.), efek hutan, mafia, banner cerita, atau berita yang menandai petak (viral, demo, banjir). Hemat daya hanya saat papan benar-benar tenang.
 - Adegan (Breaking News, IMF, kampanye, OTT): tap di mana saja menutup seperti Skip. Tap di 0,4 detik pertama diabaikan.
+
+## 34. Label pengali di semua kota (31 Okt 2026)
+- Label xN muncul di atas setiap kota yang sewanya dikali (wilayah lengkap x2, Kampanye Akbar, Baliho), bukan hanya landmark. Tahap cerita "Panen Raya" diganti "Panen Sawit" (suara narator tetap di slot story_4).

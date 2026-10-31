@@ -67,7 +67,7 @@ function negaraBubar(){var best=alivePlayers().sort(function(a,b){return assets(
   emit({t:'bubar',pid:best.id});toast('NEGARA BUBAR! Utang IMF pun habis. Semua pejabat kabur ke luar negeri. '+best.name+' bawa harta paling banyak.','bad big');
   S.winner={pid:best.id,how:'Negara Bubar · Bedebah Terakhir'};S.phase='over';S.pending=null;S.anim=null;sfx('win');save();}
 var STORY=[{n:'Hutan Lebat'},{n:'Karhutla',t:'Titik api muncul di tengah hutan. Api mulai menjalar.'},{n:'Pemadaman',t:'Pesawat pemadam dan hujan datang. Api padam, hutan tinggal arang.'},
-  {n:'Tanam Sawit',t:'Hutan mati. Mafia Sawit datang, lahan jadi konsesi.'},{n:'Panen Raya',t:'Sawit berbuah lebat. Truk bolak-balik ke pabrik.'},
+  {n:'Tanam Sawit',t:'Hutan mati. Mafia Sawit datang, lahan jadi konsesi.'},{n:'Panen Sawit',t:'Sawit berbuah lebat. Truk bolak-balik ke pabrik.'},
   {n:'Proyek IKN',t:'Peletakan batu pertama ibu kota baru. Crane mulai berputar.'},{n:'Mangkrak',t:'Proyek berhenti. Crane diam, rumput tumbuh di tiang beton.'},
   {n:'Banjir Rob',t:'Air laut naik dan menenggelamkan proyek.'},{n:'Reboisasi Pencitraan',t:'Pejabat menanam satu bibit di depan kamera, lalu pergi.'}];
 function storyStage(){return (S&&S.story)||0;}
