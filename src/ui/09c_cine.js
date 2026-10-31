@@ -8,7 +8,8 @@ function nextCine(){var c=CINE.q.shift();if(!c){closeCineUI();return;}CINE.cur=c
 function endCine(){if(!CINE.open)return;if(typeof stopSnd==='function'){stopSnd('bedOtt');stopSnd('bedKampanye');stopSnd('fajar');}var c=CINE.cur;CINE.open=false;CINE.cur=null;if(c&&c.data.onEnd)try{c.data.onEnd(c.data);}catch(e){}
   if(CINE.q.length)nextCine();else closeCineUI();}
 function cineFinished(now){CINE.done=true;CINE.doneAt=now;var sk=$('cineSkip');if(sk){sk.textContent='Tutup';sk.classList.add('done');}$('cine').classList.add('done');}
-function cineTap(){if(CINE.open&&CINE.done){play('tap');endCine();}}
+/* tap anywhere closes the scene, like Skip; ignore taps in the first 0.4 s so a stray touch does not eat it */
+function cineTap(){if(!CINE.open)return;if(!CINE.done&&performance.now()-CINE.t0<400)return;play('tap');endCine();}
 function closeCineUI(){$('cine').hidden=true;holdMove=performance.now()+450;refresh();}
 function once(key,fn){if(!CINE.fired[key]){CINE.fired[key]=1;fn();}}
 function cineFrame(now){if(!CINE.open)return;requestAnimationFrame(cineFrame);

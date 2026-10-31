@@ -694,3 +694,8 @@ Status: dibangun kecuali yang ditandai.
 - 10% keputusan memakai logika Sulit (biar bisa salah).
 - Hasil sim: Standar 200 game Sulit vs Licik, win/seat Licik 29,2% vs Sulit 26,4%. Chaos 150 game: Licik 27,6% vs Sulit 32,1% (dalam batas noise). Keunggulan kecil, target 2x belum tercapai.
 - Update (31 Okt 2026, siang): Licik juga pakai simulasi untuk keputusan di Lapas dan tujuan Gorong-gorong; salah langkah turun ke 5%. Uji duel (1 Licik lawan 2–4 Sulit, Standar 35 ronde, 400 game): Licik menang 34,3% per kursi vs Sulit 22,0% = 1,56x. Chaos 15 ronde (300 game): 27,7% vs 24,1% = 1,15x, karena Chaos lebih ditentukan keberuntungan. Waktu mikir di Chromium desktop: median 22 ms, maks 35 ms per keputusan.
+
+## 33. Hemat daya dan adegan (31 Okt 2026)
+- Penyebab "FPS drop kalau dibiarkan": papan sengaja diperlambat saat diam (dulu 15 fps setelah 2,5 detik, 10 fps setelah 15 detik). Sekarang: penuh 20 detik pertama, 30 fps sampai 2 menit, lalu 20 fps. Gerak mouse, sentuhan, tombol, atau scroll langsung membangunkan ke kecepatan penuh.
+- Penghitung FPS menampilkan mode (penuh / hemat 30fps / hemat 20fps), lama diam, ukuran kanvas, dan tanda kalau tab tersembunyi.
+- Adegan (Breaking News, IMF, kampanye, OTT): tap di mana saja menutup seperti Skip. Tap di 0,4 detik pertama diabaikan.

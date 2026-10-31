@@ -70,12 +70,15 @@ function shakeOffset(now){var sx=0,sy=0;if(FX.shake){var t=(now-FX.shake.t0)/(FX
 function nightTarget(){return 0;if(!S)return 0;var ph=((S.round-1)+S.turnIdx/Math.max(1,S.order.length))/8,v=(1-Math.cos(ph*Math.PI*2))/2;return Math.max(0,Math.min(0.62,v*0.9-0.06));}
 var lastBg=-1;
 var LASTF=0,IDLE_SINCE=0,CAMPREV={z:0,px:0,py:0};
+/* when nothing moves the board saves battery, but gently: full speed for 20 s, then 30 fps, 20 fps after 2 minutes; any touch or mouse move wakes it */
+function idleGap(idle){return idle>120000?50:idle>20000?33:PERF.busyGap||0;}
+['pointermove','pointerdown','keydown','wheel','touchstart'].forEach(function(ev){window.addEventListener(ev,function(){IDLE_SINCE=performance.now();},{passive:true,capture:true});});
 /* adaptive quality: when busy frames keep missing ~30fps, drop canvas resolution one step (2 -> 1.5 -> 1.25 -> 1) and cap busy fps at 30 */
 var PERF={cap:2,busyGap:0,win:[],lastAdj:0,show:false,js:0,fr:0,fdt:0};var LASTF0=0;
 try{PERF.show=localStorage.getItem('nb-fps')==='1';}catch(e){}
 /* FPS meter (toggle in Menu): frame interval and JS time per frame, exponential averages */
 function perfMeter(now,js){PERF.js+=(js-PERF.js)*0.1;if(PERF.fdt>0&&PERF.fdt<500)PERF.fr+=(PERF.fdt-PERF.fr)*0.1;if(!PERF.show)return;
-  var fps=PERF.fr?Math.round(1000/PERF.fr):0,txt=fps+' fps · JS '+PERF.js.toFixed(1)+' ms · '+dpr+'x';g.save();g.setTransform(dpr,0,0,dpr,0,0);g.font='800 12px Nunito, sans-serif';var w=g.measureText(txt).width+14;
+  var fps=PERF.fr?Math.round(1000/PERF.fr):0,txt=fps+' fps · JS '+PERF.js.toFixed(1)+' ms · '+dpr+'x · '+(PERF.gap>=50?'hemat 20fps':PERF.gap>=33?'hemat 30fps':'penuh')+' · diam '+Math.round((PERF.idle||0)/1000)+' dtk · '+Math.round(CW*dpr)+'×'+Math.round(CH_*dpr)+(document.hidden?' · tab tersembunyi':'');g.save();g.setTransform(dpr,0,0,dpr,0,0);g.font='800 12px Nunito, sans-serif';var w=g.measureText(txt).width+14;
   g.fillStyle='rgba(0,0,0,.65)';rrect(8,CH_-30,w,22,8);g.fill();g.fillStyle=fps>=40?'#7CFC9A':fps>=24?'#FFD95A':'#FF7A7A';g.textAlign='left';g.textBaseline='middle';g.fillText(txt,15,CH_-19);g.restore();}
 function perfSample(now,dt){if(dt>250)return;PERF.win.push(dt);if(PERF.win.length<45)return;var a=PERF.win.slice().sort(function(x,y){return x-y;}),med=a[a.length>>1];PERF.win.length=0;
   if(now-PERF.lastAdj<3000)return;
@@ -96,7 +99,7 @@ function render(now){
   requestAnimationFrame(render);
   if(!S||$('game').hidden)return;
   if(FX.collapse&&FX.collapse.length)FX.collapse=FX.collapse.filter(function(c){return now-c.t0<1500;});
-  var busy=sceneBusy(now);if(busy)IDLE_SINCE=now;var idle=now-IDLE_SINCE,gap=busy?PERF.busyGap:(idle>15000?100:idle>2500?66:33);if(now-LASTF<gap-2)return;if(busy&&LASTF&&now-LASTF<400)perfSample(now,now-LASTF);LASTF=now;CAMPREV={z:cam.z,px:cam.px,py:cam.py};
+  var busy=sceneBusy(now);if(busy)IDLE_SINCE=now;var idle=now-IDLE_SINCE,gap=busy?PERF.busyGap:idleGap(idle);PERF.idle=idle;PERF.gap=gap;if(now-LASTF<gap-2)return;if(busy&&LASTF&&now-LASTF<400)perfSample(now,now-LASTF);LASTF=now;CAMPREV={z:cam.z,px:cam.px,py:cam.py};
   var _t0=performance.now();PERF.fdt=LASTF0?now-LASTF0:0;LASTF0=now;
   drainEvents(now);salaryTick(now);processPend(now);checkHold(now);updateConvoy(now);
   NIGHT+=(nightTarget()-NIGHT)*0.02;
